@@ -1,0 +1,373 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUÍA 01 – Introducción, herramientas y estructura del proyecto
+Módulo 1 de 5 | Guía 1 de 15
+================================================================
+
+OBJETIVO
+---------
+Al terminar esta guía tendrás:
+- Todas las herramientas instaladas y verificadas.
+- La estructura de carpetas del proyecto creada.
+- El repositorio Git inicializado.
+- El backend listo para recibir código (dependencias instaladas).
+
+================================================================
+PARTE 1 – ¿QUÉ VAMOS A CONSTRUIR?
+================================================================
+
+Durante este curso construirás un sistema de pedidos completo
+para "Cafetería Aroma" de Cochabamba, Bolivia. Al finalizar
+tendrás:
+
+  FRONTEND (lo que ve el usuario en el navegador):
+    - Menú de productos con filtros por categoría.
+    - Carrito de compras que persiste al recargar.
+    - Proceso de checkout con comprobante de pago.
+    - Panel del cajero para gestionar pedidos.
+    - Panel del administrador con dashboard de ventas.
+
+  BACKEND (el servidor en Node.js):
+    - API REST con Express.
+    - Autenticación segura con JWT.
+    - El servidor calcula los totales (el cliente no puede
+      falsificar precios).
+
+  BASE DE DATOS (Supabase / PostgreSQL):
+    - Tablas relacionadas: usuarios, productos, pedidos.
+    - Seguridad a nivel de base de datos (RLS).
+    - Almacenamiento de archivos (comprobantes de pago).
+
+Este proyecto es apto para incluir en un portafolio profesional.
+
+================================================================
+PARTE 2 – HERRAMIENTAS A INSTALAR
+================================================================
+
+PASO 1 – Node.js (el motor de JavaScript para el servidor)
+  - Ir a: https://nodejs.org
+  - Descargar la versión LTS (Long Term Support).
+  - Instalar con opciones por defecto.
+  - Verificar en la terminal:
+      node --version   → algo como: v20.11.0
+      npm --version    → algo como: 10.2.4
+
+PASO 2 – Visual Studio Code (el editor de código)
+  - Ir a: https://code.visualstudio.com
+  - Instalar con opciones por defecto.
+  - Abrir VS Code e instalar estas extensiones (Ctrl+Shift+X):
+      Live Server    (autor: Ritwick Dey)
+        → Sirve el frontend en localhost con un clic.
+      Prettier       (autor: Prettier)
+        → Formatea el código automáticamente al guardar.
+
+PASO 3 – Git (el sistema de control de versiones)
+  - Windows: https://git-scm.com → "Git for Windows".
+  - macOS: ya viene instalado (o instalar con Homebrew: brew install git).
+  - Verificar:
+      git --version   → algo como: git version 2.43.0
+  - Configurar identidad (se hace una sola vez):
+      git config --global user.name "Tu Nombre Completo"
+      git config --global user.email "tu@email.com"
+
+PASO 4 – Cuenta en GitHub
+  - Registrarse gratis en: https://github.com
+  - Esto permite guardar el código en la nube y desplegarlo.
+
+PASO 5 – Cuenta en Supabase
+  - Registrarse gratis en: https://supabase.com
+  - No hace falta hacer nada más por ahora.
+  - Lo usaremos a fondo en la Guía 02.
+
+================================================================
+PARTE 3 – ¿POR QUÉ ESTA ESTRUCTURA DE CARPETAS?
+================================================================
+
+Antes de crear una sola carpeta, entendamos el diseño:
+
+  trabajoBaseTecnicoMedio/   ← raíz del repositorio
+  ├── backend/               ← servidor Node.js (corre en Railway/Render)
+  ├── frontend/              ← archivos estáticos (van en Netlify)
+  ├── database/              ← scripts SQL (se ejecutan en Supabase)
+  └── docs/guias/            ← este curso
+
+Esta separación tiene ventajas reales:
+  - Frontend y backend se despliegan en servidores distintos.
+  - Un cambio en el servidor no afecta al HTML/CSS y viceversa.
+  - Dos desarrolladores pueden trabajar en paralelo sin conflictos.
+  - Es el estándar de la industria para proyectos web modernos.
+
+================================================================
+PARTE 4 – CREAR LA ESTRUCTURA DEL PROYECTO
+================================================================
+
+PASO 1 – Abrir la terminal en VS Code
+  Menú Terminal → New Terminal  (o Ctrl+`)
+
+PASO 2 – Navegar a donde quieres crear el proyecto
+  Ejemplo en Windows:
+    cd C:\Users\TuUsuario\Documents
+
+  Ejemplo en macOS/Linux:
+    cd ~/Documents
+
+PASO 3 – Crear la carpeta raíz y entrar en ella
+  mkdir trabajoBaseTecnicoMedio
+  cd trabajoBaseTecnicoMedio
+
+PASO 4 – Crear todas las subcarpetas de una vez
+  mkdir backend
+  mkdir -p backend/src/controllers
+  mkdir -p backend/src/middleware
+  mkdir -p backend/src/routes
+  mkdir -p backend/src/services
+  mkdir -p frontend/css
+  mkdir -p frontend/js/pages
+  mkdir database
+  mkdir -p docs/guias
+
+  El flag -p crea carpetas anidadas de una vez.
+  En Windows cmd usa: mkdir backend\src\controllers (con \)
+
+PASO 5 – Crear los archivos vacíos del frontend
+  Desde la raíz, crea estos archivos (toca el nombre en VS Code
+  o usa el comando touch en macOS/Linux):
+
+    frontend/index.html
+    frontend/css/styles.css
+    frontend/js/config.js
+    frontend/js/auth.js
+    frontend/js/api.js
+    frontend/js/cart.js
+    frontend/js/app.js
+    frontend/js/pages/home.js
+    frontend/js/pages/menu.js
+    frontend/js/pages/cart-page.js
+    frontend/js/pages/login.js
+    frontend/js/pages/contact.js
+    frontend/js/pages/cashier.js
+    frontend/js/pages/admin.js
+
+  En Windows puedes crearlos desde VS Code:
+  clic derecho en la carpeta → New File → escribir el nombre.
+
+================================================================
+PARTE 5 – INICIALIZAR EL BACKEND
+================================================================
+
+PASO 1 – Entrar a la carpeta backend
+  cd backend
+
+PASO 2 – Inicializar el proyecto Node.js
+  npm init -y
+
+  Este comando crea package.json, el "carnet de identidad"
+  del proyecto Node.js. El flag -y acepta todos los valores
+  por defecto sin preguntar.
+
+  Abre el package.json que se creó. Verás algo como:
+    {
+      "name": "backend",
+      "version": "1.0.0",
+      "description": "",
+      "main": "index.js",
+      "scripts": { "test": "echo ..." },
+      "keywords": [],
+      "author": "",
+      "license": "ISC"
+    }
+
+PASO 3 – Instalar dependencias de producción
+  npm install express cors morgan dotenv @supabase/supabase-js
+
+  ¿Para qué sirve cada paquete?
+
+  express:
+    Framework web. Define cómo el servidor recibe peticiones HTTP
+    y qué responde. Es el núcleo del backend.
+
+  cors:
+    Cross-Origin Resource Sharing. El navegador bloquea por
+    seguridad las peticiones a otro dominio. Este paquete
+    le dice al servidor qué orígenes puede aceptar.
+    Sin él, el frontend no podría hablar con el backend.
+
+  morgan:
+    Logger de peticiones. Muestra en consola cada petición:
+      GET /api/products 200 12ms
+
+  dotenv:
+    Lee el archivo .env y pone las variables en process.env.
+    Permite cambiar claves sin tocar el código.
+
+  @supabase/supabase-js:
+    SDK oficial de Supabase. Permite al backend consultar
+    la base de datos y gestionar la autenticación.
+
+PASO 4 – Instalar dependencias de desarrollo
+  npm install --save-dev nodemon
+
+  nodemon reinicia el servidor automáticamente cada vez que
+  guardas un archivo. Solo se usa en desarrollo, no en
+  producción (por eso --save-dev).
+
+  Observa cómo package.json ahora tiene dos secciones:
+    "dependencies":    { paquetes que necesita en producción }
+    "devDependencies": { paquetes que solo usa en desarrollo }
+
+PASO 5 – Actualizar los scripts en package.json
+
+  Abre backend/package.json y reemplaza la sección "scripts":
+
+    "scripts": {
+      "start": "node src/index.js",
+      "dev":   "nodemon src/index.js"
+    },
+
+  Ahora tendrás:
+    npm run dev    → inicia con nodemon (desarrollo)
+    npm start      → inicia con node puro (producción)
+
+PASO 6 – Crear el archivo de variables de entorno
+
+  Crea el archivo backend/.env con este contenido:
+
+    PORT=3000
+    SUPABASE_URL=https://REEMPLAZAR.supabase.co
+    SUPABASE_SERVICE_ROLE_KEY=REEMPLAZAR_CON_TU_CLAVE
+    FRONTEND_URL=http://localhost:5500
+
+  IMPORTANTE:
+  - Este archivo contiene claves secretas. Nunca lo subas a GitHub.
+  - Los valores REEMPLAZAR los completaremos en la Guía 02.
+
+PASO 7 – Crear la plantilla .env.example
+
+  Crea backend/.env.example con los mismos campos pero sin
+  valores reales:
+
+    PORT=3000
+    SUPABASE_URL=https://tu-proyecto.supabase.co
+    SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key-aqui
+    FRONTEND_URL=http://localhost:5500
+
+  Este archivo SÍ va a GitHub. Sirve para que otros
+  desarrolladores sepan qué variables necesitan.
+
+================================================================
+PARTE 6 – GIT: CONTROL DE VERSIONES
+================================================================
+
+PASO 1 – Volver a la raíz del proyecto
+  cd ..    (si estás en backend/)
+
+PASO 2 – Inicializar el repositorio Git
+  git init
+
+  Esto crea la carpeta oculta .git donde Git guarda
+  todo el historial del proyecto.
+
+PASO 3 – Crear el archivo .gitignore
+
+  Crea el archivo .gitignore en la raíz del proyecto con:
+
+    # Dependencias Node.js (se regeneran con npm install)
+    node_modules/
+
+    # Variables de entorno (contienen claves secretas)
+    .env
+    backend/.env
+
+    # Archivos del sistema operativo
+    .DS_Store
+    Thumbs.db
+
+    # Archivos de VS Code (opcional)
+    .vscode/settings.json
+
+  ¿Por qué ignorar node_modules/?
+  Esa carpeta puede tener 50.000+ archivos y pesar 200+ MB.
+  No tiene sentido subirla: cualquiera la puede regenerar
+  con "npm install" gracias al package.json.
+
+PASO 4 – Hacer el primer commit
+  git add .
+  git commit -m "feat: estructura inicial del proyecto"
+
+  Convención de commits (Git Conventional Commits):
+    feat:  nueva funcionalidad
+    fix:   corrección de error
+    chore: cambios de configuración o mantenimiento
+    docs:  cambios en documentación
+
+================================================================
+PARTE 7 – VERIFICACIÓN FINAL
+================================================================
+
+Al terminar, tu estructura debe verse así:
+
+  trabajoBaseTecnicoMedio/
+  ├── .gitignore
+  ├── backend/
+  │   ├── .env             ← CON tus datos (NO subir a Git)
+  │   ├── .env.example     ← SIN datos reales (SÍ subir a Git)
+  │   ├── package.json
+  │   ├── package-lock.json
+  │   └── src/
+  │       ├── controllers/ (vacía)
+  │       ├── middleware/  (vacía)
+  │       ├── routes/      (vacía)
+  │       └── services/    (vacía)
+  ├── database/            (vacía)
+  ├── docs/guias/
+  └── frontend/
+      ├── index.html       (vacío)
+      ├── css/styles.css   (vacío)
+      └── js/
+          ├── config.js    (vacío)
+          ├── auth.js      (vacío)
+          ├── api.js       (vacío)
+          ├── cart.js      (vacío)
+          ├── app.js       (vacío)
+          └── pages/
+              ├── home.js, menu.js, cart-page.js
+              ├── login.js, contact.js
+              ├── cashier.js, admin.js
+
+Verifica con:
+  git status       → debe mostrar "nothing to commit"
+  git log          → debe mostrar tu primer commit
+
+================================================================
+ACTIVIDAD PRÁCTICA
+================================================================
+
+1. Instala todas las herramientas y verifica las versiones en
+   la terminal. Anota cada número de versión.
+
+2. Crea la estructura completa del proyecto. Haz el primer
+   commit y ejecuta: git log --oneline
+   ¿Qué muestra?
+
+3. Abre backend/package.json y explica con tus palabras
+   qué diferencia hay entre "dependencies" y "devDependencies".
+
+4. ¿Por qué el archivo .env.example existe si tiene datos
+   falsos? ¿Qué problema resolvería si lo eliminaras?
+
+5. Investiga: ¿qué es un "monorepo"? ¿Este proyecto sería
+   considerado un monorepo? Justifica tu respuesta.
+
+================================================================
+RESUMEN
+================================================================
+En esta guía:
+✓ Instalaste Node.js, VS Code, Git y extensiones.
+✓ Creaste la estructura frontend/backend/database del proyecto.
+✓ Inicializaste el backend con npm y sus dependencias.
+✓ Configuraste variables de entorno (sin subir claves a Git).
+✓ Inicializaste Git con .gitignore y primer commit.
+
+PRÓXIMA GUÍA: Diseñar y crear la base de datos en Supabase.

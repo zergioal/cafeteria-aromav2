@@ -1,0 +1,556 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 14 – Dashboard de administrador y configuración del negocio
+Módulo 5 de 5 | Guía 14 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: sistema completo funcionando. El panel admin tiene
+productos y categorías. Los tabs "Dashboard", "Usuarios" y
+"Configuracion" muestran "en desarrollo".
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Creado el endpoint del dashboard con consultas agregadas.
+- Implementado el endpoint CRUD de usuarios para el admin.
+- Creado el endpoint UPSERT para guardar configuraciones.
+- Implementado las tres secciones faltantes del panel admin.
+- Aprendido el patrón try/catch/finally para formularios.
+
+================================================================
+PARTE 1 – CONSULTAS AGREGADAS EN POSTGRESQL
+================================================================
+
+El dashboard necesita números como:
+  - Total de ventas del período.
+  - Número de pedidos.
+  - Productos más vendidos.
+  - Desglose por canal y método de pago.
+
+Para calcular el total de ventas, tienes dos enfoques:
+
+ENFOQUE A: Traer todos los pedidos al servidor Node.js y sumar con JS:
+  const { data } = await supabase.from('orders').select('total')
+  const total = data.reduce((s, o) => s + o.total, 0)
+
+  Problema: si hay 10.000 pedidos, traes 10.000 filas por la red
+  solo para sumar. Ineficiente.
+
+ENFOQUE B: Dejar que PostgreSQL haga la agregación:
+  const { data } = await supabase
+    .from('orders')
+    .select('total.sum()')
+    .eq('status', 'delivered')
+
+  PostgreSQL calcula la suma en el servidor de BD y solo envía
+  un número. Mucho más eficiente.
+
+FUNCIONES DE AGREGACIÓN SQL:
+  SUM(columna)   -> suma todos los valores
+  COUNT(*)       -> cuenta filas
+  AVG(columna)   -> promedio
+  MAX(columna)   -> valor máximo
+  MIN(columna)   -> valor mínimo
+
+================================================================
+PARTE 2 – BACKEND: CONTROLADOR DEL DASHBOARD
+================================================================
+
+Agrega estos métodos a backend/src/controllers/adminController.js:
+
+--- Agregar a adminController.js ---
+
+/**
+ * GET /api/admin/dashboard
+ * Estadisticas del periodo.
+ * Query params: from, to (fechas YYYY-MM-DD)
+ */
+async function getDashboard(req, res) {
+  try {
+    const BOLIVIA_OFFSET_MS = 4 * 60 * 60 * 1000;
+
+    // Rango de fechas del query, por defecto los ultimos 30 dias
+    const today    = new Date(Date.now() - BOLIVIA_OFFSET_MS);
+    const toDate   = req.query.to   || today.toISOString().split('T')[0];
+    const fromDate = req.query.from || new Date(Date.now() - BOLIVIA_OFFSET_MS - 30*24*60*60*1000)
+                                         .toISOString().split('T')[0];
+
+    const start = new Date(fromDate + 'T00:00:00-04:00').toISOString();
+    const end   = new Date(toDate   + 'T23:59:59-04:00').toISOString();
+
+    // Consulta de pedidos en el rango
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('id, total, status, channel, payment_method, created_at')
+      .gte('created_at', start)
+      .lte('created_at', end);
+
+    if (error) throw error;
+
+    const completed = orders.filter(o =>
+      ['paid','preparing','delivering','delivered'].includes(o.status)
+    );
+
+    const totalRevenue   = completed.reduce((s, o) => s + Number(o.total), 0);
+    const totalOrders    = completed.length;
+    const avgOrderValue  = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const pendingOrders  = orders.filter(o => o.status === 'pending_payment').length;
+    const canceledOrders = orders.filter(o => o.status === 'canceled').length;
+
+    // Productos mas vendidos en el periodo
+    const { data: topItems } = await supabase
+      .from('order_items')
+      .select('product_name_snapshot, quantity')
+      .in('order_id', completed.map(o => o.id));
+
+    // Agrupar por nombre y sumar cantidades
+    const productSales = {};
+    (topItems || []).forEach(item => {
+      const name = item.product_name_snapshot;
+      productSales[name] = (productSales[name] || 0) + item.quantity;
+    });
+
+    const topProducts = Object.entries(productSales)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, qty]) => ({ name, qty }));
+
+    res.json({
+      totalRevenue,
+      totalOrders,
+      avgOrderValue,
+      pendingOrders,
+      canceledOrders,
+      topProducts,
+      fromDate,
+      toDate,
+    });
+  } catch (err) {
+    console.error('[admin] getDashboard:', err.message);
+    res.status(500).json({ error: 'Error al obtener dashboard' });
+  }
+}
+
+/**
+ * GET /api/admin/settings
+ * Retorna toda la configuracion del negocio.
+ */
+async function adminGetSettings(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('settings').select('key, value');
+    if (error) throw error;
+    const settings = {};
+    data.forEach(row => { settings[row.key] = row.value; });
+    res.json(settings);
+  } catch (err) {
+    console.error('[admin] adminGetSettings:', err.message);
+    res.status(500).json({ error: 'Error al obtener configuracion' });
+  }
+}
+
+/**
+ * PUT /api/admin/settings
+ * Guarda multiples configuraciones a la vez (UPSERT).
+ * Body: { whatsapp_number, qr_image_url, qr_info, ... }
+ */
+async function adminUpdateSettings(req, res) {
+  try {
+    const updates = Object.entries(req.body).map(([key, value]) => ({
+      key,
+      value: String(value ?? ''),
+      updated_at: new Date().toISOString(),
+    }));
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No hay datos para guardar' });
+    }
+
+    const { error } = await supabase
+      .from('settings')
+      .upsert(updates, { onConflict: 'key' });
+
+    /*
+      UPSERT = INSERT ... ON CONFLICT DO UPDATE
+      Si la clave ya existe -> actualiza el valor.
+      Si no existe -> la inserta.
+      Útil para tablas de configuracion clave-valor donde
+      no sabes de antemano si ya existe la clave.
+    */
+
+    if (error) throw error;
+    res.json({ message: 'Configuracion guardada correctamente' });
+  } catch (err) {
+    console.error('[admin] adminUpdateSettings:', err.message);
+    res.status(500).json({ error: 'Error al guardar configuracion' });
+  }
+}
+
+/**
+ * GET /api/admin/users
+ * Lista todos los usuarios con su perfil.
+ */
+async function adminGetUsers(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, full_name, phone, role, active, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[admin] adminGetUsers:', err.message);
+    res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+}
+
+/**
+ * PATCH /api/admin/users/:id
+ * Actualiza rol y estado de un usuario.
+ */
+async function adminUpdateUser(req, res) {
+  try {
+    const { id } = req.params;
+    const { role, active, full_name, phone } = req.body;
+
+    const VALID_ROLES = ['admin', 'cashier', 'client'];
+    if (role && !VALID_ROLES.includes(role)) {
+      return res.status(400).json({ error: 'Rol no valido' });
+    }
+
+    // No permitir que el admin se desactive a sí mismo
+    if (id === req.user.id && active === false) {
+      return res.status(400).json({ error: 'No puedes desactivar tu propia cuenta' });
+    }
+
+    const updateData = {};
+    if (role      !== undefined) updateData.role      = role;
+    if (active    !== undefined) updateData.active    = active;
+    if (full_name !== undefined) updateData.full_name = full_name;
+    if (phone     !== undefined) updateData.phone     = phone;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[admin] adminUpdateUser:', err.message);
+    res.status(500).json({ error: 'Error al actualizar usuario' });
+  }
+}
+
+// Agregar al module.exports:
+module.exports = {
+  adminGetProducts, adminCreateProduct, adminUpdateProduct, adminDeleteProduct,
+  getDashboard,
+  adminGetSettings, adminUpdateSettings,
+  adminGetUsers, adminUpdateUser,
+};
+
+Agrega a backend/src/routes/admin.js:
+
+  const {
+    // ...existentes...
+    getDashboard,
+    adminGetSettings, adminUpdateSettings,
+    adminGetUsers, adminUpdateUser,
+  } = require('../controllers/adminController');
+
+  router.get ('/dashboard',   getDashboard);
+  router.get ('/settings',    adminGetSettings);
+  router.put ('/settings',    adminUpdateSettings);
+  router.get ('/users',       adminGetUsers);
+  router.patch('/users/:id',  adminUpdateUser);
+
+================================================================
+PARTE 3 – FRONTEND: DASHBOARD, USUARIOS Y CONFIGURACIÓN
+================================================================
+
+Completa los métodos faltantes en frontend/js/pages/admin.js:
+
+--- Agregar a AdminPage ---
+
+  /** Panel de Dashboard */
+  async _renderDashboard() {
+    const el = document.getElementById('admin-panel-content');
+    el.innerHTML = `
+      <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1rem;flex-wrap:wrap;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Desde</label>
+          <input type="date" id="dash-from" class="form-input"
+                 style="width:150px;" value="${this._getDaysAgo(30)}" />
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Hasta</label>
+          <input type="date" id="dash-to" class="form-input"
+                 style="width:150px;" value="${this._getToday()}" />
+        </div>
+        <button class="btn btn-primary"
+                onclick="AdminPage._loadDashboard()">
+          Aplicar
+        </button>
+      </div>
+      <div id="dashboard-content"><div class="spinner"></div></div>
+    `;
+    this._loadDashboard();
+  },
+
+  async _loadDashboard() {
+    const el   = document.getElementById('dashboard-content');
+    const from = document.getElementById('dash-from')?.value;
+    const to   = document.getElementById('dash-to')?.value;
+    el.innerHTML = '<div class="spinner"></div>';
+
+    try {
+      const data = await API.get(`/api/admin/dashboard?from=${from}&to=${to}`);
+      el.innerHTML = `
+        <div class="grid-2" style="gap:1rem;margin-bottom:1rem;">
+          <div class="card card-body">
+            <p style="color:var(--text-muted);font-size:.875rem;">Total Ventas</p>
+            <p style="font-size:2rem;font-weight:700;color:var(--primary);">
+              ${fmtCurrency(data.totalRevenue)}
+            </p>
+          </div>
+          <div class="card card-body">
+            <p style="color:var(--text-muted);font-size:.875rem;">Pedidos Completados</p>
+            <p style="font-size:2rem;font-weight:700;">${data.totalOrders}</p>
+          </div>
+          <div class="card card-body">
+            <p style="color:var(--text-muted);font-size:.875rem;">Ticket Promedio</p>
+            <p style="font-size:1.5rem;font-weight:700;">${fmtCurrency(data.avgOrderValue)}</p>
+          </div>
+          <div class="card card-body">
+            <p style="color:var(--text-muted);font-size:.875rem;">Pendientes de pago</p>
+            <p style="font-size:1.5rem;font-weight:700;color:var(--warning);">
+              ${data.pendingOrders}
+            </p>
+          </div>
+        </div>
+
+        <div class="card card-body">
+          <h3 style="margin-bottom:.75rem;">Productos mas vendidos</h3>
+          ${data.topProducts.length === 0
+            ? '<p style="color:var(--text-muted);">Sin datos en este periodo</p>'
+            : `<table class="admin-table">
+                <tbody>
+                  ${data.topProducts.map((p, i) => `
+                    <tr>
+                      <td>#${i+1}</td>
+                      <td>${escHtml(p.name)}</td>
+                      <td><strong>${p.qty} uds</strong></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+               </table>`
+          }
+        </div>
+      `;
+    } catch (err) {
+      el.innerHTML = `<div class="alert alert-error">${escHtml(err.message)}</div>`;
+    }
+  },
+
+  _getToday() {
+    return new Date(Date.now() - 4*60*60*1000).toISOString().split('T')[0];
+  },
+  _getDaysAgo(days) {
+    return new Date(Date.now() - 4*60*60*1000 - days*24*60*60*1000)
+      .toISOString().split('T')[0];
+  },
+
+  /** Panel de Configuracion con try/catch/finally */
+  async _renderSettings() {
+    const el = document.getElementById('admin-panel-content');
+    el.innerHTML = '<div class="spinner"></div>';
+
+    let settings = {};
+    try {
+      settings = await API.get('/api/admin/settings');
+    } catch (err) {
+      el.innerHTML = `<div class="alert alert-error">${escHtml(err.message)}</div>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <h2 style="margin-bottom:1.25rem;">Configuracion del negocio</h2>
+      <div id="settings-error" class="alert alert-error" style="display:none"></div>
+
+      <form id="settings-form">
+        <div class="form-group">
+          <label class="form-label">Numero de WhatsApp</label>
+          <input type="tel" id="set-whatsapp" class="form-input"
+                 value="${escHtml(settings.whatsapp_number || '')}"
+                 placeholder="+59170000000" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">URL del QR de pago</label>
+          <input type="url" id="set-qr" class="form-input"
+                 value="${escHtml(settings.qr_image_url || '')}"
+                 placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Informacion del QR</label>
+          <input type="text" id="set-qr-info" class="form-input"
+                 value="${escHtml(settings.qr_info || '')}"
+                 placeholder="Ej: Paga por Tigo Money o QR BNB" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horarios de atencion</label>
+          <input type="text" id="set-hours" class="form-input"
+                 value="${escHtml(settings.business_hours || '')}"
+                 placeholder="L-V: 7:00 - 21:00" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Direccion del negocio</label>
+          <input type="text" id="set-address" class="form-input"
+                 value="${escHtml(settings.business_address || '')}"
+                 placeholder="Av. Ballivian, Cochabamba" />
+        </div>
+
+        <button type="button" class="btn btn-primary" id="settings-save-btn"
+                onclick="AdminPage._saveSettings()">
+          Guardar configuracion
+        </button>
+      </form>
+    `;
+  },
+
+  /**
+   * Guarda la configuracion con el patron try/catch/finally.
+   * El bloque finally SIEMPRE se ejecuta (con exito o error).
+   * Garantiza que el boton siempre se reactiva.
+   */
+  async _saveSettings() {
+    const errEl = document.getElementById('settings-error');
+    const btn   = document.getElementById('settings-save-btn');
+
+    errEl.style.display = 'none';   // limpiar error previo
+    btn.disabled    = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+      await API.put('/api/admin/settings', {
+        whatsapp_number:  document.getElementById('set-whatsapp')?.value.trim(),
+        qr_image_url:     document.getElementById('set-qr')?.value.trim(),
+        qr_info:          document.getElementById('set-qr-info')?.value.trim(),
+        business_hours:   document.getElementById('set-hours')?.value.trim(),
+        business_address: document.getElementById('set-address')?.value.trim(),
+      });
+
+      Toast.show('Configuracion guardada', 'success');
+
+    } catch (err) {
+      errEl.textContent   = err.message;
+      errEl.style.display = 'block';
+      errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } finally {
+      // SIEMPRE se ejecuta, haya exito o error
+      btn.disabled    = false;
+      btn.textContent = 'Guardar configuracion';
+    }
+
+    // Refrescar la configuracion en memoria (operacion secundaria,
+    // no debe afectar el UX si falla)
+    API.get('/api/settings/public')
+      .then(data => { App._publicSettings = data; })
+      .catch(() => {});
+  },
+
+Actualiza el _renderPanel de AdminPage para conectar los nuevos paneles:
+
+  _renderPanel(panel) {
+    switch(panel) {
+      case 'products':   this._renderProducts();   break;
+      case 'categories': this._renderCategories(); break;
+      case 'users':      this._renderUsers();      break;
+      case 'dashboard':  this._renderDashboard();  break;
+      case 'settings':   this._renderSettings();   break;
+    }
+  },
+
+Para _renderUsers, sigue el mismo patrón que _renderProducts:
+  - Llama API.get('/api/admin/users')
+  - Muestra una tabla con nombre, email, rol, estado
+  - Botón editar que abre modal para cambiar rol y estado
+  - Usa API.patch('/api/admin/users/:id') para guardar
+
+================================================================
+PARTE 4 – EL PATRÓN TRY/CATCH/FINALLY
+================================================================
+
+Sin finally (problema):
+  async function guardar() {
+    btn.disabled = true;
+    try {
+      await API.put('/api/...');
+      Toast.show('Guardado', 'success');
+    } catch (err) {
+      // Si hay error, la funcion termina aqui.
+      // btn.disabled sigue siendo true -> el boton queda bloqueado
+      mostrarError(err);
+    }
+    btn.disabled = false;  // NUNCA llega aqui si hay error
+  }
+
+Con finally (correcto):
+  async function guardar() {
+    btn.disabled = true;
+    try {
+      await API.put('/api/...');
+      Toast.show('Guardado', 'success');
+    } catch (err) {
+      mostrarError(err);
+    } finally {
+      btn.disabled = false;  // SIEMPRE se ejecuta
+    }
+  }
+
+La regla: si algo SIEMPRE debe ocurrir (limpiar estado, re-activar
+el UI, cerrar conexiones), ponlo en finally, nunca después del catch.
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. El dashboard calcula topProducts en Node.js trayendo todos
+   los order_items. ¿Cómo lo harías directamente en SQL para
+   que sea más eficiente?
+   Pista: usa GROUP BY product_name_snapshot, ORDER BY SUM(quantity) DESC
+
+2. El endpoint PUT /api/admin/settings usa UPSERT.
+   ¿Qué diferencia hay entre INSERT y UPSERT?
+   ¿Por qué UPSERT es perfecto para una tabla clave-valor?
+
+3. adminUpdateUser tiene una validación especial:
+     if (id === req.user.id && active === false)
+   ¿Qué problema de "auto-bloqueo" previene esto?
+
+4. La actualización de App._publicSettings en _saveSettings
+   está FUERA del try/catch principal pero no en finally.
+   ¿Por qué? ¿Qué pasaría si estuviera dentro del try?
+   (Pista: si GET falla después de un PUT exitoso...)
+
+5. Implementa la gestión de usuarios completa en _renderUsers:
+   tabla con nombre/rol/estado, modal de edición, cambio de rol.
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Creaste consultas agregadas (totalRevenue, topProducts) en el servidor.
+✓ Implementaste el dashboard con filtro por rango de fechas.
+✓ Creaste endpoints CRUD de usuarios y UPSERT de configuraciones.
+✓ Dominaste el patrón try/catch/finally para formularios.
+✓ Entendiste el patrón "best-effort" para operaciones secundarias.
+
+PROXIMA GUIA: Despliegue en produccion (Railway + Netlify).

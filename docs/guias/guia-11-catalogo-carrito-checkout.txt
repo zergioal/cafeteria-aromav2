@@ -1,0 +1,455 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 11 – Catálogo público, menú con filtros y checkout completo
+Módulo 4 de 5 | Guía 11 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: CRUD de productos admin funcionando.
+menu.js muestra "Menu - próximamente". El endpoint
+POST /api/orders no existe todavía.
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Implementado MenuPage con carga desde la API, filtros por
+  categoría y búsqueda.
+- Creado el endpoint POST /api/orders en el backend, con el
+  total calculado en el servidor.
+- Integrado el carrito con el checkout real (no solo local).
+
+================================================================
+PARTE 1 – PRINCIPIO CLAVE: EL SERVIDOR CALCULA EL TOTAL
+================================================================
+
+¿Por qué el total lo calcula el servidor?
+
+  El frontend envía una lista de { product_id, quantity }.
+  NUNCA envía el precio, porque el cliente podría falsificarlo.
+
+  El servidor:
+  1. Recibe los ítems del pedido.
+  2. Consulta los precios REALES en la base de datos.
+  3. Calcula el total.
+  4. Guarda el pedido con el total correcto.
+
+  Ejemplo de lo que se previene:
+    // El cliente envía esto (modificado maliciosamente):
+    { product_id: 'cappuccino-uuid', quantity: 10, price: 0.01 }
+
+    // El servidor ignora el precio enviado y consulta la BD:
+    // precio_real = 20.00
+    // total = 10 * 20.00 = 200.00 (correcto)
+
+================================================================
+PARTE 2 – BACKEND: CREAR EL CONTROLADOR DE PEDIDOS
+================================================================
+
+Crea backend/src/controllers/ordersController.js:
+
+--- backend/src/controllers/ordersController.js ---
+
+const supabase = require('../services/supabase');
+
+/**
+ * POST /api/orders
+ * Crea un nuevo pedido online.
+ * Requiere autenticacion (cliente logueado).
+ */
+async function createOrder(req, res) {
+  const {
+    items,
+    customer_name,
+    customer_phone,
+    delivery_address,
+    notes,
+    payment_method,
+    proof_url,
+  } = req.body;
+
+  // Validacion basica
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'El pedido debe tener al menos un producto' });
+  }
+  if (!customer_name?.trim()) {
+    return res.status(400).json({ error: 'El nombre del cliente es obligatorio' });
+  }
+  if (!customer_phone?.trim()) {
+    return res.status(400).json({ error: 'El telefono es obligatorio' });
+  }
+  if (!delivery_address?.trim()) {
+    return res.status(400).json({ error: 'La direccion de entrega es obligatoria' });
+  }
+
+  try {
+    // Extraer los IDs de productos del pedido
+    const productIds = items.map(i => i.product_id);
+
+    // Consultar los precios REALES en la base de datos
+    const { data: products, error: prodError } = await supabase
+      .from('products')
+      .select('id, name, price, cost')
+      .in('id', productIds)
+      .eq('active', true);
+
+    if (prodError) throw prodError;
+
+    // Construir un mapa id -> producto para acceso rapido
+    const productMap = {};
+    products.forEach(p => { productMap[p.id] = p; });
+
+    // Verificar que todos los productos del pedido existen y estan activos
+    for (const item of items) {
+      if (!productMap[item.product_id]) {
+        return res.status(400).json({
+          error: `Producto no disponible: ${item.product_id}`
+        });
+      }
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+        return res.status(400).json({
+          error: `Cantidad invalida para el producto ${item.product_id}`
+        });
+      }
+    }
+
+    // Calcular el total en el servidor (nunca confiar en el cliente)
+    let total = 0;
+    const orderItems = items.map(item => {
+      const product   = productMap[item.product_id];
+      const subtotal  = product.price * item.quantity;
+      total          += subtotal;
+      return {
+        product_id:             product.id,
+        product_name_snapshot:  product.name,    // snapshot: precio historico
+        unit_price_snapshot:    product.price,   // si cambia manana, este queda
+        unit_cost_snapshot:     product.cost || 0,
+        quantity:               item.quantity,
+        subtotal:               subtotal,
+      };
+    });
+
+    // Crear el pedido en la BD
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        user_id:          req.user.id,
+        customer_name:    customer_name.trim(),
+        customer_phone:   customer_phone.trim(),
+        delivery_address: delivery_address.trim(),
+        notes:            notes?.trim() || null,
+        payment_method:   payment_method || 'qr',
+        proof_url:        proof_url || null,
+        total:            total,
+        status:           'pending_payment',
+        channel:          'online',
+        code:             '',   // el trigger lo genera automaticamente
+      })
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // Insertar los items del pedido
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems.map(i => ({ ...i, order_id: order.id })));
+
+    if (itemsError) throw itemsError;
+
+    res.status(201).json(order);
+
+  } catch (err) {
+    console.error('[orders] createOrder:', err.message);
+    res.status(500).json({ error: 'Error al crear el pedido' });
+  }
+}
+
+/**
+ * GET /api/my-orders
+ * Los pedidos del usuario logueado.
+ */
+async function getMyOrders(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        id, code, total, status, payment_method,
+        channel, created_at,
+        order_items(product_name_snapshot, quantity, unit_price_snapshot, subtotal)
+      `)
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[orders] getMyOrders:', err.message);
+    res.status(500).json({ error: 'Error al obtener pedidos' });
+  }
+}
+
+module.exports = { createOrder, getMyOrders };
+
+Crea backend/src/routes/client.js:
+
+--- backend/src/routes/client.js ---
+
+const express = require('express');
+const router  = express.Router();
+const { requireAuth } = require('../middleware/auth');
+const { createOrder, getMyOrders } = require('../controllers/ordersController');
+
+router.post('/orders',    requireAuth, createOrder);
+router.get ('/my-orders', requireAuth, getMyOrders);
+
+module.exports = router;
+
+Registra las rutas en backend/src/index.js:
+
+  const clientRoutes = require('./routes/client');
+  app.use('/api', clientRoutes);
+
+================================================================
+PARTE 3 – FRONTEND: IMPLEMENTAR MenuPage
+================================================================
+
+Reemplaza el contenido de frontend/js/pages/menu.js:
+
+--- frontend/js/pages/menu.js ---
+
+const MenuPage = {
+  _products:   [],
+  _categories: [],
+  _activeCategory: 'all',
+  _searchQuery:    '',
+
+  async render() {
+    const root = document.getElementById('menu-root');
+    root.innerHTML = '<div class="spinner"></div>';
+
+    try {
+      // Cargar productos y categorias en paralelo
+      const [products, categories] = await Promise.all([
+        API.get('/api/products'),
+        API.get('/api/categories'),
+      ]);
+      this._products   = products;
+      this._categories = categories;
+    } catch (err) {
+      root.innerHTML = `<div class="alert alert-error">${escHtml(err.message)}</div>`;
+      return;
+    }
+
+    this._renderUI();
+  },
+
+  _renderUI() {
+    const root = document.getElementById('menu-root');
+
+    const catButtons = [
+      `<button class="category-btn ${this._activeCategory === 'all' ? 'active' : ''}"
+               onclick="MenuPage._filterCategory('all')">
+         Todos
+       </button>`,
+      ...this._categories.map(c => `
+        <button class="category-btn ${this._activeCategory === c.id ? 'active' : ''}"
+                onclick="MenuPage._filterCategory('${c.id}')">
+          ${escHtml(c.name)}
+        </button>
+      `)
+    ].join('');
+
+    root.innerHTML = `
+      <div class="page-header">
+        <h1 class="page-title">Nuestro Menu</h1>
+        <p class="page-subtitle">Elige tus productos favoritos</p>
+      </div>
+
+      <!-- Barra de busqueda -->
+      <input type="search" id="menu-search" class="form-input"
+             placeholder="Buscar producto..."
+             value="${escHtml(this._searchQuery)}"
+             oninput="MenuPage._onSearch(this.value)"
+             style="max-width:400px;margin-bottom:1rem;" />
+
+      <!-- Filtros por categoria -->
+      <div class="category-filter">${catButtons}</div>
+
+      <!-- Grid de productos -->
+      <div class="grid-products" id="menu-grid"></div>
+    `;
+
+    this._renderProducts();
+  },
+
+  _renderProducts() {
+    const grid = document.getElementById('menu-grid');
+    if (!grid) return;
+
+    // Filtrar por categoria y busqueda
+    let filtered = this._products;
+
+    if (this._activeCategory !== 'all') {
+      filtered = filtered.filter(p => p.category?.id === this._activeCategory);
+    }
+
+    if (this._searchQuery.trim()) {
+      const q = this._searchQuery.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q)
+      );
+    }
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-state-icon">&#128269;</div>
+          <p class="empty-state-title">Sin resultados</p>
+          <p>Intenta con otra busqueda o categoria</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(p => `
+      <div class="product-card">
+        ${p.image_url
+          ? `<img src="${escHtml(p.image_url)}" class="product-card-img"
+                  alt="${escHtml(p.name)}" loading="lazy">`
+          : `<div class="product-card-img-placeholder">&#9749;</div>`
+        }
+        <div class="product-card-body">
+          <span class="product-card-name">${escHtml(p.name)}</span>
+          ${p.description
+            ? `<span class="product-card-desc">${escHtml(p.description)}</span>`
+            : ''}
+        </div>
+        <div class="product-card-footer">
+          <span class="product-price">${fmtCurrency(p.price)}</span>
+          <button class="btn btn-primary btn-sm"
+                  onclick="MenuPage._addToCart(${JSON.stringify(p).replace(/"/g,'&quot;')})">
+            + Agregar
+          </button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  _filterCategory(categoryId) {
+    this._activeCategory = categoryId;
+    // Actualizar botones activos
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim() === 'Todos'
+        ? categoryId === 'all'
+        : btn.onclick?.toString().includes(categoryId));
+    });
+    this._renderUI();
+  },
+
+  _onSearch(value) {
+    this._searchQuery = value;
+    this._renderProducts();
+  },
+
+  _addToCart(product) {
+    if (!App._user) {
+      Toast.show('Inicia sesion para agregar al carrito', 'warning');
+      App.openModal('login');
+      return;
+    }
+    Cart.add(product);
+    Toast.show(`${product.name} agregado al carrito`, 'success', 2000);
+  },
+};
+
+Agrega este CSS al final de styles.css:
+
+/* Menu */
+.category-filter {
+  display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem;
+}
+.category-btn {
+  padding: .4rem .875rem; border-radius: var(--radius-pill);
+  border: 1px solid var(--border); background: var(--surface);
+  font-size: .875rem; font-weight: 500; color: var(--text-muted);
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition);
+}
+.category-btn:hover { background: var(--surface-2); color: var(--text); }
+.category-btn.active {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+
+================================================================
+PARTE 4 – PROBAR EL FLUJO COMPLETO
+================================================================
+
+PASO 1 – Navegar a "Menu":
+  ¿Se carga la lista de productos desde la API?
+  ¿Los filtros de categoría funcionan?
+  ¿La búsqueda filtra en tiempo real?
+
+PASO 2 – Agregar productos al carrito:
+  Clic en "+ Agregar". ¿El badge del carrito se actualiza?
+  ¿El Toast aparece con el nombre del producto?
+
+PASO 3 – Ir al carrito y confirmar pedido:
+  Con el backend corriendo, completa el formulario.
+  Clic en "Confirmar pedido".
+  ¿Aparece la pantalla de éxito con el código ARO-...?
+
+PASO 4 – Verificar en Supabase:
+  Table Editor -> orders.
+  ¿Aparece el nuevo pedido con el total calculado?
+  Table Editor -> order_items.
+  ¿Aparecen los ítems con snapshots de precio?
+
+PASO 5 – Probar que el servidor no acepta precios falsos:
+  En la consola del navegador:
+    API.post('/api/orders', {
+      items: [{ product_id: 'uuid-real', quantity: 10 }],
+      customer_name: 'Test',
+      customer_phone: '70000000',
+      delivery_address: 'Test',
+      payment_method: 'cash'
+    }).then(o => console.log('Total calculado por servidor:', o.total))
+  El total debe ser el precio real * 10, no un precio inventado.
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. Agrega una animacion al agregar al carrito: el boton
+   "+ Agregar" cambia temporalmente a "Agregado ✓" durante 1 segundo.
+   Pista: usa setTimeout para restaurar el texto.
+
+2. El endpoint POST /api/orders usa una transaccion implícita.
+   ¿Qué pasaría si el INSERT de order_items falla despues de
+   que se creó el pedido? ¿El pedido queda huerfano en la BD?
+   (Pista: investiga Supabase transactions o Postgres transactions)
+
+3. Los snapshots guardan el precio al momento del pedido.
+   ¿Qué pasaría si NO usáramos snapshots y el precio del
+   cappuccino cambia de 20 a 25 Bs mañana?
+
+4. La búsqueda filtra en el frontend (sin llamar al servidor).
+   ¿Qué ventaja tiene? ¿Qué desventaja tiene si hay miles
+   de productos?
+
+5. ¿Por qué _filterCategory re-renderiza toda la UI (_renderUI)
+   pero _onSearch solo re-renderiza los productos (_renderProducts)?
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Creaste el endpoint POST /api/orders con total calculado en servidor.
+✓ Implementaste MenuPage con carga desde API, filtros y búsqueda.
+✓ Integraste el carrito con el checkout real.
+✓ Verificaste que el servidor ignora precios enviados por el cliente.
+✓ Comprendiste el patrón snapshot para integridad histórica.
+
+PROXIMA GUIA: Panel del cajero para gestionar pedidos.

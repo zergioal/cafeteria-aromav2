@@ -1,0 +1,688 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 04 – CSS: Variables, componentes y diseño responsive
+Módulo 1 de 5 | Guía 4 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: index.html completo, frontend/css/styles.css vacío.
+Live Server funcionando en http://localhost:5500
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Creado el sistema de diseño completo con variables CSS.
+- Estilizado el header, navegación y estructura de tabs.
+- Creado componentes reutilizables: botones, tarjetas, formularios,
+  alertas, toasts, badges y modales.
+- Hecho el layout responsive (funciona en celular y PC).
+
+================================================================
+PARTE 1 – DISEÑO CON VARIABLES CSS (DESIGN TOKENS)
+================================================================
+
+¿QUE SON LAS VARIABLES CSS?
+  Son valores reutilizables definidos una sola vez.
+  Si mañana el cliente quiere cambiar el color principal de
+  café a azul, cambias UN valor y afecta a todo el sitio.
+
+  Sin variables:
+    .btn-primary { background: #6f4e37; }
+    .site-header { background: #4a3223; }
+    .product-price { color: #4a3223; }
+    /* Si cambia el color... hay que buscar y reemplazar en 50 lugares */
+
+  Con variables:
+    :root { --primary: #6f4e37; --primary-dark: #4a3223; }
+    .btn-primary { background: var(--primary); }
+    .site-header { background: var(--primary-dark); }
+    .product-price { color: var(--primary-dark); }
+    /* Para cambiar el color: editar solo :root */
+
+¿POR QUE NO USAR SASS/LESS?
+  Las variables CSS nativas funcionan en todos los navegadores
+  modernos. No necesitan compilación. Son más simples de
+  aprender y el resultado es el mismo para este proyecto.
+
+SISTEMA DE DISEÑO DEL PROYECTO:
+  Paleta:    tonos café (cálido, clásico para una cafetería).
+  Tipografía: system-ui (la tipografía nativa del sistema operativo).
+  Espaciado:  múltiplos de 8px (8, 16, 24, 32...).
+  Radio:      bordes redondeados modernos.
+
+================================================================
+PARTE 2 – ESCRIBIR frontend/css/styles.css SECCIÓN POR SECCIÓN
+================================================================
+
+Abre frontend/css/styles.css y escribe el contenido completo.
+Lee cada comentario antes de escribir la sección.
+
+------------ INICIO DEL ARCHIVO frontend/css/styles.css --------
+
+/* ============================================================
+   SECCION 1: VARIABLES CSS (DESIGN TOKENS)
+   Definidas en :root -> disponibles en todo el documento.
+   ============================================================ */
+:root {
+  /* Colores principales */
+  --primary:       #6f4e37;
+  --primary-dark:  #4a3223;
+  --primary-light: #a0785a;
+  --accent:        #c8956c;
+  --accent-light:  #f5ede6;
+
+  /* Superficie y fondos */
+  --bg:            #faf8f5;
+  --surface:       #ffffff;
+  --surface-2:     #f2ede8;
+
+  /* Textos */
+  --text:          #1a1209;
+  --text-muted:    #7a6a5a;
+
+  /* Bordes y sombras */
+  --border:        #ddd4c8;
+  --shadow-sm:     0 1px 3px rgba(0,0,0,.08);
+  --shadow:        0 4px 12px rgba(0,0,0,.1);
+  --shadow-lg:     0 8px 30px rgba(0,0,0,.15);
+
+  /* Estados */
+  --success:       #2d6a4f;
+  --success-bg:    #d8f3dc;
+  --warning:       #b5451b;
+  --warning-bg:    #fde8d8;
+  --error:         #c0392b;
+  --error-bg:      #fde8e8;
+  --info:          #1a5276;
+  --info-bg:       #d6eaf8;
+
+  /* Forma */
+  --radius:        8px;
+  --radius-lg:     14px;
+  --radius-pill:   999px;
+  --transition:    .18s ease;
+}
+
+/* ============================================================
+   SECCION 2: RESET Y BASE
+   Elimina inconsistencias entre navegadores.
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+  box-sizing: border-box es CRITICO.
+  Sin el: un div con width:200px y padding:20px mide 240px.
+  Con el: mide exactamente 200px. Mucho mas predecible.
+*/
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+a   { color: var(--primary); text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+
+/* ============================================================
+   SECCION 3: HEADER Y NAVEGACION
+   ============================================================ */
+.site-header {
+  background: var(--primary-dark);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: var(--shadow);
+}
+
+/*
+  position: sticky -> el header se queda pegado en la parte
+  superior al hacer scroll. Mas natural que position:fixed
+  porque no saca el elemento del flujo del documento.
+*/
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: .75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.site-logo {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.site-nav {
+  display: flex;
+  gap: .25rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,.8);
+  padding: .5rem .875rem;
+  border-radius: var(--radius);
+  font-size: .875rem;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition);
+  white-space: nowrap;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+}
+
+.nav-btn--staff {
+  background: rgba(200, 149, 108, .25);
+  color: var(--accent);
+}
+.nav-btn--staff:hover { background: rgba(200, 149, 108, .4); }
+
+.cart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  margin-left: 4px;
+}
+
+.auth-controls {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-shrink: 0;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.user-greeting {
+  font-size: .875rem;
+  color: rgba(255,255,255,.8);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   SECCION 4: LAYOUT PRINCIPAL Y TABS
+   ============================================================ */
+.site-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* El truco de la SPA: ocultar todas las secciones por defecto */
+.tab-content        { display: none; }
+.tab-content.active { display: block; }
+
+/* ============================================================
+   SECCION 5: BOTONES
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  padding: .6rem 1.25rem;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: .9rem;
+  transition: background var(--transition), transform var(--transition),
+              box-shadow var(--transition);
+  white-space: nowrap;
+  line-height: 1;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover:not(:disabled) { background: var(--border); }
+
+.btn-ghost {
+  background: transparent;
+  color: rgba(255,255,255,.8);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(255,255,255,.1);
+  color: #fff;
+}
+
+.btn-danger { background: var(--error); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: #a93226; }
+
+.btn-sm   { padding: .4rem .875rem; font-size: .8rem; }
+.btn-lg   { padding: .875rem 2rem;  font-size: 1rem; }
+.btn-full { width: 100%; }
+
+/* ============================================================
+   SECCION 6: TARJETAS DE PRODUCTO
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.card-body { padding: 1.25rem; }
+
+.product-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--transition), transform var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+.product-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.product-card-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: var(--surface-2);
+}
+
+.product-card-img-placeholder {
+  width: 100%;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  font-size: 3rem;
+  color: var(--text-muted);
+}
+
+.product-card-body {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+
+.product-card-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.product-card-desc {
+  font-size: .85rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.product-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 1rem;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+}
+
+.product-price {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--primary-dark);
+}
+
+/* ============================================================
+   SECCION 7: FORMULARIOS
+   ============================================================ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  padding: .625rem .875rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: .95rem;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  width: 100%;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(111,78,55,.12);
+}
+
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-hint  { font-size: .8rem; color: var(--text-muted); }
+.form-error { font-size: .8rem; color: var(--error); }
+
+/* ============================================================
+   SECCION 8: ALERTAS
+   ============================================================ */
+.alert {
+  padding: .75rem 1rem;
+  border-radius: var(--radius);
+  font-size: .9rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+}
+
+.alert-success { background: var(--success-bg); color: var(--success); border-color: #b7e4c7; }
+.alert-warning { background: var(--warning-bg); color: var(--warning); border-color: #f9c5a5; }
+.alert-error   { background: var(--error-bg);   color: var(--error);   border-color: #f5b7b1; }
+.alert-info    { background: var(--info-bg);    color: var(--info);    border-color: #aed6f1; }
+
+/* ============================================================
+   SECCION 9: BADGES
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: .2rem .6rem;
+  border-radius: var(--radius-pill);
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.badge-pending  { background: var(--warning-bg); color: var(--warning); }
+.badge-paid     { background: var(--success-bg); color: var(--success); }
+.badge-canceled { background: var(--error-bg);   color: var(--error); }
+.badge-info     { background: var(--info-bg);    color: var(--info); }
+
+/* ============================================================
+   SECCION 10: MODAL
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+}
+
+/*
+  inset: 0 equivale a:
+    top: 0; right: 0; bottom: 0; left: 0;
+  Cubre toda la pantalla.
+*/
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  padding: .25rem;
+  border-radius: 4px;
+  transition: color var(--transition), background var(--transition);
+}
+.modal-close:hover { color: var(--text); background: var(--surface-2); }
+
+/* ============================================================
+   SECCION 11: TOAST (notificaciones flotantes)
+   ============================================================ */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  max-width: 340px;
+}
+
+.toast {
+  padding: .875rem 1.25rem;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn .25s ease;
+  line-height: 1.4;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.toast-success { background: var(--success); }
+.toast-error   { background: var(--error);   }
+.toast-warning { background: #b5451b;         }
+.toast-info    { background: var(--info);     }
+
+/* ============================================================
+   SECCION 12: UTILIDADES GENERALES
+   ============================================================ */
+.page-header   { margin-bottom: 2rem; }
+.page-title    { font-size: 1.75rem; font-weight: 700; color: var(--text); }
+.page-subtitle { color: var(--text-muted); font-size: .95rem; }
+
+.grid-products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+.empty-state       { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+.empty-state-icon  { font-size: 3rem; margin-bottom: .75rem; }
+.empty-state-title { font-size: 1.1rem; font-weight: 600; margin-bottom: .25rem; }
+
+.spinner {
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: spin .7s linear infinite;
+  margin: 2rem auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   SECCION 13: RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+
+  .header-inner {
+    padding: .625rem 1rem;
+    gap: .5rem;
+  }
+
+  .site-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-btn {
+    font-size: .8rem;
+    padding: .4rem .6rem;
+  }
+
+  .site-main {
+    padding: 1.25rem 1rem;
+  }
+
+  .grid-products {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .modal {
+    padding: 1.5rem 1.25rem;
+  }
+
+  #toast-container {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    max-width: none;
+  }
+}
+
+------------- FIN DEL ARCHIVO frontend/css/styles.css ----------
+
+================================================================
+PARTE 3 – VERIFICAR LOS ESTILOS
+================================================================
+
+PASO 1 – Guardar (Ctrl+S). Live Server recarga automáticamente.
+
+PASO 2 – Lo que deberías ver:
+  - Header con fondo café oscuro.
+  - Logo a la izquierda, botones de navegación al centro.
+  - "Iniciar sesión" a la derecha con color café.
+  - Fondo de la página en crema suave.
+
+PASO 3 – Probar el responsive
+  DevTools (F12) -> ícono de dispositivo móvil (Ctrl+Shift+M).
+  Cambiar a 375px (iPhone SE).
+  ¿La navegación se reorganiza en una segunda línea?
+
+PASO 4 – Probar las variables CSS
+  DevTools -> pestaña Styles -> elemento <html>.
+  ¿Ves las variables --primary, --bg, etc.?
+  Cambia manualmente --primary a blue.
+  ¿Cuántos elementos cambian?
+
+================================================================
+PARTE 4 – COMMIT
+================================================================
+
+  git add frontend/css/styles.css
+  git commit -m "feat: sistema CSS con variables, componentes y responsive"
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. Usando solo CSS (sin tocar el HTML), cambia la paleta
+   a un tema "verde bosque": --primary: #2d6a4f, etc.
+   ¿Cuántas líneas de CSS cambiaste?
+
+2. El .grid-products usa auto-fill y minmax(220px, 1fr).
+   Prueba cambiar el mínimo a 150px y luego a 300px.
+   ¿Cómo cambia el número de columnas?
+
+3. Agrega un botón .btn-outline: borde del color primario,
+   fondo transparente. En hover: relleno de color primario.
+
+4. ¿Qué diferencia hay entre position:sticky y position:fixed?
+   ¿Por qué usamos sticky para el header?
+
+5. El modal usa max-height: 90vh y overflow-y: auto.
+   ¿Qué sucedería si el contenido del modal fuera muy largo?
+   ¿Qué pasaría sin esas dos propiedades?
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Creaste el sistema de variables CSS (design tokens).
+✓ Escribiste reset y estilos base.
+✓ Estilizaste header, navegación y sistema de tabs.
+✓ Creaste componentes: botones, cards, formularios,
+  alertas, badges, modal, toast, spinner y grids.
+✓ Implementaste diseño responsive con media queries.
+
+PROXIMA GUIA: Escribir los módulos JavaScript base (config, app, utilidades).

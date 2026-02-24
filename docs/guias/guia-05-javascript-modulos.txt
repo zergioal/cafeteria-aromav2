@@ -1,0 +1,604 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 05 – JavaScript: Configuración, utilidades y módulo App
+Módulo 1 de 5 | Guía 5 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: index.html y styles.css completos.
+Los archivos JS están vacíos: config.js, auth.js, api.js,
+cart.js, app.js, y todos los pages/*.js
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Escrito config.js con la configuración centralizada.
+- Creado funciones de utilidad globales (escHtml, fmtCurrency, Toast).
+- Escrito app.js con el sistema de navegación entre tabs.
+- Creado esqueletos funcionales de todas las páginas.
+- Visto la aplicación con tabs funcionales en el navegador.
+
+================================================================
+PARTE 1 – EL PATRÓN MÓDULO EN JAVASCRIPT VANILLA
+================================================================
+
+En proyectos con frameworks (React, Vue) cada archivo ES un
+módulo con import/export. En JavaScript vanilla sin build tool,
+todos los archivos comparten el mismo ámbito global (window).
+
+PROBLEMA del ámbito global sin organización:
+  Si defines: var nombre = "Juan"   en home.js
+  Y también:  var nombre = "Pedro"  en menu.js
+  Se sobreescriben mutuamente. Colisión de nombres.
+
+SOLUCIÓN: Patrón Módulo con objetos con nombre único
+
+  // home.js
+  const HomePage = {
+    render() { ... },
+    init()   { ... }
+  };
+
+  // menu.js
+  const MenuPage = {
+    render() { ... },
+  };
+
+  Cada módulo vive en su propio objeto. No hay colisiones.
+  Es como un namespace manual.
+
+REGLA DE ORO DE ESTE PROYECTO:
+  - config.js:   datos de configuración (URLs, claves públicas).
+  - app.js:      lógica GLOBAL (tabs, sesión, navegación).
+  - pages/*.js:  lógica ESPECÍFICA de cada sección.
+  - Funciones globales (escHtml, Toast): en app.js porque se
+    cargan antes que todo lo demás.
+
+================================================================
+PARTE 2 – ESCRIBIR frontend/js/config.js
+================================================================
+
+Este archivo centraliza todas las URLs y configuraciones.
+Si cambias de servidor, solo editas aquí.
+
+------------ INICIO DEL ARCHIVO frontend/js/config.js ----------
+
+/**
+ * Configuracion global de la aplicacion.
+ * Editar estas URLs antes de desplegar en produccion.
+ *
+ * DESARROLLO:
+ *   SUPABASE_URL y SUPABASE_ANON_KEY: Supabase -> Settings -> API
+ *   API_BASE_URL: http://localhost:3000
+ *
+ * PRODUCCION:
+ *   API_BASE_URL: URL de tu backend desplegado (Railway/Render)
+ */
+const CONFIG = {
+  SUPABASE_URL:      'https://REEMPLAZAR.supabase.co',
+  SUPABASE_ANON_KEY: 'REEMPLAZAR_CON_TU_ANON_KEY',
+  API_BASE_URL:      'http://localhost:3000',
+};
+
+/*
+  ¿Por que ANON_KEY va aqui y SERVICE_ROLE_KEY NO?
+
+  - anon key: clave publica, diseñada para el frontend.
+    Las politicas RLS controlan lo que puede hacer.
+
+  - service_role key: bypasea RLS completamente.
+    Si estuviera en el frontend, cualquier usuario podria
+    ver y modificar TODOS los datos de la base de datos.
+    VA SOLO en backend/.env, NUNCA en el frontend.
+*/
+
+------------- FIN DEL ARCHIVO frontend/js/config.js -----------
+
+IMPORTANTE: Reemplaza los valores REEMPLAZAR con los datos
+reales de tu proyecto Supabase (Settings -> API).
+
+================================================================
+PARTE 3 – ESCRIBIR frontend/js/app.js
+================================================================
+
+app.js hace tres cosas:
+1. Define funciones globales (escHtml, fmtCurrency, Toast).
+2. Define el módulo App con la navegación entre tabs.
+3. Inicializa la aplicación cuando el DOM está listo.
+
+------------ INICIO DEL ARCHIVO frontend/js/app.js ------------
+
+/* =============================================================
+   UTILIDADES GLOBALES
+   Se definen en app.js porque se carga antes que los demas.
+   ============================================================= */
+
+/**
+ * Sanitiza texto para uso seguro en innerHTML.
+ * CRITICO para prevenir ataques XSS.
+ *
+ * XSS (Cross-Site Scripting): un usuario malicioso escribe
+ * HTML/JS en un campo de texto para atacar a otros usuarios.
+ *
+ * Ejemplo de ataque:
+ *   El usuario escribe en "Nombre":
+ *     <script>document.cookie = "robado"</script>
+ *
+ *   Sin escHtml: innerHTML = nombreUsuario
+ *     -> El script se ejecuta. El usuario es atacado.
+ *
+ *   Con escHtml: innerHTML = escHtml(nombreUsuario)
+ *     -> Se muestra el texto literal. Sin ejecucion.
+ *
+ * @param {string} str - Texto a sanitizar
+ * @returns {string} Texto con caracteres especiales escapados
+ */
+function escHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;')
+    .replace(/'/g,  '&#39;');
+}
+
+/**
+ * Formatea un numero como precio en bolivianos.
+ * @param {number} n - Monto
+ * @returns {string} Ej: "Bs 15.50"
+ */
+function fmtCurrency(n) {
+  return 'Bs ' + Number(n || 0).toFixed(2);
+}
+
+/* =============================================================
+   MODULO TOAST – Notificaciones temporales
+   ============================================================= */
+const Toast = {
+  /**
+   * Muestra una notificacion flotante temporal.
+   * @param {string} msg - Mensaje a mostrar
+   * @param {'success'|'error'|'warning'|'info'} type
+   * @param {number} duration - ms antes de desaparecer (default: 3500)
+   */
+  show(msg, type = 'info', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.textContent = msg;
+    container.appendChild(el);
+
+    // Desvanecer y eliminar despues de 'duration' ms
+    setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transition = 'opacity .3s';
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  }
+};
+
+/* =============================================================
+   MODULO APP – Navegacion y estado global
+   ============================================================= */
+const App = {
+  _currentTab: 'home',     // tab activo ahora
+  _user: null,              // usuario logueado (null = sin sesion)
+  _publicSettings: null,   // configuracion publica del negocio
+
+  /**
+   * Punto de entrada de la aplicacion.
+   * Se llama UNA SOLA VEZ al cargar la pagina.
+   */
+  async init() {
+    this._setupNavigation();
+    this._setupModal();
+
+    // Cargar configuracion publica (WhatsApp, horarios, QR...)
+    try {
+      this._publicSettings = await API.get('/api/settings/public');
+    } catch (e) {
+      console.warn('[App] Settings publicos no disponibles:', e.message);
+    }
+
+    // Detectar si hay sesion activa (completa en Guia 08)
+    await Auth.init();
+
+    // Renderizar la pagina inicial
+    this._renderCurrentTab();
+  },
+
+  /**
+   * Navega a una seccion de la aplicacion.
+   * @param {string} tabName - Ej: 'menu', 'cart', 'admin'
+   */
+  navigateTo(tabName) {
+    const targetSection = document.getElementById(`tab-${tabName}`);
+    if (!targetSection) return;
+
+    // --- CONTROL DE ACCESO ---
+    // Carrito: requiere sesion iniciada
+    if (tabName === 'cart' && !this._user) {
+      Toast.show('Inicia sesion para ver el carrito', 'warning');
+      this.openModal('login');
+      return;
+    }
+    // Panel cajero: requiere rol 'cashier' o 'admin'
+    if (tabName === 'cashier' && !['cashier','admin'].includes(this._user?.role)) {
+      Toast.show('No tienes permiso para acceder', 'error');
+      return;
+    }
+    // Panel admin: solo rol 'admin'
+    if (tabName === 'admin' && this._user?.role !== 'admin') {
+      Toast.show('Solo administradores pueden acceder', 'error');
+      return;
+    }
+
+    // Ocultar seccion actual
+    document.getElementById(`tab-${this._currentTab}`)?.classList.remove('active');
+    // Mostrar nueva seccion
+    targetSection.classList.add('active');
+    this._currentTab = tabName;
+
+    // Actualizar boton activo en la navegacion
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this._renderCurrentTab();
+  },
+
+  /** Renderiza la pagina correspondiente al tab actual. */
+  _renderCurrentTab() {
+    switch (this._currentTab) {
+      case 'home':    HomePage.render();    break;
+      case 'menu':    MenuPage.render();    break;
+      case 'cart':    CartPage.render();    break;
+      case 'contact': ContactPage.render(); break;
+      case 'cashier': CashierPage.render(); break;
+      case 'admin':   AdminPage.render();   break;
+    }
+  },
+
+  /**
+   * Un solo listener para TODOS los botones de navegacion.
+   * Tecnica: delegacion de eventos.
+   *
+   * En lugar de: boton1.onclick = ...; boton2.onclick = ...;
+   * Usamos:      document.body.addEventListener('click', ...)
+   *
+   * Ventaja: funciona incluso para botones que se agregan
+   * dinamicamente despues de cargar la pagina.
+   */
+  _setupNavigation() {
+    document.body.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-tab]');
+      if (!btn) return;
+      e.preventDefault();
+      this.navigateTo(btn.dataset.tab);
+    });
+  },
+
+  /** Configura eventos para abrir/cerrar el modal. */
+  _setupModal() {
+    document.getElementById('modal-close')?.addEventListener('click', () => {
+      this.closeModal();
+    });
+    // Cerrar al hacer clic en el fondo oscuro (fuera del modal)
+    document.getElementById('modal-overlay')?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) this.closeModal();
+    });
+  },
+
+  /** Abre el modal con la vista especificada. */
+  openModal(view = 'login') {
+    document.getElementById('modal-overlay').style.display = 'flex';
+    LoginPage.render(view);
+  },
+
+  /** Cierra el modal y limpia su contenido. */
+  closeModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('modal-body').innerHTML = '';
+  },
+
+  /**
+   * Actualiza el header segun si hay o no sesion activa.
+   * Se llama despues de login y logout.
+   * @param {object|null} user - Objeto del usuario o null
+   */
+  updateAuthUI(user) {
+    this._user = user;
+
+    const btnLogin   = document.getElementById('btn-open-login');
+    const userMenu   = document.getElementById('user-menu');
+    const greeting   = document.getElementById('user-greeting');
+    const cashierBtn = document.getElementById('nav-cashier-btn');
+    const adminBtn   = document.getElementById('nav-admin-btn');
+    const logoutBtn  = document.getElementById('btn-logout');
+
+    if (user) {
+      // Con sesion: muestra nombre y boton de logout
+      btnLogin.style.display  = 'none';
+      userMenu.style.display  = 'flex';
+      greeting.textContent    = 'Hola, ' + (user.full_name || user.email.split('@')[0]);
+
+      // Mostrar botones de panel segun rol
+      cashierBtn.style.display = ['cashier','admin'].includes(user.role) ? '' : 'none';
+      adminBtn.style.display   = user.role === 'admin' ? '' : 'none';
+
+      logoutBtn.onclick = async () => {
+        await Auth.signOut();
+        Toast.show('Sesion cerrada correctamente', 'info');
+        App.navigateTo('home');
+      };
+    } else {
+      // Sin sesion: muestra boton de login
+      btnLogin.style.display   = '';
+      userMenu.style.display   = 'none';
+      cashierBtn.style.display = 'none';
+      adminBtn.style.display   = 'none';
+      btnLogin.onclick = () => App.openModal('login');
+    }
+
+    // Actualizar el badge del carrito en la navegacion
+    const count = Cart.count();
+    const badge = document.getElementById('nav-cart-count');
+    if (badge) {
+      badge.textContent = count > 0 ? count : '';
+      badge.style.display = count > 0 ? '' : 'none';
+    }
+  },
+
+  /** Actualiza el badge del carrito en el botón de nav. */
+  updateCartBadge() {
+    const count = Cart.count();
+    const badge = document.getElementById('nav-cart-count');
+    if (!badge) return;
+    badge.textContent   = count > 0 ? count : '';
+    badge.style.display = count > 0 ? '' : 'none';
+  },
+};
+
+/* =============================================================
+   INICIAR LA APLICACION CUANDO EL DOM ESTE LISTO
+   DOMContentLoaded: el HTML fue parseado pero las imagenes
+   y recursos externos pueden seguir cargando.
+   ============================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});
+
+------------- FIN DEL ARCHIVO frontend/js/app.js ---------------
+
+================================================================
+PARTE 4 – CREAR ESQUELETOS DE CADA PÁGINA Y MÓDULO
+================================================================
+
+Para que app.js no lance errores al llamar a HomePage.render(),
+etc., crea un esqueleto mínimo en cada archivo:
+
+--- frontend/js/pages/home.js ---
+
+const HomePage = {
+  render() {
+    document.getElementById('home-root').innerHTML = `
+      <div class="page-header">
+        <h1 class="page-title">Bienvenido a Cafeteria Aroma</h1>
+        <p class="page-subtitle">Tu cafe favorito en Cochabamba</p>
+      </div>
+      <p>Contenido de inicio - proximamente.</p>
+    `;
+  }
+};
+
+
+--- frontend/js/pages/menu.js ---
+
+const MenuPage = {
+  render() {
+    document.getElementById('menu-root').innerHTML =
+      '<p>Menu de productos - proximamente.</p>';
+  }
+};
+
+
+--- frontend/js/pages/cart-page.js ---
+
+const CartPage = {
+  render() {
+    document.getElementById('cart-root').innerHTML =
+      '<p>Carrito y checkout - proximamente.</p>';
+  }
+};
+
+
+--- frontend/js/pages/login.js ---
+
+const LoginPage = {
+  render(view = 'login') {
+    document.getElementById('modal-body').innerHTML = `
+      <h2>Iniciar sesion</h2>
+      <p>Formulario - proximamente.</p>
+    `;
+  }
+};
+
+
+--- frontend/js/pages/contact.js ---
+
+const ContactPage = {
+  render() {
+    document.getElementById('contact-root').innerHTML =
+      '<p>Pagina de contacto - proximamente.</p>';
+  }
+};
+
+
+--- frontend/js/pages/cashier.js ---
+
+const CashierPage = {
+  render() {
+    document.getElementById('cashier-root').innerHTML =
+      '<p>Panel del cajero - proximamente.</p>';
+  }
+};
+
+
+--- frontend/js/pages/admin.js ---
+
+const AdminPage = {
+  render() {
+    document.getElementById('admin-root').innerHTML =
+      '<p>Panel del administrador - proximamente.</p>';
+  }
+};
+
+================================================================
+PARTE 5 – MÓDULOS AUXILIARES TEMPORALES
+================================================================
+
+app.js usa Auth, API y Cart. Crea versiones temporales:
+
+--- frontend/js/auth.js (temporal) ---
+
+const Auth = {
+  supabase: null,
+  async init() {
+    // Se completara en la Guia 08
+    App.updateAuthUI(null);
+  },
+  async signOut() {}
+};
+
+
+--- frontend/js/api.js (temporal) ---
+
+const API = {
+  async get(path) {
+    const res = await fetch(CONFIG.API_BASE_URL + path);
+    if (!res.ok) throw new Error('Error ' + res.status);
+    return res.json();
+  },
+  async post(path, body) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error('Error ' + res.status);
+    return res.json();
+  },
+  async put(path, body) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error('Error ' + res.status);
+    return res.json();
+  },
+  async patch(path, body) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error('Error ' + res.status);
+    return res.json();
+  }
+};
+
+
+--- frontend/js/cart.js (temporal) ---
+
+const Cart = {
+  items: [],
+  count() { return this.items.reduce((s, i) => s + i.qty, 0); },
+  total() { return this.items.reduce((s, i) => s + i.price * i.qty, 0); }
+};
+
+================================================================
+PARTE 6 – PROBAR EN EL NAVEGADOR
+================================================================
+
+PASO 1 – Guardar todos los archivos. Abrir Live Server.
+
+PASO 2 – Deberías ver:
+  - Header con fondo café oscuro y botones.
+  - "Bienvenido a Cafeteria Aroma" en la sección Inicio.
+  - Al clic en "Menu": aparece "Menu de productos - proximamente."
+  - Al clic en "Contacto": aparece el texto de contacto.
+  - Al clic en "Carrito": aparece Toast "Inicia sesion para ver
+    el carrito." y se abre el modal con "Iniciar sesion".
+
+PASO 3 – Verificar en la consola (F12)
+  NO deben aparecer errores en rojo.
+  Si ves "ReferenceError: Config is not defined" -> verifica que
+  config.js esté listado ANTES de los otros scripts en index.html.
+
+PASO 4 – Probar Toast desde la consola
+  Toast.show('Exito!', 'success')
+  Toast.show('Error de prueba', 'error')
+  Toast.show('Advertencia', 'warning')
+  ¿Aparecen y desaparecen solos?
+
+PASO 5 – Probar escHtml desde la consola
+  escHtml('<script>alert("xss")</script>')
+  ¿Qué retorna? ¿Por qué es seguro mostrarlo en innerHTML?
+
+PASO 6 – Probar la delegación de eventos
+  Abre DevTools -> Elements -> inspecciona un botón de nav.
+  ¿Tiene un onclick en el HTML? (No debe tener).
+  El listener está en document.body, no en cada botón.
+
+================================================================
+PARTE 7 – COMMIT
+================================================================
+
+  git add frontend/js/
+  git commit -m "feat: modulos JS base - config, app, utilidades y esqueletos de paginas"
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. En App._setupNavigation usamos e.target.closest('[data-tab]').
+   ¿Por qué no usamos simplemente e.target.dataset.tab?
+   (Pista: ¿qué pasa si el botón tiene un <span> dentro?)
+
+2. Agrega un cuarto tipo de Toast: 'purple' con color morado.
+   Modifica app.js (Toast.show) y styles.css (.toast-purple).
+   Prueba: Toast.show('Morado!', 'purple')
+
+3. escHtml convierte 5 caracteres especiales. ¿Cuáles son?
+   Busca el "OWASP XSS Cheat Sheet" y explica por qué cada
+   uno es peligroso sin escapar.
+
+4. App.navigateTo verifica acceso con:
+     this._user?.role !== 'admin'
+   ¿Qué es el operador ?. (optional chaining)?
+   ¿Qué pasaría sin él si this._user es null?
+
+5. DOMContentLoaded vs window.onload: ¿cuál es la diferencia?
+   ¿Por qué preferimos DOMContentLoaded para inicializar la app?
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Escribiste config.js con la configuracion centralizada.
+✓ Creaste escHtml y fmtCurrency como funciones globales.
+✓ Implementaste el modulo Toast para notificaciones.
+✓ Construiste App con el sistema de navegacion, control de
+  acceso y actualizacion del UI de autenticacion.
+✓ Creaste esqueletos funcionales de todas las paginas.
+✓ Verificaste el sistema de tabs funcionando en el navegador.
+
+PROXIMA GUIA: Implementar el carrito con LocalStorage.

@@ -1,0 +1,554 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 08 – Autenticación con JWT y Supabase Auth
+Módulo 3 de 5 | Guía 8 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: servidor backend con rutas públicas funcionando.
+Frontend con carrito y tabs operativos. auth.js y login.js
+tienen implementaciones temporales.
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Entendido qué es JWT y cómo fluye la autenticación.
+- Implementado auth.js con el cliente Supabase y sesión persistente.
+- Creado el formulario de login/registro en login.js.
+- Escrito el middleware requireAuth y requireRole en el backend.
+- Probado el flujo completo de login -> token -> petición protegida.
+
+================================================================
+PARTE 1 – ¿CÓMO FUNCIONA LA AUTENTICACIÓN CON JWT?
+================================================================
+
+JWT (JSON Web Token): un token firmado digitalmente que contiene
+información del usuario. Como un "pase digital" que se presenta
+al servidor para demostrar quién eres.
+
+FLUJO COMPLETO:
+
+  1. El usuario escribe email y contraseña.
+
+  2. El frontend llama a Supabase Auth:
+       supabase.auth.signInWithPassword({ email, password })
+
+  3. Supabase verifica las credenciales. Si son correctas,
+     genera un JWT firmado y lo envía al frontend.
+
+     El JWT contiene (payload):
+       sub:   UUID del usuario
+       email: email del usuario
+       exp:   fecha de expiración (1 hora por defecto)
+
+  4. El frontend guarda el token (Supabase usa localStorage).
+
+  5. Para peticiones protegidas, el frontend incluye el token:
+       Authorization: Bearer eyJhbGci...
+
+  6. El backend verifica el token:
+       supabase.auth.getUser(token)
+     Si es válido -> continúa. Si no -> responde 401.
+
+¿POR QUÉ JWT Y NO SESIONES CLÁSICAS?
+  - JWT: sin estado en el servidor. Escala fácilmente.
+    Cualquier instancia del servidor puede verificar el token.
+  - Sesiones: el servidor guarda estado. Con múltiples instancias
+    necesitas compartir sesiones entre ellas (más complejidad).
+
+================================================================
+PARTE 2 – IMPLEMENTAR frontend/js/auth.js
+================================================================
+
+------------ INICIO DEL ARCHIVO frontend/js/auth.js ------------
+
+const Auth = {
+  supabase: null,
+
+  /**
+   * Inicializa el cliente Supabase y detecta la sesion activa.
+   * Se llama una sola vez en App.init().
+   */
+  async init() {
+    this.supabase = supabase.createClient(
+      CONFIG.SUPABASE_URL,
+      CONFIG.SUPABASE_ANON_KEY,
+      {
+        auth: {
+          // Bypass Web Locks API para evitar timeout en pestanas
+          // multiples o tras cierres bruscos del navegador.
+          lock: (_name, _acquireTimeout, fn) => fn(),
+        }
+      }
+    );
+
+    // Verificar si ya hay sesion activa (de ayer, por ejemplo)
+    const { data: { session } } = await this.supabase.auth.getSession();
+
+    if (session) {
+      const profile = await this._loadProfile(session.user.id);
+      App.updateAuthUI(profile
+        ? { ...session.user, ...profile }
+        : session.user);
+    } else {
+      App.updateAuthUI(null);
+    }
+
+    // Suscribirse a cambios de sesion (login/logout/renovacion)
+    this.supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        const profile = await this._loadProfile(session.user.id);
+        App.updateAuthUI(profile
+          ? { ...session.user, ...profile }
+          : session.user);
+      } else {
+        App.updateAuthUI(null);
+        if (['cart', 'cashier', 'admin'].includes(App._currentTab)) {
+          App.navigateTo('home');
+        }
+      }
+    });
+  },
+
+  /** Registra un nuevo usuario. */
+  async signUp(email, password, fullName) {
+    const { data, error } = await this.supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName }
+        // El trigger handle_new_user() usa este full_name
+        // para crear el registro en la tabla profiles.
+      }
+    });
+    return { user: data.user, error };
+  },
+
+  /** Inicia sesion con email y contraseña. */
+  async signIn(email, password) {
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email, password
+    });
+    return { user: data.user, error };
+  },
+
+  /** Cierra la sesion actual. */
+  async signOut() {
+    await this.supabase.auth.signOut();
+  },
+
+  /**
+   * Obtiene el JWT de la sesion activa.
+   * Se incluye en el header Authorization de las peticiones
+   * al backend que requieren autenticacion.
+   * @returns {Promise<string|null>}
+   */
+  async getToken() {
+    const { data: { session } } = await this.supabase.auth.getSession();
+    return session?.access_token || null;
+  },
+
+  /**
+   * Carga el perfil del usuario (role, active, full_name)
+   * desde la tabla profiles.
+   * @private
+   */
+  async _loadProfile(userId) {
+    try {
+      const { data, error } = await this.supabase
+        .from('profiles')
+        .select('full_name, phone, role, active')
+        .eq('id', userId)
+        .single();
+
+      if (error) return null;
+
+      if (!data.active) {
+        await this.signOut();
+        Toast.show('Tu cuenta esta desactivada.', 'error', 6000);
+        return null;
+      }
+      return data;
+    } catch {
+      return null;
+    }
+  },
+};
+
+------------- FIN DEL ARCHIVO frontend/js/auth.js ---------------
+
+================================================================
+PARTE 3 – ACTUALIZAR api.js PARA INCLUIR EL TOKEN
+================================================================
+
+------------ INICIO DEL ARCHIVO frontend/js/api.js -------------
+
+const API = {
+  /** Construye los headers incluye el token JWT si hay sesion. */
+  async _headers(isJson = true) {
+    const headers = {};
+    if (isJson) headers['Content-Type'] = 'application/json';
+    const token = await Auth.getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    return headers;
+  },
+
+  /** Maneja la respuesta HTTP, lanza error si no es OK. */
+  async _handleResponse(res) {
+    if (res.ok) return res.json();
+    let errMsg = 'Error ' + res.status;
+    try {
+      const body = await res.json();
+      errMsg = body.error || body.message || errMsg;
+    } catch { /* body no es JSON */ }
+    throw new Error(errMsg);
+  },
+
+  async get(path) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
+      headers: await this._headers(false)
+    });
+    return this._handleResponse(res);
+  },
+
+  async post(path, body) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
+      method: 'POST',
+      headers: await this._headers(true),
+      body: JSON.stringify(body)
+    });
+    return this._handleResponse(res);
+  },
+
+  async put(path, body) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
+      method: 'PUT',
+      headers: await this._headers(true),
+      body: JSON.stringify(body)
+    });
+    return this._handleResponse(res);
+  },
+
+  async patch(path, body) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
+      method: 'PATCH',
+      headers: await this._headers(true),
+      body: JSON.stringify(body)
+    });
+    return this._handleResponse(res);
+  },
+
+  async delete(path) {
+    const res = await fetch(CONFIG.API_BASE_URL + path, {
+      method: 'DELETE',
+      headers: await this._headers(false)
+    });
+    return this._handleResponse(res);
+  },
+};
+
+------------- FIN DEL ARCHIVO frontend/js/api.js ----------------
+
+================================================================
+PARTE 4 – IMPLEMENTAR frontend/js/pages/login.js
+================================================================
+
+------------ frontend/js/pages/login.js ------------------------
+
+const LoginPage = {
+  render(view = 'login') {
+    view === 'register' ? this._renderRegister() : this._renderLogin();
+  },
+
+  _renderLogin() {
+    document.getElementById('modal-body').innerHTML = `
+      <h2 style="margin-bottom:1.5rem;">Iniciar sesion</h2>
+      <div id="login-error" class="alert alert-error" style="display:none"></div>
+
+      <div class="form-group">
+        <label class="form-label">Correo electronico</label>
+        <input type="email" id="login-email" class="form-input"
+               placeholder="tu@email.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contrasena</label>
+        <input type="password" id="login-password" class="form-input"
+               placeholder="Tu contrasena" autocomplete="current-password" />
+      </div>
+
+      <button class="btn btn-primary btn-full" id="login-btn"
+              onclick="LoginPage._submitLogin()">
+        Entrar
+      </button>
+      <hr class="divider">
+      <p style="text-align:center;font-size:.875rem;color:var(--text-muted);">
+        ¿No tienes cuenta?
+        <a href="#" onclick="LoginPage.render('register');return false;">
+          Registrate aqui
+        </a>
+      </p>
+    `;
+    document.getElementById('login-password')
+      ?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') LoginPage._submitLogin();
+      });
+  },
+
+  _renderRegister() {
+    document.getElementById('modal-body').innerHTML = `
+      <h2 style="margin-bottom:1.5rem;">Crear cuenta</h2>
+      <div id="register-error" class="alert alert-error" style="display:none"></div>
+
+      <div class="form-group">
+        <label class="form-label">Nombre completo</label>
+        <input type="text" id="reg-name" class="form-input" placeholder="Juan Perez" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo electronico</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="tu@email.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contrasena (minimo 8 caracteres)</label>
+        <input type="password" id="reg-password" class="form-input"
+               placeholder="Minimo 8 caracteres" />
+      </div>
+
+      <button class="btn btn-primary btn-full" id="register-btn"
+              onclick="LoginPage._submitRegister()">
+        Crear cuenta
+      </button>
+      <hr class="divider">
+      <p style="text-align:center;font-size:.875rem;color:var(--text-muted);">
+        ¿Ya tienes cuenta?
+        <a href="#" onclick="LoginPage.render('login');return false;">
+          Inicia sesion
+        </a>
+      </p>
+    `;
+  },
+
+  async _submitLogin() {
+    const errEl    = document.getElementById('login-error');
+    const btn      = document.getElementById('login-btn');
+    const email    = document.getElementById('login-email')?.value.trim();
+    const password = document.getElementById('login-password')?.value;
+
+    errEl.style.display = 'none';
+    if (!email || !password) {
+      errEl.textContent = 'Completa todos los campos.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Entrando...';
+    const { error } = await Auth.signIn(email, password);
+
+    if (error) {
+      btn.disabled = false; btn.textContent = 'Entrar';
+      errEl.textContent   = this._translateError(error.message);
+      errEl.style.display = 'block';
+    } else {
+      App.closeModal();
+      Toast.show('Sesion iniciada correctamente', 'success');
+    }
+  },
+
+  async _submitRegister() {
+    const errEl    = document.getElementById('register-error');
+    const btn      = document.getElementById('register-btn');
+    const name     = document.getElementById('reg-name')?.value.trim();
+    const email    = document.getElementById('reg-email')?.value.trim();
+    const password = document.getElementById('reg-password')?.value;
+
+    errEl.style.display = 'none';
+    if (!name || !email || !password) {
+      errEl.textContent = 'Completa todos los campos.';
+      errEl.style.display = 'block'; return;
+    }
+    if (password.length < 8) {
+      errEl.textContent   = 'La contrasena debe tener al menos 8 caracteres.';
+      errEl.style.display = 'block'; return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Creando cuenta...';
+    const { error } = await Auth.signUp(email, password, name);
+
+    if (error) {
+      btn.disabled = false; btn.textContent = 'Crear cuenta';
+      errEl.textContent   = this._translateError(error.message);
+      errEl.style.display = 'block';
+    } else {
+      App.closeModal();
+      Toast.show('Cuenta creada. Revisa tu email para confirmar.', 'success', 6000);
+    }
+  },
+
+  _translateError(msg) {
+    if (!msg) return 'Error desconocido';
+    const m = msg.toLowerCase();
+    if (m.includes('invalid login credentials'))
+      return 'Correo o contrasena incorrectos.';
+    if (m.includes('already registered'))
+      return 'Este correo ya esta registrado.';
+    if (m.includes('password should be at least'))
+      return 'La contrasena debe tener al menos 8 caracteres.';
+    if (m.includes('unable to validate email'))
+      return 'El formato del correo no es valido.';
+    return msg;
+  },
+};
+
+================================================================
+PARTE 5 – MIDDLEWARE DE AUTENTICACIÓN EN EL BACKEND
+================================================================
+
+--- backend/src/middleware/auth.js ---
+
+const supabase = require('../services/supabase');
+
+/**
+ * requireAuth
+ * Verifica el JWT del header Authorization.
+ * Si es valido: agrega req.user y llama next().
+ * Si no: responde 401.
+ */
+async function requireAuth(req, res, next) {
+  const token = req.headers['authorization']?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Autenticacion requerida' });
+  }
+
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Token invalido o expirado' });
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, active, full_name')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || !profile.active) {
+      return res.status(403).json({ error: 'Cuenta desactivada o sin perfil' });
+    }
+
+    req.user = {
+      id:       user.id,
+      email:    user.email,
+      role:     profile.role,
+      fullName: profile.full_name,
+    };
+
+    next();
+  } catch (err) {
+    console.error('[auth] requireAuth:', err.message);
+    res.status(401).json({ error: 'Error al verificar autenticacion' });
+  }
+}
+
+/**
+ * requireRole(...roles)
+ * Verifica que req.user tenga uno de los roles requeridos.
+ * Usar DESPUES de requireAuth.
+ *
+ * Ejemplo:
+ *   router.get('/users', requireAuth, requireRole('admin'), listar)
+ *   router.patch('/orders/:id', requireAuth, requireRole('cashier','admin'), actualizar)
+ */
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ error: 'Sin autenticacion' });
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        error: `Acceso denegado. Rol requerido: ${roles.join(' o ')}`
+      });
+    }
+    next();
+  };
+}
+
+module.exports = { requireAuth, requireRole };
+
+================================================================
+PARTE 6 – CREAR EL USUARIO ADMIN INICIAL
+================================================================
+
+OPCIÓN A – Desde el Dashboard de Supabase:
+  1. Authentication -> Users -> "Add user"
+  2. Email: admin@aroma.com
+  3. Password: Admin1234!
+  4. Marcar "Auto Confirm User" -> "Create User"
+
+  Luego en SQL Editor:
+    UPDATE profiles
+    SET role = 'admin', active = true, full_name = 'Administrador'
+    WHERE id = (SELECT id FROM auth.users WHERE email = 'admin@aroma.com');
+
+OPCIÓN B – Registrarse desde el frontend y luego cambiar el rol:
+    UPDATE profiles SET role = 'admin', active = true
+    WHERE id = (SELECT id FROM auth.users WHERE email = 'tu@email.com');
+
+================================================================
+PARTE 7 – PROBAR EL FLUJO COMPLETO
+================================================================
+
+PASO 1 – Con backend corriendo, clic en "Iniciar sesion".
+  Escribe email y contraseña del admin.
+  -> Modal se cierra. Header muestra "Hola, Administrador".
+  -> Aparecen botones "Panel Cajero" y "Panel Admin".
+
+PASO 2 – Verificar el token:
+  DevTools -> Application -> Local Storage
+  Busca "sb-XXXX-auth-token". Copia el access_token.
+  Pégalo en: https://jwt.io
+  ¿Qué información contiene el payload?
+
+PASO 3 – Verificar requireAuth:
+  En consola, sin token (o con token inválido):
+    fetch('http://localhost:3000/api/cashier/orders')
+      .then(r=>r.json()).then(console.log)
+  -> { error: 'Autenticacion requerida' }
+
+PASO 4 – Hacer logout:
+  Clic en "Cerrar sesion".
+  -> Vuelve a mostrar "Iniciar sesion". Desaparecen paneles.
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. Decodifica tu access_token en jwt.io. ¿Qué significa "exp"?
+   ¿Cuántos segundos dura el token por defecto?
+
+2. ¿Por qué requireRole debe usarse DESPUES de requireAuth?
+   ¿Qué pasaría si se pusiera antes?
+
+3. onAuthStateChange se dispara cuando el token se renueva.
+   ¿Qué ventaja tiene esto para el usuario? ¿Tendría que
+   hacer login de nuevo cuando expire?
+
+4. Si el usuario borra el localStorage manualmente y recarga:
+   ¿Qué detecta Auth.init()? ¿Qué muestra el header?
+
+5. ¿Por qué la función _translateError es necesaria?
+   ¿No sería más fácil mostrar el mensaje original de Supabase?
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Entendiste el flujo JWT: login -> token -> peticion autenticada.
+✓ Implementaste auth.js con cliente Supabase y sesion persistente.
+✓ Actualizaste api.js para incluir el token en cada peticion.
+✓ Creaste el formulario de login y registro en login.js.
+✓ Escribiste requireAuth y requireRole en el backend.
+✓ Probaste el flujo completo de autenticacion.
+
+PROXIMA GUIA: Row Level Security - seguridad en la base de datos.

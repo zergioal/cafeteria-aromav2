@@ -1,0 +1,487 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUÍA 02 – Diseño y creación de la base de datos en Supabase
+Módulo 1 de 5 | Guía 2 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: estructura de carpetas, Git inicializado, backend con
+dependencias instaladas. La carpeta database/ está vacía.
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Diseñado el esquema de la base de datos en papel.
+- Creado el proyecto en Supabase.
+- Escrito y ejecutado el archivo database/schema.sql completo.
+- Verificado que todas las tablas existen con RLS activo.
+
+================================================================
+PARTE 1 – DISEÑO ANTES DE CODIFICAR
+================================================================
+
+Un error común es empezar a crear tablas sin planificar.
+Un programador experto siempre diseña el modelo de datos primero.
+
+PREGUNTA CLAVE: ¿Qué información necesita guardar el sistema?
+
+Hagamos la lista de entidades (objetos del mundo real):
+  - USUARIO: nombre, email, rol (admin/cajero/cliente), teléfono.
+  - CATEGORÍA: nombre (ej: "Cafés", "Pasteles").
+  - PRODUCTO: nombre, descripción, precio, costo, categoría, imagen.
+  - PEDIDO: cliente, total, estado, canal (online/tienda), fecha.
+  - ÍTEM DE PEDIDO: qué producto, qué cantidad, en qué pedido.
+  - PAGO: monto, método, quién verificó, referencia.
+  - CONFIGURACIÓN: pares clave-valor (teléfono WhatsApp, QR, etc.).
+
+DIAGRAMA DE RELACIONES (ER):
+
+  auth.users (Supabase)
+      |
+      | 1:1
+      ↓
+  profiles (extensión con role, phone, active)
+      |
+      | 1:N (un cliente tiene muchos pedidos)
+      ↓
+  orders ←────────── order_items ──→ products ──→ categories
+      |
+      | 1:N (un pedido puede tener varios pagos)
+      ↓
+  payments
+
+  settings (tabla independiente, pares clave-valor)
+
+¿POR QUÉ profiles Y NO modificar auth.users?
+
+  Supabase maneja auth.users internamente para autenticación.
+  No podemos agregar columnas (role, phone, etc.) directamente.
+  La solución: una tabla "profiles" con el mismo id que auth.users.
+  Relación 1:1 garantizada por la clave foránea.
+
+================================================================
+PARTE 2 – CREAR EL PROYECTO EN SUPABASE
+================================================================
+
+PASO 1 – Ingresar a Supabase
+  - Ir a: https://supabase.com
+  - Iniciar sesión con tu cuenta.
+
+PASO 2 – Crear nuevo proyecto
+  - Clic en "New project".
+  - Organization: tu organización por defecto.
+  - Project name: cafeteria-aroma (o el nombre que prefieras).
+  - Database Password: genera una contraseña fuerte y guárdala.
+  - Region: South America (São Paulo) - la más cercana a Bolivia.
+  - Plan: Free tier (gratuito).
+  - Clic en "Create new project".
+  - Espera 1-2 minutos mientras Supabase aprovisiona la BD.
+
+PASO 3 – Obtener las claves del proyecto
+  - Ir a: Settings (ícono de engranaje) → API
+  - Copia estos valores:
+    Project URL:      https://XXXXXXXX.supabase.co
+    anon public key:  eyJh... (clave larga)
+    service_role key: eyJh... (clave diferente, MÁS LARGA)
+
+  ¿Cuál es la diferencia?
+  anon key:         Segura para usar en el frontend.
+                    Solo permite lo que las políticas RLS permiten.
+  service_role key: Bypasea todas las políticas RLS.
+                    SOLO para el backend. NUNCA en el frontend.
+
+PASO 4 – Actualizar el archivo backend/.env
+  Reemplaza los valores REEMPLAZAR con tus claves reales:
+
+    SUPABASE_URL=https://XXXXXXXX.supabase.co
+    SUPABASE_SERVICE_ROLE_KEY=eyJh...tu-service-role-key...
+
+================================================================
+PARTE 3 – ESCRIBIR EL SCHEMA SQL
+================================================================
+
+Crea el archivo database/schema.sql y escribe el siguiente
+contenido paso a paso, leyendo los comentarios:
+
+------------------------------------------------------------------
+-- ARCHIVO: database/schema.sql
+-- PROPÓSITO: Crear toda la estructura de la base de datos.
+-- CÓMO USARLO: Copiar todo y ejecutar en Supabase SQL Editor.
+------------------------------------------------------------------
+
+-- ============================================================
+-- SECCIÓN 1: EXTENSIÓN PARA UUIDs
+-- ============================================================
+-- Los IDs de las tablas serán UUIDs (identificadores únicos
+-- globales). Necesitamos habilitar la extensión que los genera.
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ============================================================
+-- SECCIÓN 2: TABLA profiles
+-- ============================================================
+-- Extiende auth.users de Supabase con datos adicionales.
+-- El campo id es el mismo UUID que Supabase asigna al usuario.
+
+CREATE TABLE IF NOT EXISTS profiles (
+  id          UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name   TEXT,
+  phone       TEXT,
+  role        TEXT NOT NULL DEFAULT 'client'
+                   CHECK (role IN ('admin', 'cashier', 'client')),
+  active      BOOLEAN NOT NULL DEFAULT true,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+-- Notas:
+-- REFERENCES auth.users(id) ON DELETE CASCADE:
+--   Si se elimina el usuario de auth, se elimina el perfil también.
+-- CHECK (role IN (...)):
+--   Restricción: solo esos tres valores son válidos.
+-- TIMESTAMPTZ: timestamp con zona horaria.
+
+-- ============================================================
+-- SECCIÓN 3: TABLA categories
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS categories (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name        TEXT NOT NULL UNIQUE,
+  sort_order  INT  NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+-- sort_order permite ordenar las categorías manualmente.
+-- UNIQUE en name evita duplicados.
+
+-- ============================================================
+-- SECCIÓN 4: TABLA products
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS products (
+  id           UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
+  category_id  UUID    REFERENCES categories(id) ON DELETE SET NULL,
+  name         TEXT    NOT NULL,
+  description  TEXT,
+  price        NUMERIC(10,2) NOT NULL CHECK (price >= 0),
+  cost         NUMERIC(10,2) DEFAULT 0 CHECK (cost >= 0),
+  image_url    TEXT,
+  active       BOOLEAN NOT NULL DEFAULT true,
+  created_at   TIMESTAMPTZ DEFAULT now(),
+  updated_at   TIMESTAMPTZ DEFAULT now()
+);
+
+-- Notas:
+-- NUMERIC(10,2): número con hasta 10 dígitos, 2 decimales.
+--   Exacto para dinero (a diferencia de FLOAT que tiene errores).
+-- ON DELETE SET NULL: si se elimina la categoría, el producto
+--   queda sin categoría pero no se elimina.
+
+-- ============================================================
+-- SECCIÓN 5: TABLA orders
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS orders (
+  id               UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
+  code             TEXT    UNIQUE DEFAULT '',
+  user_id          UUID    REFERENCES auth.users(id) ON DELETE SET NULL,
+  customer_name    TEXT    NOT NULL,
+  customer_phone   TEXT    NOT NULL,
+  delivery_address TEXT,
+  notes            TEXT,
+  total            NUMERIC(10,2) NOT NULL DEFAULT 0,
+  status           TEXT    NOT NULL DEFAULT 'pending_payment'
+                           CHECK (status IN (
+                             'pending_payment','paid','preparing',
+                             'delivering','delivered','canceled'
+                           )),
+  channel          TEXT    NOT NULL DEFAULT 'online'
+                           CHECK (channel IN ('online','store')),
+  payment_method   TEXT    NOT NULL DEFAULT 'qr'
+                           CHECK (payment_method IN ('qr','cash')),
+  proof_url        TEXT,
+  cashier_notes    TEXT,
+  created_at       TIMESTAMPTZ DEFAULT now(),
+  updated_at       TIMESTAMPTZ DEFAULT now()
+);
+
+-- proof_url: URL de la imagen del comprobante de pago
+--   subida a Supabase Storage.
+-- channel: 'online' = pedido web, 'store' = venta presencial.
+
+-- ============================================================
+-- SECCIÓN 6: TABLA order_items
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS order_items (
+  id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id                UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id              UUID REFERENCES products(id) ON DELETE SET NULL,
+  product_name_snapshot   TEXT NOT NULL,
+  unit_price_snapshot     NUMERIC(10,2) NOT NULL,
+  unit_cost_snapshot      NUMERIC(10,2) DEFAULT 0,
+  quantity                INT  NOT NULL CHECK (quantity > 0),
+  subtotal                NUMERIC(10,2) NOT NULL,
+  created_at              TIMESTAMPTZ DEFAULT now()
+);
+
+-- CONCEPTO IMPORTANTE: "snapshot" (instantánea)
+-- Guardamos el nombre y precio del producto AL MOMENTO del pedido.
+-- Si el admin cambia el precio mañana, el pedido de hoy conserva
+-- el precio original. Esto es crítico para la integridad histórica.
+
+-- ============================================================
+-- SECCIÓN 7: TABLA payments
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS payments (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id        UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  amount          NUMERIC(10,2) NOT NULL,
+  payment_method  TEXT NOT NULL CHECK (payment_method IN ('qr','cash')),
+  status          TEXT NOT NULL DEFAULT 'completed'
+                       CHECK (status IN ('pending','completed','failed')),
+  reference_text  TEXT,
+  verified_by     UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+-- verified_by: ID del cajero que verificó el pago.
+
+-- ============================================================
+-- SECCIÓN 8: TABLA settings (clave-valor)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS settings (
+  key         TEXT PRIMARY KEY,
+  value       TEXT NOT NULL DEFAULT '',
+  updated_at  TIMESTAMPTZ DEFAULT now()
+);
+
+-- Patrón key-value para configuración flexible.
+-- Ejemplo: key='whatsapp_number', value='+59170000000'
+-- Ventaja: agregar nuevos ajustes sin cambiar el schema SQL.
+
+-- ============================================================
+-- SECCIÓN 9: ÍNDICES PARA RENDIMIENTO
+-- ============================================================
+-- Los índices aceleran las consultas de búsqueda.
+
+CREATE INDEX IF NOT EXISTS idx_products_category  ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_products_active     ON products(active);
+CREATE INDEX IF NOT EXISTS idx_orders_user         ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status       ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at   ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_order_items_order   ON order_items(order_id);
+
+-- ============================================================
+-- SECCIÓN 10: TRIGGERS (acciones automáticas)
+-- ============================================================
+
+-- TRIGGER 1: Crear perfil automáticamente al registrar usuario
+-- Cuando Supabase crea un usuario en auth.users, este trigger
+-- crea automáticamente un registro en profiles.
+
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', '')
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_on_auth_user_created ON auth.users;
+CREATE TRIGGER trg_on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- COALESCE(a, b): retorna 'a' si no es NULL, sino retorna 'b'.
+-- raw_user_meta_data: JSON con datos extra enviados al registrar.
+
+-- TRIGGER 2: Generar código único para cada pedido
+-- Formato: ARO-YYYYMMDD-XXXX  (ej: ARO-20240115-7832)
+
+CREATE OR REPLACE FUNCTION set_order_code()
+RETURNS TRIGGER LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.code := 'ARO-'
+    || TO_CHAR(now(), 'YYYYMMDD')
+    || '-'
+    || LPAD(FLOOR(RANDOM() * 9000 + 1000)::TEXT, 4, '0');
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_set_order_code ON orders;
+CREATE TRIGGER trg_set_order_code
+  BEFORE INSERT ON orders
+  FOR EACH ROW EXECUTE FUNCTION set_order_code();
+
+-- LPAD: rellena con ceros a la izquierda si es necesario.
+-- FLOOR(RANDOM() * 9000 + 1000): número entre 1000 y 9999.
+
+-- ============================================================
+-- SECCIÓN 11: ROW LEVEL SECURITY (RLS)
+-- ============================================================
+-- RLS: cada fila de la tabla tiene su propia política de acceso.
+-- Sin RLS, cualquiera podría leer/modificar todos los datos.
+
+ALTER TABLE profiles     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings     ENABLE ROW LEVEL SECURITY;
+
+-- Política: cualquiera puede leer categorías y productos activos.
+CREATE POLICY "public_read_categories" ON categories
+  FOR SELECT USING (true);
+
+CREATE POLICY "public_read_active_products" ON products
+  FOR SELECT USING (active = true);
+
+CREATE POLICY "public_read_settings" ON settings
+  FOR SELECT USING (true);
+
+-- Nota: el backend usa service_role_key que bypasea RLS.
+-- Las políticas RLS protegen el acceso DIRECTO a Supabase
+-- (por ej, desde el SDK del frontend).
+-- En la Guía 09 veremos políticas más avanzadas.
+
+-- ============================================================
+-- SECCIÓN 12: DATOS INICIALES
+-- ============================================================
+
+INSERT INTO categories (name, sort_order) VALUES
+  ('Cafés',     1),
+  ('Jugos',     2),
+  ('Pasteles',  3),
+  ('Sándwiches',4)
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO products (name, description, price, cost, category_id, active)
+VALUES
+  ('Café Americano',  'Café negro clásico',             15.00, 5.00,
+   (SELECT id FROM categories WHERE name='Cafés'), true),
+  ('Cappuccino',      'Café con espuma de leche',       20.00, 7.00,
+   (SELECT id FROM categories WHERE name='Cafés'), true),
+  ('Jugo de Naranja', 'Jugo natural exprimido',         18.00, 6.00,
+   (SELECT id FROM categories WHERE name='Jugos'), true),
+  ('Croissant',       'Croissant de mantequilla',       12.00, 4.00,
+   (SELECT id FROM categories WHERE name='Pasteles'), true)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO settings (key, value) VALUES
+  ('whatsapp_number',  '+59170000000'),
+  ('business_hours',   'L-V: 7:00 - 21:00'),
+  ('business_address', 'Av. Ballivián, Cochabamba'),
+  ('qr_image_url',     ''),
+  ('qr_info',          'Paga por Tigo Money o QR BNB'),
+  ('delivery_note',    'Delivery a coordinar por WhatsApp')
+ON CONFLICT (key) DO NOTHING;
+
+================================================================
+PARTE 4 – EJECUTAR EL SCHEMA EN SUPABASE
+================================================================
+
+PASO 1 – Abrir el SQL Editor de Supabase
+  - En el panel izquierdo de Supabase → SQL Editor.
+  - Clic en "New query".
+
+PASO 2 – Copiar y pegar el schema completo
+  - Abre database/schema.sql en VS Code.
+  - Seleccionar todo (Ctrl+A) y copiar (Ctrl+C).
+  - Pegar en el SQL Editor de Supabase.
+
+PASO 3 – Ejecutar
+  - Clic en "Run" (o Ctrl+Enter).
+  - Debe mostrar: "Success. No rows returned."
+  - Si hay errores, léelos cuidadosamente. Cada error indica
+    la línea y el problema específico.
+
+PASO 4 – Verificar las tablas
+  - En el panel izquierdo → Table Editor.
+  - Debes ver: profiles, categories, products, orders,
+    order_items, payments, settings.
+  - Abre "products": deben aparecer los 4 productos de ejemplo.
+  - Abre "settings": deben aparecer las 6 configuraciones.
+
+PASO 5 – Verificar los triggers
+  - En el panel izquierdo → Database → Triggers.
+  - Debes ver:
+    trg_on_auth_user_created  (en auth.users)
+    trg_set_order_code        (en orders)
+
+PASO 6 – Verificar RLS
+  - En el panel izquierdo → Authentication → Policies.
+  - Debes ver políticas en categories, products y settings.
+
+================================================================
+ACTIVIDAD PRÁCTICA
+================================================================
+
+1. Antes de ejecutar el SQL, dibuja en papel el diagrama
+   entidad-relación con todas las tablas y sus relaciones.
+   Flechas → indican "foreign key apunta a".
+
+2. Ejecuta el schema.sql completo. ¿Cuántas tablas se crearon?
+
+3. En el Table Editor, abre "products". Agrega manualmente
+   un producto nuevo usando la interfaz de Supabase.
+   Luego elimínalo.
+
+4. En el SQL Editor, ejecuta:
+     SELECT * FROM categories ORDER BY sort_order;
+   ¿Qué resultado obtienes?
+
+5. Intenta insertar un producto con price = -5.00:
+     INSERT INTO products (name, price) VALUES ('Test', -5.00);
+   ¿Qué error obtienes? ¿Qué parte del schema lo previene?
+
+6. ¿Qué pasaría si eliminas una categoría que tiene productos?
+   (Pista: mira ON DELETE SET NULL en la tabla products)
+
+================================================================
+EJERCICIOS DE REFUERZO
+================================================================
+
+1. ¿Qué diferencia hay entre NUMERIC(10,2) y FLOAT para
+   guardar precios? ¿Por qué usamos NUMERIC?
+   (Pista: prueba en una calculadora: 0.1 + 0.2 en JavaScript)
+
+2. El campo "code" en orders tiene DEFAULT ''.
+   ¿Por qué no tiene DEFAULT uuid_generate_v4() como el id?
+
+3. ¿Qué significa SECURITY DEFINER en la función handle_new_user?
+   ¿Por qué es necesario para crear el perfil automáticamente?
+
+4. Los snapshots (product_name_snapshot, unit_price_snapshot)
+   duplican información que ya está en products. ¿Por qué
+   aceptamos esa duplicación?
+
+5. ¿Podría la tabla settings reemplazarse por un solo campo
+   JSON en otra tabla? ¿Qué ventajas y desventajas tendría?
+
+================================================================
+RESUMEN
+================================================================
+En esta guía:
+✓ Diseñaste el modelo de datos antes de escribir código.
+✓ Creaste el proyecto en Supabase y obtuviste las claves.
+✓ Escribiste el schema.sql con 7 tablas, índices y triggers.
+✓ Entendiste el patrón "profiles" para extender auth.users.
+✓ Activaste RLS como capa de seguridad en la base de datos.
+✓ Insertaste datos de ejemplo para poder probar.
+
+PRÓXIMA GUÍA: Construir la estructura HTML de la SPA.

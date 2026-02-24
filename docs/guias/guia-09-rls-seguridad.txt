@@ -1,0 +1,357 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 09 – Row Level Security (RLS): Seguridad en la base de datos
+Módulo 3 de 5 | Guía 9 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: autenticación completa con JWT. El backend verifica tokens.
+La Guía 02 activó RLS en todas las tablas, pero solo con políticas
+básicas (lectura pública de productos, categorías, settings).
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Entendido en profundidad qué es RLS y por qué es importante.
+- Escrito políticas RLS completas para cada tabla.
+- Resuelto el problema de recursión infinita en profiles.
+- Verificado que las políticas funcionan correctamente.
+
+================================================================
+PARTE 1 – ¿QUÉ ES RLS Y POR QUÉ IMPORTA?
+================================================================
+
+ESCENARIO SIN RLS:
+  Imagina que un usuario hace esto desde la consola del navegador:
+
+    supabase.from('orders').select('*')
+
+  Sin RLS: retorna TODOS los pedidos de TODOS los usuarios.
+  ¡El cliente puede ver los pedidos privados de otras personas!
+
+  Y peor:
+    supabase.from('profiles').update({ role: 'admin' }).eq('id', '...')
+
+  Sin RLS: ¡el usuario puede cambiar su propio rol a admin!
+
+RLS (Row Level Security) resuelve esto:
+  Cada tabla tiene "políticas" que definen:
+  - ¿Quién puede SELECT (leer)?
+  - ¿Quién puede INSERT (crear)?
+  - ¿Quién puede UPDATE (modificar)?
+  - ¿Quién puede DELETE (eliminar)?
+
+  Las políticas se evalúan por cada fila. Por eso "Row Level".
+
+¿NECESITAMOS RLS SI YA TENEMOS requireAuth EN EL BACKEND?
+
+  El backend con service_role_key bypasea RLS. Entonces, si
+  TODOS los accesos van por el backend → RLS no importa para
+  el backend.
+
+  PERO: el frontend también tiene el cliente Supabase (auth.js)
+  con la anon_key. Si alguien ejecuta supabase.from('orders')
+  directamente desde la consola del navegador, bypasea el backend.
+
+  RLS protege esa capa: acceso DIRECTO a Supabase desde el frontend.
+
+  REGLA PRÁCTICA:
+    - Backend (service_role): hace lo que quiere, RLS no aplica.
+    - Frontend (anon_key): solo puede lo que las políticas permiten.
+
+================================================================
+PARTE 2 – EL PROBLEMA DE RECURSIÓN INFINITA EN profiles
+================================================================
+
+EL ERROR:
+  Supón que escribes esta política para profiles:
+
+    CREATE POLICY "users_read_own_profile" ON profiles
+      FOR SELECT USING (auth.uid() = id);
+
+  Y para verificar el rol del usuario en otras tablas:
+
+    CREATE POLICY "admin_can_do_everything" ON orders
+      FOR ALL USING (
+        (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+      );
+
+  PROBLEMA: cuando se evalúa la política de orders, se consulta
+  profiles. Pero profiles también tiene RLS activo. Cuando se
+  evalúa la política de profiles, se consulta profiles de nuevo...
+  ¡RECURSIÓN INFINITA! PostgreSQL lanza: "infinite recursion
+  detected in policy for relation 'profiles'"
+
+LA SOLUCIÓN: Función SECURITY DEFINER
+
+  Una función con SECURITY DEFINER se ejecuta con los privilegios
+  del usuario que LA CREÓ (generalmente postgres/supabase_admin),
+  no del usuario que la llama. Esto bypasea RLS para esa función.
+
+  La función get_my_role() consulta profiles SIN que se evalúe
+  la política RLS de profiles, rompiendo la recursión.
+
+================================================================
+PARTE 3 – CREAR LA FUNCIÓN get_my_role()
+================================================================
+
+Crea el archivo database/fix_rls_recursion.sql:
+
+--- database/fix_rls_recursion.sql ---
+
+-- ============================================================
+-- FUNCION: get_my_role()
+-- Retorna el rol del usuario autenticado actualmente.
+-- Usa SECURITY DEFINER para bypasar el RLS de profiles
+-- y asi evitar recursion infinita.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION get_my_role()
+RETURNS TEXT
+LANGUAGE sql
+STABLE          -- No modifica la BD, puede ser cacheada en la sesion
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT role FROM public.profiles WHERE id = auth.uid();
+$$;
+
+-- Revocar acceso publico y dar solo a los roles que lo necesitan
+REVOKE ALL ON FUNCTION get_my_role() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION get_my_role() TO authenticated;
+GRANT EXECUTE ON FUNCTION get_my_role() TO anon;
+
+Ejecuta este SQL en Supabase SQL Editor.
+
+================================================================
+PARTE 4 – ESCRIBIR LAS POLÍTICAS RLS COMPLETAS
+================================================================
+
+Agrega este bloque al final de database/schema.sql, o
+ejecútalo directamente en el SQL Editor de Supabase:
+
+-- ============================================================
+-- POLITICAS RLS COMPLETAS
+-- ============================================================
+
+-- Limpiar politicas anteriores de la Guia 02
+DROP POLICY IF EXISTS "public_read_categories"         ON categories;
+DROP POLICY IF EXISTS "public_read_active_products"    ON products;
+DROP POLICY IF EXISTS "public_read_settings"           ON settings;
+
+-- ============================================================
+-- TABLA: categories (solo lectura publica)
+-- ============================================================
+CREATE POLICY "anyone_can_read_categories"
+  ON categories FOR SELECT
+  USING (true);
+
+-- Solo admins pueden crear/modificar/eliminar categorias
+CREATE POLICY "admin_manage_categories"
+  ON categories FOR ALL
+  USING (get_my_role() = 'admin')
+  WITH CHECK (get_my_role() = 'admin');
+
+-- ============================================================
+-- TABLA: products
+-- ============================================================
+CREATE POLICY "anyone_can_read_active_products"
+  ON products FOR SELECT
+  USING (active = true);
+
+CREATE POLICY "admin_manage_products"
+  ON products FOR ALL
+  USING (get_my_role() = 'admin')
+  WITH CHECK (get_my_role() = 'admin');
+
+-- ============================================================
+-- TABLA: settings
+-- ============================================================
+CREATE POLICY "anyone_can_read_settings"
+  ON settings FOR SELECT
+  USING (true);
+
+CREATE POLICY "admin_manage_settings"
+  ON settings FOR ALL
+  USING (get_my_role() = 'admin')
+  WITH CHECK (get_my_role() = 'admin');
+
+-- ============================================================
+-- TABLA: profiles
+-- ============================================================
+-- Cada usuario puede leer y actualizar SOLO su propio perfil
+CREATE POLICY "users_read_own_profile"
+  ON profiles FOR SELECT
+  USING (auth.uid() = id);
+
+CREATE POLICY "users_update_own_profile"
+  ON profiles FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (
+    auth.uid() = id
+    -- El usuario NO puede cambiar su propio rol
+    -- (no hay columna 'role' modificable directamente)
+  );
+
+-- Los admins pueden leer todos los perfiles
+CREATE POLICY "admin_read_all_profiles"
+  ON profiles FOR SELECT
+  USING (get_my_role() = 'admin');
+
+-- Los admins pueden actualizar cualquier perfil (para cambiar roles)
+CREATE POLICY "admin_update_profiles"
+  ON profiles FOR UPDATE
+  USING (get_my_role() = 'admin')
+  WITH CHECK (get_my_role() = 'admin');
+
+-- El trigger handle_new_user crea perfiles automaticamente.
+-- Para que funcione, el service_role (backend) hace el INSERT.
+
+-- ============================================================
+-- TABLA: orders
+-- ============================================================
+-- Los clientes solo ven SUS propios pedidos
+CREATE POLICY "clients_read_own_orders"
+  ON orders FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Los cajeros y admins ven todos los pedidos
+CREATE POLICY "staff_read_all_orders"
+  ON orders FOR SELECT
+  USING (get_my_role() IN ('cashier', 'admin'));
+
+-- Los cajeros y admins pueden actualizar pedidos (cambiar estado)
+CREATE POLICY "staff_update_orders"
+  ON orders FOR UPDATE
+  USING (get_my_role() IN ('cashier', 'admin'))
+  WITH CHECK (get_my_role() IN ('cashier', 'admin'));
+
+-- Los clientes autenticados pueden crear pedidos
+-- (El INSERT real lo hace el backend con service_role,
+-- pero esta politica permite también el flujo directo)
+CREATE POLICY "authenticated_can_insert_orders"
+  ON orders FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- ============================================================
+-- TABLA: order_items (los items siguen al pedido)
+-- ============================================================
+CREATE POLICY "clients_read_own_order_items"
+  ON order_items FOR SELECT
+  USING (
+    order_id IN (
+      SELECT id FROM orders WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "staff_read_all_order_items"
+  ON order_items FOR SELECT
+  USING (get_my_role() IN ('cashier', 'admin'));
+
+-- ============================================================
+-- TABLA: payments
+-- ============================================================
+CREATE POLICY "clients_read_own_payments"
+  ON payments FOR SELECT
+  USING (
+    order_id IN (
+      SELECT id FROM orders WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "staff_manage_payments"
+  ON payments FOR ALL
+  USING (get_my_role() IN ('cashier', 'admin'))
+  WITH CHECK (get_my_role() IN ('cashier', 'admin'));
+
+================================================================
+PARTE 5 – VERIFICAR QUE LAS POLÍTICAS FUNCIONAN
+================================================================
+
+PRUEBA 1 – Usuario anónimo no puede leer pedidos
+  En el SQL Editor de Supabase, ejecuta como anónimo:
+
+    -- Simular usuario anonimo
+    SET LOCAL role = 'anon';
+    SELECT * FROM orders LIMIT 5;
+
+  Resultado esperado: 0 filas (o error de RLS).
+
+PRUEBA 2 – Cliente solo ve sus propios pedidos
+  Si tienes una orden en la BD, en la consola del navegador:
+
+    const { data } = await Auth.supabase.from('orders').select('*')
+    console.log(data)
+
+  Resultado: solo los pedidos del usuario logueado.
+
+PRUEBA 3 – No se puede cambiar el propio rol
+  En la consola del navegador (logueado como cliente):
+
+    const { error } = await Auth.supabase
+      .from('profiles')
+      .update({ role: 'admin' })
+      .eq('id', '(tu-uuid)')
+    console.log(error)
+
+  Resultado: error de RLS (la política no permite esto sin ser admin).
+
+PRUEBA 4 – El backend bypasea RLS
+  El backend usa service_role_key. Probemos que no le afecta RLS:
+  El endpoint GET /api/products retorna todos los productos,
+  incluyendo los inactivos, si el controlador no filtra por
+  active = true... ¡Pero el controlador SÍ filtra! Es intencional.
+
+PRUEBA 5 – Verificar función get_my_role
+  En el SQL Editor (logueado como usuario de prueba):
+
+    SELECT get_my_role();
+
+  Resultado: el rol del usuario logueado actualmente.
+
+================================================================
+PARTE 6 – COMMIT
+================================================================
+
+  git add database/fix_rls_recursion.sql database/schema.sql
+  git commit -m "feat: RLS completo con politicas por rol y funcion SECURITY DEFINER"
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. Intenta desde la consola del navegador (sin estar logueado):
+     const sb = Auth.supabase
+     const { data } = await sb.from('products').select('*')
+     console.log(data.length)
+   ¿Cuántos productos retorna? ¿Por qué?
+
+2. Ahora logéate e intenta leer todos los pedidos:
+     const { data } = await Auth.supabase.from('orders').select('*')
+   ¿Ves solo los tuyos? ¿Qué pasa si no tienes ninguno?
+
+3. La política "authenticated_can_insert_orders" tiene:
+     WITH CHECK (auth.uid() = user_id)
+   ¿Qué significa? ¿Qué ataque previene?
+
+4. ¿Por qué SECURITY DEFINER es una herramienta poderosa pero
+   también peligrosa? ¿Qué precaución debes tomar con ella?
+
+5. El backend con service_role bypasea RLS. ¿Por qué entonces
+   implementamos RLS si el backend siempre puede acceder a todo?
+   (Pista: piensa en accesos directos al SDK de Supabase)
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Entendiste RLS: políticas de acceso por fila en la BD.
+✓ Identificaste el problema de recursión infinita en profiles.
+✓ Resolviste la recursión con la función SECURITY DEFINER.
+✓ Escribiste políticas completas para todas las tablas.
+✓ Verificaste que las políticas funcionan correctamente.
+
+PROXIMA GUIA: CRUD de productos en el panel administrador.

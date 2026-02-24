@@ -1,0 +1,483 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 06 – Carrito de compras con LocalStorage
+Módulo 2 de 5 | Guía 6 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: index.html, styles.css, config.js, app.js, y esqueletos
+de todas las páginas funcionando. La navegación entre tabs funciona.
+cart.js contiene el esqueleto temporal de la Guía 05.
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Entendido qué es localStorage y sus limitaciones.
+- Reescrito cart.js con el módulo Cart completo.
+- Implementado CartPage con render del carrito visual.
+- Verificado que el carrito persiste al recargar la página.
+
+================================================================
+PARTE 1 – ¿QUÉ ES LOCALSTORAGE?
+================================================================
+
+El problema que resuelve:
+  Normalmente, cuando recargas el navegador, JavaScript pierde
+  todo su estado. Si el usuario puso 3 productos en el carrito
+  y recarga la página, el carrito queda vacío.
+
+  localStorage permite guardar datos en el navegador del usuario
+  que persisten entre sesiones (incluso si cierra el navegador).
+
+API de localStorage:
+  localStorage.setItem('clave', 'valor')   // Guardar
+  localStorage.getItem('clave')            // Leer (null si no existe)
+  localStorage.removeItem('clave')         // Eliminar una clave
+  localStorage.clear()                     // Eliminar todo
+
+¿Cómo guardar un objeto (array/JSON)?
+  localStorage solo guarda strings. Para guardar el carrito
+  (que es un array de objetos) usamos JSON:
+
+    // Guardar
+    localStorage.setItem('cart', JSON.stringify(miArray))
+
+    // Leer
+    const miArray = JSON.parse(localStorage.getItem('cart') || '[]')
+
+LIMITACIONES importantes de localStorage:
+  1. Solo strings (por eso usamos JSON.stringify/parse).
+  2. Máximo ~5MB por dominio.
+  3. Solo accesible desde el mismo origen (dominio + puerto).
+  4. SINCRÓNICO (bloquea el hilo, aunque es muy rápido).
+  5. NO es seguro para datos sensibles (contraseñas, tokens).
+  6. El usuario puede borrarlo desde DevTools.
+
+¿Por qué no usamos sessionStorage?
+  sessionStorage se borra cuando el usuario cierra la pestaña.
+  Para el carrito queremos persistencia más larga.
+
+================================================================
+PARTE 2 – DISEÑAR EL MÓDULO CART
+================================================================
+
+Antes de escribir código, definimos el contrato del módulo:
+
+ESTRUCTURA de cada ítem en el carrito:
+  {
+    id:    "uuid-del-producto",
+    name:  "Cappuccino",
+    price: 20.00,
+    qty:   2
+  }
+
+MÉTODOS que necesitamos:
+  Cart.load()             -> carga desde localStorage al arrancar
+  Cart._save()            -> guarda a localStorage (privado)
+  Cart.add(product)       -> agrega o incrementa qty
+  Cart.remove(id)         -> elimina un producto
+  Cart.updateQty(id, qty) -> cambia la cantidad
+  Cart.clear()            -> vacía el carrito
+  Cart.count()            -> total de unidades
+  Cart.total()            -> monto total
+  Cart.getItems()         -> retorna copia del array
+
+================================================================
+PARTE 3 – ESCRIBIR frontend/js/cart.js
+================================================================
+
+Reemplaza el contenido temporal de cart.js:
+
+------------ INICIO DEL ARCHIVO frontend/js/cart.js ------------
+
+/**
+ * Modulo Cart
+ * Gestiona el carrito de compras con persistencia en localStorage.
+ * La convencion _ (prefijo guion bajo) indica uso interno.
+ */
+const Cart = {
+  STORAGE_KEY: 'aroma_cart',
+  _items: [],
+
+  /**
+   * Carga el carrito desde localStorage.
+   * Llamar una sola vez al iniciar la app.
+   */
+  load() {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      this._items = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.warn('[Cart] Error al cargar:', e.message);
+      this._items = [];
+    }
+  },
+
+  /**
+   * Guarda el estado actual en localStorage.
+   * Se llama automaticamente tras cada modificacion.
+   * @private
+   */
+  _save() {
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this._items));
+    App.updateCartBadge();
+  },
+
+  /**
+   * Agrega un producto. Si ya existe, incrementa qty en 1.
+   * @param {{ id, name, price }} product
+   */
+  add(product) {
+    const existing = this._items.find(i => i.id === product.id);
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      this._items.push({
+        id:    product.id,
+        name:  product.name,
+        price: Number(product.price),
+        qty:   1
+      });
+    }
+    this._save();
+  },
+
+  /**
+   * Elimina un producto del carrito por su id.
+   * @param {string} id
+   */
+  remove(id) {
+    this._items = this._items.filter(i => i.id !== id);
+    this._save();
+  },
+
+  /**
+   * Actualiza la cantidad. Si qty <= 0, elimina el producto.
+   * @param {string} id
+   * @param {number} qty
+   */
+  updateQty(id, qty) {
+    if (qty <= 0) { this.remove(id); return; }
+    const item = this._items.find(i => i.id === id);
+    if (item) { item.qty = qty; this._save(); }
+  },
+
+  /** Vacia el carrito completamente. */
+  clear() {
+    this._items = [];
+    this._save();
+  },
+
+  /**
+   * Total de unidades. Ej: 2 cappuccinos + 1 croissant = 3
+   * @returns {number}
+   */
+  count() {
+    return this._items.reduce((s, i) => s + i.qty, 0);
+  },
+
+  /**
+   * Monto total (orientativo para el usuario).
+   * El total REAL lo calcula el servidor en el checkout.
+   * @returns {number}
+   */
+  total() {
+    return this._items.reduce((s, i) => s + i.price * i.qty, 0);
+  },
+
+  /**
+   * Retorna una COPIA del array de items.
+   * Copia para que nadie modifique el array interno sin pasar
+   * por los métodos del módulo.
+   * @returns {Array}
+   */
+  getItems() {
+    return [...this._items];
+  },
+};
+
+------------- FIN DEL ARCHIVO frontend/js/cart.js ---------------
+
+IMPORTANTE: En app.js, agrega Cart.load() como la PRIMERA linea
+de App.init():
+
+  async init() {
+    Cart.load();              // <- AGREGAR AQUI
+    this._setupNavigation();
+    // ...
+  }
+
+================================================================
+PARTE 4 – ESCRIBIR frontend/js/pages/cart-page.js
+================================================================
+
+------------ INICIO DEL ARCHIVO frontend/js/pages/cart-page.js -
+
+const CartPage = {
+  render() {
+    const root  = document.getElementById('cart-root');
+    const items = Cart.getItems();
+
+    if (items.length === 0) {
+      root.innerHTML = `
+        <div class="page-header">
+          <h1 class="page-title">Tu carrito</h1>
+        </div>
+        <div class="empty-state">
+          <div class="empty-state-icon">&#128722;</div>
+          <p class="empty-state-title">El carrito esta vacio</p>
+          <p>Agrega productos desde el menu</p><br>
+          <button class="btn btn-primary" data-tab="menu">Ver el menu</button>
+        </div>
+      `;
+      return;
+    }
+
+    const itemsHTML = items.map(item => `
+      <div class="cart-item" data-id="${escHtml(item.id)}">
+        <div class="cart-item-info">
+          <span class="cart-item-name">${escHtml(item.name)}</span>
+          <span class="cart-item-price">${fmtCurrency(item.price)} c/u</span>
+        </div>
+        <div class="cart-item-controls">
+          <button class="btn btn-secondary btn-sm"
+            onclick="CartPage._changeQty('${escHtml(item.id)}', ${item.qty - 1})">-</button>
+          <span class="cart-item-qty">${item.qty}</span>
+          <button class="btn btn-secondary btn-sm"
+            onclick="CartPage._changeQty('${escHtml(item.id)}', ${item.qty + 1})">+</button>
+          <button class="btn btn-danger btn-sm"
+            onclick="CartPage._removeItem('${escHtml(item.id)}')">Quitar</button>
+        </div>
+        <div class="cart-item-subtotal">${fmtCurrency(item.price * item.qty)}</div>
+      </div>
+    `).join('');
+
+    root.innerHTML = `
+      <div class="page-header">
+        <h1 class="page-title">Tu carrito</h1>
+        <p class="page-subtitle">${Cart.count()} productos</p>
+      </div>
+
+      <div class="cart-items-list">${itemsHTML}</div>
+      <hr class="divider">
+
+      <div class="cart-total-row">
+        <span>Total estimado:</span>
+        <strong>${fmtCurrency(Cart.total())}</strong>
+      </div>
+      <p class="form-hint">El total final lo calcula el servidor al confirmar.</p>
+      <hr class="divider">
+
+      <h2 style="margin-bottom:1rem;">Datos del pedido</h2>
+      <div id="cart-error" class="alert alert-error" style="display:none"></div>
+
+      <div class="form-group">
+        <label class="form-label">Tu nombre *</label>
+        <input type="text" id="cart-name" class="form-input" placeholder="Nombre completo" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefono / WhatsApp *</label>
+        <input type="tel" id="cart-phone" class="form-input" placeholder="+591 70000000" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Direccion de entrega *</label>
+        <input type="text" id="cart-address" class="form-input"
+               placeholder="Ej: Av. Ballivian N.123, Zona Centro" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas (opcional)</label>
+        <textarea id="cart-notes" class="form-textarea"
+                  placeholder="Ej: sin azucar, delivery urgente..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Metodo de pago *</label>
+        <select id="cart-payment" class="form-select">
+          <option value="qr">QR / Transferencia bancaria</option>
+          <option value="cash">Efectivo en entrega</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary btn-full btn-lg" id="cart-confirm-btn"
+              onclick="CartPage._confirmOrder()">
+        Confirmar pedido
+      </button>
+      <button class="btn btn-secondary btn-full" style="margin-top:.5rem;"
+              onclick="CartPage._clearCart()">
+        Vaciar carrito
+      </button>
+    `;
+  },
+
+  _changeQty(id, newQty) { Cart.updateQty(id, newQty); this.render(); },
+  _removeItem(id)         { Cart.remove(id); this.render(); },
+
+  _clearCart() {
+    if (!confirm('¿Vaciar el carrito?')) return;
+    Cart.clear();
+    this.render();
+    Toast.show('Carrito vaciado', 'info');
+  },
+
+  async _confirmOrder() {
+    const errEl = document.getElementById('cart-error');
+    const btn   = document.getElementById('cart-confirm-btn');
+    errEl.style.display = 'none';
+
+    const name    = document.getElementById('cart-name')?.value.trim();
+    const phone   = document.getElementById('cart-phone')?.value.trim();
+    const address = document.getElementById('cart-address')?.value.trim();
+    const notes   = document.getElementById('cart-notes')?.value.trim();
+    const payment = document.getElementById('cart-payment')?.value;
+
+    if (!name)    return this._showError(errEl, 'El nombre es obligatorio.');
+    if (!phone)   return this._showError(errEl, 'El telefono es obligatorio.');
+    if (!address) return this._showError(errEl, 'La direccion es obligatoria.');
+
+    btn.disabled    = true;
+    btn.textContent = 'Confirmando pedido...';
+
+    try {
+      const orderData = {
+        items:            Cart.getItems().map(i => ({ product_id: i.id, quantity: i.qty })),
+        customer_name:    name,
+        customer_phone:   phone,
+        delivery_address: address,
+        notes:            notes || null,
+        payment_method:   payment,
+      };
+
+      const order = await API.post('/api/orders', orderData);
+      Cart.clear();
+      this._renderSuccess(order);
+    } catch (err) {
+      this._showError(errEl, err.message || 'Error al procesar el pedido.');
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Confirmar pedido';
+    }
+  },
+
+  _showError(errEl, msg) {
+    errEl.textContent   = msg;
+    errEl.style.display = 'block';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  },
+
+  _renderSuccess(order) {
+    const settings  = App._publicSettings || {};
+    const waNumber  = (settings.whatsapp_number || '').replace(/\D/g, '');
+    const waMsg     = encodeURIComponent(
+      `Hola! Realice un pedido en Cafeteria Aroma.\n` +
+      `Codigo: ${order.code}\nTotal: ${fmtCurrency(order.total)}`
+    );
+
+    document.getElementById('cart-root').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">&#9989;</div>
+        <h2 class="empty-state-title">Pedido confirmado</h2>
+        <p>Tu codigo de pedido:</p>
+        <h3 style="font-size:1.5rem;color:var(--primary);margin:.5rem 0;">
+          ${escHtml(order.code)}
+        </h3>
+        <p>Total: <strong>${fmtCurrency(order.total)}</strong></p><br>
+        ${waNumber ? `
+          <a href="https://wa.me/${waNumber}?text=${waMsg}"
+             target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+            Enviar comprobante por WhatsApp
+          </a>
+        ` : ''}
+        <br><br>
+        <button class="btn btn-secondary" data-tab="menu">Seguir comprando</button>
+      </div>
+    `;
+  },
+};
+
+------------- FIN DEL ARCHIVO frontend/js/pages/cart-page.js ---
+
+================================================================
+PARTE 5 – CSS DEL CARRITO (agregar al final de styles.css)
+================================================================
+
+/* Carrito */
+.cart-item {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .875rem 0; border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.cart-item-info       { flex: 1; min-width: 120px; }
+.cart-item-name       { font-weight: 600; display: block; }
+.cart-item-price      { font-size: .85rem; color: var(--text-muted); }
+.cart-item-controls   { display: flex; align-items: center; gap: .4rem; }
+.cart-item-qty        { min-width: 28px; text-align: center; font-weight: 700; }
+.cart-item-subtotal   { font-weight: 700; color: var(--primary-dark); min-width: 80px; text-align: right; }
+.cart-total-row       { display: flex; justify-content: space-between; font-size: 1.1rem; padding: .5rem 0; }
+
+================================================================
+PARTE 6 – PROBAR EL CARRITO (sin backend todavía)
+================================================================
+
+En la consola del navegador (F12):
+
+PASO 1 – Agregar productos manualmente:
+  Cart.add({ id: '1', name: 'Cappuccino', price: 20.00 })
+  Cart.add({ id: '1', name: 'Cappuccino', price: 20.00 })
+  Cart.add({ id: '2', name: 'Croissant',  price: 12.00 })
+  Cart.count()     // -> 3
+  Cart.total()     // -> 52
+
+PASO 2 – Verificar persistencia:
+  Recarga la página (F5).
+  Cart.count()     // sigue siendo 3?
+
+PASO 3 – DevTools -> Application -> Local Storage -> localhost:5500
+  Busca la clave 'aroma_cart'. ¿Ves el JSON?
+
+PASO 4 – Navegar al tab Carrito:
+  Para probar sin login, comenta temporalmente el guard en
+  App.navigateTo (el if de tabName === 'cart').
+  ¿Se muestra la lista de productos?
+
+================================================================
+PARTE 7 – COMMIT
+================================================================
+
+  git add frontend/js/cart.js frontend/js/pages/cart-page.js \
+          frontend/css/styles.css
+  git commit -m "feat: carrito de compras con persistencia en localStorage"
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. ¿Por qué Cart.getItems() retorna [...this._items] en vez
+   de this._items directamente?
+   Prueba: modifica el array que retorna y verifica si afecta
+   al carrito interno.
+
+2. Agrega el método Cart.hasItem(id) que retorne true/false.
+   ¿Para qué sería útil en el botón "Agregar" del menú?
+
+3. La validación en _confirmOrder es solo del lado del cliente.
+   ¿Por qué no es suficiente? ¿Qué podría hacer un atacante?
+
+4. Abre DevTools -> Local Storage y edita manualmente el JSON
+   cambiando el precio de un producto a 0.01.
+   ¿Importa? ¿Por qué el total del servidor es el oficial?
+
+5. Cart.total() calcula el total localmente. ¿Por qué lo
+   mostramos si no es el total oficial?
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Entendiste localStorage: API, limitaciones y uso con JSON.
+✓ Escribiste el módulo Cart con persistencia automática.
+✓ Implementaste CartPage con lista visual, controles y checkout.
+✓ Verificaste persistencia al recargar y edición en DevTools.
+
+PROXIMA GUIA: Crear el servidor backend con Node.js y Express.

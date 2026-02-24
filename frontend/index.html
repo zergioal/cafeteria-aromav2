@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cafetería Aroma - El mejor café de Cochabamba. Pedidos online y delivery." />
+  <title>☕ Cafetería Aroma</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="brand-logo" aria-label="Cafetería Aroma">☕</span>
+        <span class="brand-name">Aroma</span>
+      </div>
+
+      <!-- Navegación por pestañas -->
+      <nav class="tab-nav" role="navigation" aria-label="Menú principal">
+        <button class="tab-btn active" data-tab="home"    aria-current="page">Inicio</button>
+        <button class="tab-btn"        data-tab="menu">Menú</button>
+        <button class="tab-btn"        data-tab="contact">Contacto</button>
+        <button class="tab-btn"        data-tab="cart" id="nav-cart-btn" aria-label="Carrito de compras">
+          🛒 <span class="cart-badge" id="cart-count" aria-live="polite">0</span>
+        </button>
+        <button class="tab-btn" data-tab="login"   id="nav-login-btn">Ingresar</button>
+        <button class="tab-btn hidden" data-tab="cashier" id="nav-cashier-btn">Caja</button>
+        <button class="tab-btn hidden" data-tab="admin"   id="nav-admin-btn">Admin</button>
+      </nav>
+
+      <!-- Info del usuario logueado -->
+      <div class="header-user" id="header-user" aria-live="polite"></div>
+    </div>
+  </header>
+
+  <!-- ===== CONTENIDO DE PESTAÑAS ===== -->
+  <main class="main-content" role="main">
+
+    <section id="tab-home"    class="tab-content active" role="tabpanel" aria-label="Inicio"></section>
+    <section id="tab-menu"    class="tab-content"        role="tabpanel" aria-label="Menú"></section>
+    <section id="tab-cart"    class="tab-content"        role="tabpanel" aria-label="Carrito"></section>
+    <section id="tab-login"   class="tab-content"        role="tabpanel" aria-label="Iniciar sesión"></section>
+    <section id="tab-contact" class="tab-content"        role="tabpanel" aria-label="Contacto"></section>
+    <section id="tab-cashier" class="tab-content"        role="tabpanel" aria-label="Panel Cajero"></section>
+    <section id="tab-admin"   class="tab-content"        role="tabpanel" aria-label="Panel Admin"></section>
+
+  </main>
+
+  <!-- ===== TOAST NOTIFICATIONS ===== -->
+  <div id="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- ===== MODAL (reutilizable) ===== -->
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <button class="modal-close" onclick="App.closeModal()" aria-label="Cerrar">&times;</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <!-- Supabase JS (solo anon key en frontend) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- Config (personalizar SUPABASE_URL, SUPABASE_ANON_KEY, API_BASE_URL) -->
+  <script src="js/config.js"></script>
+
+  <!-- Núcleo -->
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+
+  <!-- Páginas -->
+  <script src="js/pages/home.js"></script>
+  <script src="js/pages/menu.js"></script>
+  <script src="js/pages/login.js"></script>
+  <script src="js/pages/cart-page.js"></script>
+  <script src="js/pages/contact.js"></script>
+  <script src="js/pages/cashier.js"></script>
+  <script src="js/pages/admin.js"></script>
+
+  <!-- App principal (inicializa todo) -->
+  <script src="js/app.js"></script>
+</body>
+</html>

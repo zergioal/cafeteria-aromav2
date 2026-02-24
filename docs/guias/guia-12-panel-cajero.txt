@@ -1,0 +1,726 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 12 – Panel del cajero: gestión de pedidos y ventas
+Módulo 4 de 5 | Guía 12 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: flujo completo de checkout funcionando. Los pedidos
+se guardan en la BD. CashierPage muestra "próximamente".
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Creado el controlador y rutas del cajero en el backend.
+- Implementado el panel del cajero con lista de pedidos en tiempo real.
+- Agregado la funcionalidad de verificar pagos y cambiar estados.
+- Creado el flujo de venta presencial (tienda).
+
+================================================================
+PARTE 1 – CICLO DE VIDA DE UN PEDIDO
+================================================================
+
+Un pedido online pasa por estos estados:
+
+  pending_payment  -> El cliente hizo el pedido pero no pagó todavía.
+  paid             -> El cajero verificó el pago.
+  preparing        -> La cafetería está preparando el pedido.
+  delivering       -> El pedido está en camino (delivery).
+  delivered        -> El cliente recibió el pedido.
+  canceled         -> El pedido fue cancelado.
+
+Transiciones válidas (el cajero solo puede avanzar, no retroceder):
+  pending_payment -> paid -> preparing -> delivering -> delivered
+  Cualquier estado -> canceled (siempre se puede cancelar)
+
+¿POR QUÉ EL CAJERO NO PUEDE VOLVER ATRÁS?
+  - Evitar errores accidentales.
+  - Mantener un historial limpio y auditable.
+  - Regla de negocio: una vez verificado el pago, no se puede
+    "des-verificar" sin una razón clara.
+
+ZONA HORARIA DE BOLIVIA (UTC-4):
+  Bolivia no usa horario de verano. Está siempre en UTC-4.
+  Al filtrar pedidos "de hoy", necesitamos calcular las fechas
+  en hora boliviana, no UTC.
+
+  Truco: sumar 4 horas a una fecha UTC para convertirla a Bolivia.
+    const BOLIVIA_OFFSET_MS = 4 * 60 * 60 * 1000;
+    const ahora = new Date(Date.now() - BOLIVIA_OFFSET_MS);
+    const hoyBolivia = ahora.toISOString().split('T')[0];
+
+================================================================
+PARTE 2 – BACKEND: CONTROLADOR DEL CAJERO
+================================================================
+
+Crea backend/src/controllers/cashierController.js:
+
+--- backend/src/controllers/cashierController.js ---
+
+const supabase = require('../services/supabase');
+
+// Bolivia siempre UTC-4 (sin horario de verano)
+const BOLIVIA_OFFSET_MS = 4 * 60 * 60 * 1000;
+
+function getBoliviaDateStr() {
+  return new Date(Date.now() - BOLIVIA_OFFSET_MS)
+    .toISOString().split('T')[0];   // 'YYYY-MM-DD'
+}
+
+/**
+ * GET /api/cashier/orders
+ * Lista pedidos con filtros opcionales.
+ * Query params: status, channel, date (YYYY-MM-DD)
+ */
+async function getOrders(req, res) {
+  try {
+    const { status, channel, date } = req.query;
+
+    let query = supabase
+      .from('orders')
+      .select(`
+        id, code, customer_name, customer_phone,
+        delivery_address, notes, total, status,
+        payment_method, channel, proof_url,
+        cashier_notes, created_at,
+        order_items(product_name_snapshot, quantity, unit_price_snapshot, subtotal)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (status)  query = query.eq('status', status);
+    if (channel) query = query.eq('channel', channel);
+    if (date) {
+      // Filtrar por dia en hora boliviana
+      const start = new Date(date + 'T00:00:00-04:00').toISOString();
+      const end   = new Date(date + 'T23:59:59-04:00').toISOString();
+      query = query.gte('created_at', start).lte('created_at', end);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[cashier] getOrders:', err.message);
+    res.status(500).json({ error: 'Error al obtener pedidos' });
+  }
+}
+
+/**
+ * GET /api/cashier/orders/:id
+ * Detalle de un pedido especifico.
+ */
+async function getOrderById(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items(*)
+      `)
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116')
+        return res.status(404).json({ error: 'Pedido no encontrado' });
+      throw error;
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('[cashier] getOrderById:', err.message);
+    res.status(500).json({ error: 'Error al obtener el pedido' });
+  }
+}
+
+/**
+ * PATCH /api/cashier/orders/:id/status
+ * Cambia el estado de un pedido.
+ * Body: { status, cashier_notes }
+ */
+async function updateOrderStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const { status, cashier_notes } = req.body;
+
+    const VALID_STATUSES = [
+      'pending_payment','paid','preparing','delivering','delivered','canceled'
+    ];
+    if (!VALID_STATUSES.includes(status)) {
+      return res.status(400).json({ error: 'Estado no valido' });
+    }
+
+    const { data, error } = await supabase
+      .from('orders')
+      .update({
+        status,
+        cashier_notes: cashier_notes || null,
+        updated_at:    new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[cashier] updateOrderStatus:', err.message);
+    res.status(500).json({ error: 'Error al actualizar estado' });
+  }
+}
+
+/**
+ * POST /api/cashier/orders/:id/verify-payment
+ * Marca el pago como verificado (status: paid).
+ * Registra el pago en la tabla payments.
+ */
+async function verifyPayment(req, res) {
+  try {
+    const { id } = req.params;
+    const { amount, reference_text } = req.body;
+
+    // Obtener el pedido para verificar el total
+    const { data: order, error: orderErr } = await supabase
+      .from('orders')
+      .select('id, total, status, payment_method')
+      .eq('id', id)
+      .single();
+
+    if (orderErr) throw orderErr;
+    if (order.status !== 'pending_payment') {
+      return res.status(400).json({ error: 'El pedido ya fue procesado' });
+    }
+
+    // Registrar el pago
+    const { error: payErr } = await supabase
+      .from('payments')
+      .insert({
+        order_id:       id,
+        amount:         amount || order.total,
+        payment_method: order.payment_method,
+        status:         'completed',
+        reference_text: reference_text || null,
+        verified_by:    req.user.id,
+      });
+
+    if (payErr) throw payErr;
+
+    // Cambiar estado del pedido a "paid"
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ status: 'paid', updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[cashier] verifyPayment:', err.message);
+    res.status(500).json({ error: 'Error al verificar pago' });
+  }
+}
+
+/**
+ * POST /api/cashier/store-sale
+ * Registra una venta presencial directa (en tienda).
+ * Crea el pedido y lo marca como pagado en un solo paso.
+ */
+async function createStoreSale(req, res) {
+  try {
+    const { items, customer_name, payment_method, amount_paid, notes } = req.body;
+
+    if (!items?.length) {
+      return res.status(400).json({ error: 'Debes agregar al menos un producto' });
+    }
+
+    const productIds = items.map(i => i.product_id);
+    const { data: products, error: prodErr } = await supabase
+      .from('products')
+      .select('id, name, price, cost')
+      .in('id', productIds)
+      .eq('active', true);
+
+    if (prodErr) throw prodErr;
+
+    const productMap = {};
+    products.forEach(p => { productMap[p.id] = p; });
+
+    let total      = 0;
+    const orderItems = items.map(item => {
+      const product  = productMap[item.product_id];
+      if (!product) throw new Error(`Producto no encontrado: ${item.product_id}`);
+      const subtotal = product.price * item.quantity;
+      total         += subtotal;
+      return {
+        product_id:            product.id,
+        product_name_snapshot: product.name,
+        unit_price_snapshot:   product.price,
+        unit_cost_snapshot:    product.cost || 0,
+        quantity:              item.quantity,
+        subtotal,
+      };
+    });
+
+    // Validar que el efectivo sea suficiente (si pagan en efectivo)
+    if (payment_method === 'cash' && amount_paid < total) {
+      return res.status(400).json({
+        error: `Monto insuficiente. Total: Bs ${total.toFixed(2)}, Pagado: Bs ${Number(amount_paid).toFixed(2)}`
+      });
+    }
+
+    // Crear el pedido (ya pagado, sin delivery)
+    const { data: order, error: orderErr } = await supabase
+      .from('orders')
+      .insert({
+        user_id:          req.user.id,
+        customer_name:    customer_name?.trim() || 'Cliente tienda',
+        customer_phone:   '0',
+        delivery_address: 'Tienda',
+        notes:            notes || null,
+        payment_method:   payment_method || 'cash',
+        total,
+        status:           'delivered',   // venta presencial ya completada
+        channel:          'store',
+        code:             '',
+      })
+      .select()
+      .single();
+
+    if (orderErr) throw orderErr;
+
+    // Insertar items
+    await supabase
+      .from('order_items')
+      .insert(orderItems.map(i => ({ ...i, order_id: order.id })));
+
+    // Registrar pago
+    await supabase.from('payments').insert({
+      order_id:       order.id,
+      amount:         total,
+      payment_method: payment_method || 'cash',
+      status:         'completed',
+      verified_by:    req.user.id,
+    });
+
+    res.status(201).json({
+      order,
+      change: payment_method === 'cash'
+        ? Number(amount_paid) - total
+        : 0,
+    });
+  } catch (err) {
+    console.error('[cashier] createStoreSale:', err.message);
+    res.status(500).json({ error: err.message || 'Error al registrar venta' });
+  }
+}
+
+/**
+ * GET /api/cashier/summary/today
+ * Resumen de ventas del dia actual (hora boliviana).
+ */
+async function getTodaySummary(req, res) {
+  try {
+    const today = getBoliviaDateStr();
+    const start = new Date(today + 'T00:00:00-04:00').toISOString();
+    const end   = new Date(today + 'T23:59:59-04:00').toISOString();
+
+    const { data, error } = await supabase
+      .from('orders')
+      .select('total, status, channel, payment_method')
+      .gte('created_at', start)
+      .lte('created_at', end)
+      .neq('status', 'canceled');
+
+    if (error) throw error;
+
+    const completedOrders = data.filter(o =>
+      ['paid','preparing','delivering','delivered'].includes(o.status)
+    );
+
+    const totalRevenue = completedOrders.reduce((s, o) => s + Number(o.total), 0);
+    const totalOrders  = completedOrders.length;
+
+    // Desglose por canal
+    const byChannel = {
+      online: completedOrders.filter(o => o.channel === 'online').length,
+      store:  completedOrders.filter(o => o.channel === 'store').length,
+    };
+
+    // Desglose por metodo de pago
+    const byPayment = {
+      qr:   completedOrders.filter(o => o.payment_method === 'qr').length,
+      cash: completedOrders.filter(o => o.payment_method === 'cash').length,
+    };
+
+    res.json({ totalRevenue, totalOrders, byChannel, byPayment, date: today });
+  } catch (err) {
+    console.error('[cashier] getTodaySummary:', err.message);
+    res.status(500).json({ error: 'Error al obtener resumen' });
+  }
+}
+
+module.exports = {
+  getOrders, getOrderById, updateOrderStatus,
+  verifyPayment, createStoreSale, getTodaySummary,
+};
+
+Crea backend/src/routes/cashier.js y registra en index.js:
+
+--- backend/src/routes/cashier.js ---
+const express  = require('express');
+const router   = express.Router();
+const { requireAuth, requireRole } = require('../middleware/auth');
+const ctrl = require('../controllers/cashierController');
+
+router.use(requireAuth);
+router.use(requireRole('cashier', 'admin'));
+
+router.get ('/orders',                  ctrl.getOrders);
+router.get ('/orders/:id',              ctrl.getOrderById);
+router.patch('/orders/:id/status',      ctrl.updateOrderStatus);
+router.post ('/orders/:id/verify-payment', ctrl.verifyPayment);
+router.post ('/store-sale',             ctrl.createStoreSale);
+router.get ('/summary/today',           ctrl.getTodaySummary);
+
+module.exports = router;
+
+En index.js agrega:
+  const cashierRoutes = require('./routes/cashier');
+  app.use('/api/cashier', cashierRoutes);
+
+================================================================
+PARTE 3 – FRONTEND: PANEL DEL CAJERO (cashier.js)
+================================================================
+
+Reemplaza frontend/js/pages/cashier.js con la versión completa.
+Por la extensión, mostramos la estructura base:
+
+--- frontend/js/pages/cashier.js (estructura) ---
+
+const CashierPage = {
+  _orders: [],
+  _filter: { status: '', channel: '' },
+
+  render() {
+    document.getElementById('cashier-root').innerHTML = `
+      <div class="page-header">
+        <h1 class="page-title">Panel del Cajero</h1>
+      </div>
+
+      <!-- Tabs del panel -->
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" data-panel="orders">
+          Pedidos Online
+        </button>
+        <button class="admin-tab-btn" data-panel="store">
+          Venta en Tienda
+        </button>
+        <button class="admin-tab-btn" data-panel="summary">
+          Resumen del Dia
+        </button>
+      </div>
+
+      <div id="cashier-panel-content"></div>
+    `;
+
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab-btn')
+          .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this._renderPanel(btn.dataset.panel);
+      });
+    });
+
+    this._renderPanel('orders');
+  },
+
+  _renderPanel(panel) {
+    switch(panel) {
+      case 'orders':  this._renderOrders();  break;
+      case 'store':   this._renderStore();   break;
+      case 'summary': this._renderSummary(); break;
+    }
+  },
+
+  async _renderOrders() {
+    const el = document.getElementById('cashier-panel-content');
+    el.innerHTML = '<div class="spinner"></div>';
+
+    try {
+      const params = new URLSearchParams();
+      if (this._filter.status)  params.set('status',  this._filter.status);
+      if (this._filter.channel) params.set('channel', this._filter.channel);
+
+      // Filtrar por hoy por defecto
+      const today = new Date(Date.now() - 4*60*60*1000)
+        .toISOString().split('T')[0];
+      params.set('date', today);
+
+      this._orders = await API.get('/api/cashier/orders?' + params.toString());
+    } catch (err) {
+      el.innerHTML = `<div class="alert alert-error">${escHtml(err.message)}</div>`;
+      return;
+    }
+
+    const statusLabels = {
+      pending_payment: 'Pago pendiente',
+      paid:            'Pagado',
+      preparing:       'Preparando',
+      delivering:      'En camino',
+      delivered:       'Entregado',
+      canceled:        'Cancelado',
+    };
+    const statusBadge  = {
+      pending_payment: 'badge-pending',
+      paid:            'badge-paid',
+      preparing:       'badge-info',
+      delivering:      'badge-info',
+      delivered:       'badge-paid',
+      canceled:        'badge-canceled',
+    };
+
+    el.innerHTML = `
+      <!-- Filtros -->
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center;">
+        <select class="form-select" style="max-width:200px;"
+                onchange="CashierPage._filter.status=this.value;CashierPage._renderOrders()">
+          <option value="">Todos los estados</option>
+          ${Object.entries(statusLabels).map(([v,l]) =>
+            `<option value="${v}" ${this._filter.status===v?'selected':''}>${l}</option>`
+          ).join('')}
+        </select>
+        <button class="btn btn-secondary btn-sm"
+                onclick="CashierPage._filter={status:'',channel:''};CashierPage._renderOrders()">
+          Limpiar filtros
+        </button>
+        <span style="color:var(--text-muted);font-size:.875rem;">
+          ${this._orders.length} pedidos hoy
+        </span>
+      </div>
+
+      ${this._orders.length === 0
+        ? '<div class="empty-state"><div class="empty-state-icon">&#128203;</div><p>Sin pedidos con este filtro</p></div>'
+        : this._orders.map(order => `
+          <div class="order-card" onclick="CashierPage._openOrder('${order.id}')">
+            <div class="order-card-header">
+              <span class="order-code">${escHtml(order.code)}</span>
+              <span class="badge ${statusBadge[order.status] || 'badge-info'}">
+                ${statusLabels[order.status] || order.status}
+              </span>
+            </div>
+            <div class="order-card-body">
+              <strong>${escHtml(order.customer_name)}</strong>
+              ${order.customer_phone !== '0' ? ' · ' + escHtml(order.customer_phone) : ''}
+            </div>
+            <div class="order-card-footer">
+              <span>${fmtCurrency(order.total)}</span>
+              <span style="font-size:.8rem;color:var(--text-muted);">
+                ${new Date(order.created_at).toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit'})}
+              </span>
+            </div>
+          </div>
+        `).join('')
+      }
+    `;
+  },
+
+  async _openOrder(orderId) {
+    // Abre modal con detalle del pedido y acciones
+    const order = this._orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const nextStatus = {
+      pending_payment: 'paid',
+      paid:            'preparing',
+      preparing:       'delivering',
+      delivering:      'delivered',
+    };
+
+    const nextStatusLabel = {
+      pending_payment: 'Verificar pago',
+      paid:            'Marcar Preparando',
+      preparing:       'Marcar En Camino',
+      delivering:      'Marcar Entregado',
+    };
+
+    const overlay = document.createElement('div');
+    overlay.className  = 'modal-overlay';
+    overlay.style.display = 'flex';
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:600px;">
+        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">x</button>
+        <h2 style="margin-bottom:.5rem;">${escHtml(order.code)}</h2>
+        <p><strong>Cliente:</strong> ${escHtml(order.customer_name)} · ${escHtml(order.customer_phone)}</p>
+        <p><strong>Direccion:</strong> ${escHtml(order.delivery_address || '—')}</p>
+        ${order.notes ? `<p><strong>Notas:</strong> ${escHtml(order.notes)}</p>` : ''}
+        <hr class="divider">
+        <table class="admin-table">
+          <thead><tr><th>Producto</th><th>Cant.</th><th>Subtotal</th></tr></thead>
+          <tbody>
+            ${(order.order_items || []).map(i => `
+              <tr>
+                <td>${escHtml(i.product_name_snapshot)}</td>
+                <td>${i.quantity}</td>
+                <td>${fmtCurrency(i.subtotal)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <p style="text-align:right;font-weight:700;margin-top:.5rem;">
+          Total: ${fmtCurrency(order.total)}
+        </p>
+
+        ${order.proof_url ? `
+          <div class="proof-display-section">
+            <p style="font-weight:700;margin-bottom:.5rem;">Comprobante de pago:</p>
+            <img src="${escHtml(order.proof_url)}" class="proof-display-img"
+                 onclick="window.open('${escHtml(order.proof_url)}','_blank')" />
+          </div>
+        ` : `
+          <div class="alert alert-warning">Sin comprobante en el sistema.</div>
+        `}
+
+        <div style="display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap;">
+          ${nextStatus[order.status] ? `
+            <button class="btn btn-primary"
+                    onclick="CashierPage._changeStatus('${order.id}','${nextStatus[order.status]}',this.closest('.modal-overlay'))">
+              ${nextStatusLabel[order.status]}
+            </button>
+          ` : ''}
+          ${order.status !== 'canceled' && order.status !== 'delivered' ? `
+            <button class="btn btn-danger"
+                    onclick="CashierPage._changeStatus('${order.id}','canceled',this.closest('.modal-overlay'))">
+              Cancelar pedido
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.remove();
+    });
+  },
+
+  async _changeStatus(orderId, newStatus, overlay) {
+    try {
+      if (newStatus === 'paid') {
+        await API.post(`/api/cashier/orders/${orderId}/verify-payment`, {});
+      } else {
+        await API.patch(`/api/cashier/orders/${orderId}/status`, { status: newStatus });
+      }
+      overlay?.remove();
+      Toast.show('Estado actualizado', 'success');
+      this._renderOrders();
+    } catch (err) {
+      Toast.show('Error: ' + err.message, 'error');
+    }
+  },
+
+  _renderStore() {
+    document.getElementById('cashier-panel-content').innerHTML =
+      '<p style="padding:1rem;color:var(--text-muted);">Venta en tienda - implementar con formulario de productos y pago en efectivo.</p>';
+  },
+
+  async _renderSummary() {
+    const el = document.getElementById('cashier-panel-content');
+    el.innerHTML = '<div class="spinner"></div>';
+    try {
+      const data = await API.get('/api/cashier/summary/today');
+      el.innerHTML = `
+        <h2 style="margin-bottom:1rem;">Resumen de hoy (${data.date})</h2>
+        <div class="grid-2">
+          <div class="card card-body">
+            <p style="color:var(--text-muted);font-size:.875rem;">Total ventas</p>
+            <p style="font-size:2rem;font-weight:700;color:var(--primary);">
+              ${fmtCurrency(data.totalRevenue)}
+            </p>
+          </div>
+          <div class="card card-body">
+            <p style="color:var(--text-muted);font-size:.875rem;">Pedidos completados</p>
+            <p style="font-size:2rem;font-weight:700;">${data.totalOrders}</p>
+          </div>
+        </div>
+        <div class="card card-body" style="margin-top:1rem;">
+          <p><strong>Por canal:</strong> Online: ${data.byChannel.online} · Tienda: ${data.byChannel.store}</p>
+          <p><strong>Por pago:</strong> QR: ${data.byPayment.qr} · Efectivo: ${data.byPayment.cash}</p>
+        </div>
+      `;
+    } catch (err) {
+      el.innerHTML = `<div class="alert alert-error">${escHtml(err.message)}</div>`;
+    }
+  },
+};
+
+Agrega CSS al final de styles.css:
+
+/* Panel cajero */
+.order-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: .75rem; cursor: pointer;
+  transition: box-shadow var(--transition);
+}
+.order-card:hover { box-shadow: var(--shadow); }
+.order-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .75rem 1rem; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.order-code { font-weight: 700; font-family: monospace; }
+.order-card-body { padding: .625rem 1rem; }
+.order-card-footer {
+  display: flex; justify-content: space-between;
+  padding: .5rem 1rem; background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.proof-display-section {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem; text-align: center; margin: 1.25rem 0;
+}
+.proof-display-img {
+  max-width: 100%; max-height: 280px; border-radius: var(--radius);
+  object-fit: contain; display: block; margin: .5rem auto;
+  cursor: pointer; box-shadow: var(--shadow);
+}
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. ¿Por qué la venta en tienda crea el pedido directamente
+   con status='delivered' en lugar de pasar por los estados
+   normales del ciclo de vida?
+
+2. En el resumen del día, los pedidos cancelados NO se cuentan
+   en totalOrders ni totalRevenue. ¿Por qué es correcto esto?
+   ¿Qué pasaría si sí se contaran?
+
+3. El cálculo de "hoy en Bolivia" usa:
+     new Date(Date.now() - 4*60*60*1000).toISOString().split('T')[0]
+   Explica paso a paso qué hace cada parte de esta expresión.
+
+4. ¿Qué pasaría si dos cajeros verifican el pago del mismo pedido
+   simultáneamente? ¿El sistema lo previene? ¿Cómo lo mejorarías?
+
+5. Implementa la funcionalidad "_renderStore" completa:
+   un formulario para agregar productos por código y una
+   caja que calcule el cambio al ingresar el monto pagado.
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Creaste el controlador completo del cajero con 6 endpoints.
+✓ Implementaste el ciclo de vida de un pedido con estados.
+✓ Calculaste fechas en zona horaria boliviana (UTC-4).
+✓ Construiste el panel visual del cajero con lista y detalle.
+✓ Integraste la verificación de pago y cambio de estados.
+
+PROXIMA GUIA: Supabase Storage para comprobantes de pago.

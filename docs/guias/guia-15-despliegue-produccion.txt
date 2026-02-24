@@ -1,0 +1,353 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 15 – Despliegue en producción: Railway + Netlify
+Módulo 5 de 5 | Guía 15 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: el proyecto completo funcionando en localhost.
+Backend en http://localhost:3000
+Frontend en http://localhost:5500
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Publicado el código en GitHub.
+- Desplegado el backend en Railway (o Render).
+- Desplegado el frontend en Netlify.
+- Configurado las variables de entorno en producción.
+- Verificado que el sistema funciona en internet.
+
+================================================================
+PARTE 1 – PREPARAR EL REPOSITORIO EN GITHUB
+================================================================
+
+PASO 1 – Crear el repositorio en GitHub
+  - Ir a github.com -> New repository
+  - Name: cafeteria-aroma (o el nombre que prefieras)
+  - Private o Public: tu elección
+  - NO marques "Initialize with README" (ya tienes uno)
+  - Clic en "Create repository"
+
+PASO 2 – Verificar que .gitignore protege los secretos
+  Asegúrate de que .gitignore incluye:
+    node_modules/
+    .env
+    backend/.env
+
+  Si ya están ignorados, no hay riesgo de subir claves secretas.
+
+PASO 3 – Hacer commit de todos los cambios pendientes
+  git add .
+  git status  // verificar qué archivos se agregarán
+
+  ¡IMPORTANTE! Revisa que NO aparezcan:
+  - backend/.env
+  - backend/node_modules/
+  Si aparecen, agrégatelos al .gitignore antes de continuar.
+
+  git commit -m "feat: proyecto completo listo para produccion"
+
+PASO 4 – Conectar con GitHub y subir
+  GitHub mostrará estos comandos al crear el repositorio:
+  (copia exactamente los que te da GitHub, no los de abajo)
+
+  git remote add origin https://github.com/TU_USUARIO/cafeteria-aroma.git
+  git branch -M main
+  git push -u origin main
+
+PASO 5 – Verificar en GitHub
+  Abre tu repositorio en el navegador.
+  ¿Ves todos los archivos excepto .env y node_modules?
+
+================================================================
+PARTE 2 – DESPLEGAR EL BACKEND EN RAILWAY
+================================================================
+
+Railway es una plataforma que despliega Node.js fácilmente.
+Tiene capa gratuita para proyectos pequeños.
+
+PASO 1 – Crear cuenta en Railway
+  - Ir a: https://railway.app
+  - "Login with GitHub" -> autorizar Railway
+
+PASO 2 – Crear nuevo proyecto
+  - Clic en "New Project"
+  - Seleccionar "Deploy from GitHub repo"
+  - Buscar y seleccionar tu repositorio
+
+PASO 3 – Configurar el servicio
+  Railway detectará automáticamente que es un proyecto Node.js.
+  Necesitas indicar que el código del backend está en una subcarpeta:
+  - Settings -> Root Directory: backend
+  - O en el panel de configuración:
+    Start Command: npm start
+    Build Command: npm install
+
+PASO 4 – Configurar variables de entorno
+  En Railway -> Variables -> Add Variables:
+
+  SUPABASE_URL              = https://XXXX.supabase.co
+  SUPABASE_SERVICE_ROLE_KEY = eyJh...tu-service-role-key...
+  FRONTEND_URL              = https://tu-cafeteria.netlify.app
+    (pondremos la URL real de Netlify en el siguiente paso)
+  PORT                      = 3000
+    (Railway asigna automáticamente el PORT, pero déjalo por si acaso)
+
+  IMPORTANTE: Nunca pongas estas claves en el código fuente.
+  Railway las inyecta como process.env.* en tiempo de ejecución.
+
+PASO 5 – Deploy
+  Railway inicia el deploy automáticamente.
+  Progreso: Building -> Deploying -> Active
+
+  Al completar, Railway da una URL como:
+    https://cafeteria-aroma-production.up.railway.app
+
+PASO 6 – Verificar el health check
+  Abre en el navegador:
+    https://cafeteria-aroma-production.up.railway.app/health
+
+  ¿Responde {"status":"ok","timestamp":"..."}?
+
+  Si hay errores:
+  - Railway -> Logs: ver los mensajes de consola del servidor
+  - Verifica que las variables de entorno estén correctas
+
+================================================================
+PARTE 3 – DESPLEGAR EL FRONTEND EN NETLIFY
+================================================================
+
+Netlify despliega sitios web estáticos (HTML/CSS/JS) gratis.
+
+PASO 1 – Crear cuenta en Netlify
+  - Ir a: https://netlify.com
+  - "Sign up with GitHub"
+
+PASO 2 – ANTES de desplegar: actualizar config.js
+
+  Abre frontend/js/config.js y actualiza la URL del backend:
+
+    const CONFIG = {
+      SUPABASE_URL:      'https://XXXX.supabase.co',   // sin cambios
+      SUPABASE_ANON_KEY: 'eyJh...',                     // sin cambios
+      API_BASE_URL:      'https://tu-url-railway.up.railway.app',  // ACTUALIZAR
+    };
+
+  Guarda, haz commit y push:
+    git add frontend/js/config.js
+    git commit -m "chore: URL del backend en produccion"
+    git push
+
+PASO 3 – Importar el proyecto en Netlify
+  - Netlify -> "Add new site" -> "Import an existing project"
+  - Conectar GitHub -> seleccionar el repositorio
+  - Configuración:
+    Base directory:    frontend
+    Build command:     (dejar vacío, no necesita compilación)
+    Publish directory: frontend
+
+PASO 4 – Deploy
+  Netlify despliega automáticamente.
+  Al completar, da una URL como:
+    https://cafeteria-aroma-XXXX.netlify.app
+
+  Puedes personalizar el nombre: Site settings -> Site name.
+
+PASO 5 – Actualizar FRONTEND_URL en Railway
+  Ahora que tienes la URL de Netlify, actualiza en Railway:
+  FRONTEND_URL = https://tu-cafeteria.netlify.app
+
+  Railway re-desplegará automáticamente.
+
+PASO 6 – Verificar CORS
+  Abre la consola del navegador en tu sitio de Netlify.
+  Haz cualquier petición: navega al menú.
+  ¿Aparece el error "CORS policy"?
+
+  Si hay error CORS:
+  - Verifica que FRONTEND_URL en Railway sea exactamente la URL
+    de Netlify (sin / al final, con https://).
+  - En backend/src/index.js el cors() debe usar process.env.FRONTEND_URL
+
+================================================================
+PARTE 4 – CONFIGURAR DEPLOY CONTINUO
+================================================================
+
+Una de las ventajas de conectar GitHub a Railway y Netlify es
+que el deploy es AUTOMÁTICO en cada push:
+
+  git push -> Railway re-despliega el backend automáticamente
+           -> Netlify re-despliega el frontend automáticamente
+
+Flujo de trabajo en producción:
+  1. Desarrollas localmente y pruebas.
+  2. git add . && git commit -m "feat: nueva funcionalidad"
+  3. git push
+  4. Railway y Netlify detectan el push y re-despliegan.
+  5. En ~2 minutos, la versión actualizada está en producción.
+
+================================================================
+PARTE 5 – CHECKLIST DE PRODUCCIÓN
+================================================================
+
+SUPABASE:
+  [ ] schema.sql ejecutado completamente.
+  [ ] fix_rls_recursion.sql ejecutado (get_my_role()).
+  [ ] add_proof_url.sql ejecutado (columna proof_url).
+  [ ] Bucket order-proofs creado con política de escritura.
+  [ ] Usuarios iniciales creados (admin, cajero de prueba).
+  [ ] Trigger trg_on_auth_user_created funcional.
+  [ ] Trigger trg_set_order_code funcional (código ARO-...).
+
+BACKEND (Railway):
+  [ ] Variables de entorno configuradas.
+  [ ] /health responde OK.
+  [ ] /api/products retorna los productos de Supabase.
+  [ ] POST /api/orders con token inválido -> 401.
+  [ ] Logs sin errores de conexión.
+
+FRONTEND (Netlify):
+  [ ] config.js con API_BASE_URL de Railway.
+  [ ] El menú carga productos desde la API.
+  [ ] Login funciona (cliente, cajero, admin).
+  [ ] Carrito persiste al recargar.
+  [ ] Checkout genera código de pedido.
+  [ ] Botón WhatsApp lleva al número correcto.
+  [ ] Panel cajero visible solo para cajero/admin.
+  [ ] Panel admin visible solo para admin.
+  [ ] Subida de comprobante funciona (si bucket está configurado).
+
+SEGURIDAD:
+  [ ] Service_role_key NO aparece en el código del frontend.
+  [ ] Variables de entorno en Railway, no en el código.
+  [ ] .env y node_modules en .gitignore.
+  [ ] CORS solo permite el dominio de Netlify.
+
+RENDIMIENTO:
+  [ ] Las imágenes de productos tienen URLs estables (no blob URLs).
+  [ ] El frontend no tiene errores en la consola en producción.
+
+================================================================
+PARTE 6 – SOLUCIÓN DE PROBLEMAS COMUNES EN PRODUCCIÓN
+================================================================
+
+PROBLEMA: El frontend carga pero el menú está vacío.
+  CAUSA: API_BASE_URL en config.js apunta a localhost.
+  SOLUCIÓN: Actualizar config.js con la URL de Railway.
+
+PROBLEMA: Error CORS en producción pero no en local.
+  CAUSA: FRONTEND_URL en Railway no coincide con la URL de Netlify.
+  SOLUCIÓN: Copiar exactamente la URL de Netlify a FRONTEND_URL.
+
+PROBLEMA: Login falla con "invalid key".
+  CAUSA: SUPABASE_ANON_KEY en config.js es incorrecto.
+  SOLUCIÓN: Copiar de Supabase -> Settings -> API -> anon key.
+
+PROBLEMA: Backend responde 500 en todos los endpoints.
+  CAUSA: SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY incorrecto.
+  SOLUCIÓN: Revisar las variables en Railway -> Variables.
+  DIAGNÓSTICO: Railway -> Logs para ver el error real.
+
+PROBLEMA: El comprobante no se sube (Storage error).
+  CAUSA: El bucket no existe o no tiene política de escritura.
+  SOLUCIÓN: Verificar en Supabase -> Storage y ejecutar el SQL
+    de la política (Guía 13).
+
+================================================================
+PARTE 7 – ALTERNATIVAS DE DESPLIEGUE
+================================================================
+
+BACKEND (alternativas a Railway):
+  Render:   https://render.com
+    - Free tier con 750 horas/mes.
+    - Se "duerme" después de 15 min de inactividad (free tier).
+    - Root Directory: backend
+    - Build Command: npm install
+    - Start Command: npm start
+
+  Fly.io:   https://fly.io
+    - Requiere instalar la CLI (flyctl).
+    - Más control pero más configuración.
+
+FRONTEND (alternativas a Netlify):
+  GitHub Pages:
+    - Completamente gratis.
+    - Solo para proyectos públicos (o con GitHub Pro).
+    - Limitación: el path del sitio puede ser /repo-name/, no /.
+    - No requiere build, solo archivos estáticos.
+
+  Vercel:   https://vercel.com
+    - Similar a Netlify, también muy fácil.
+
+================================================================
+ACTIVIDAD FINAL – PROYECTO COMPLETO
+================================================================
+
+1. Despliega el proyecto completo (backend + frontend) y
+   comparte la URL con tu profesor.
+
+2. Documenta en el README.md las URLs de producción.
+
+3. Crea una cuenta de cajero adicional desde el panel admin
+   y prueba el flujo completo:
+     a. Como cliente: hacer un pedido con comprobante.
+     b. Como cajero: verificar el pago y cambiar estados.
+     c. Como admin: ver las ventas en el dashboard.
+
+4. Reflexiona:
+   - ¿Qué parte del proyecto fue más difícil de entender?
+   - ¿Qué mejorarías si tuvieras más tiempo?
+   - ¿Qué funcionalidades agregarías al sistema?
+
+5. CHALLENGE FINAL: Implementa notificaciones en tiempo real.
+   Cuando un cliente hace un pedido, el panel del cajero
+   debería actualizarse automáticamente sin recargar.
+   Investiga: Supabase Realtime y supabase.channel().on('postgres_changes', ...)
+
+================================================================
+RESUMEN DEL CURSO COMPLETO
+================================================================
+
+A lo largo de las 15 guías construiste desde cero:
+
+MODULO 1 – Fundamentos:
+  ✓ Entorno de desarrollo (Node.js, VS Code, Git).
+  ✓ Base de datos relacional con PostgreSQL/Supabase.
+  ✓ SPA con HTML vanilla y sistema de tabs.
+  ✓ Sistema de diseño CSS con variables y componentes.
+  ✓ Módulos JavaScript con patrón objeto.
+
+MODULO 2 – Frontend Base:
+  ✓ Carrito de compras con persistencia en localStorage.
+  ✓ Servidor Express con API REST y middleware.
+
+MODULO 3 – Autenticacion y Seguridad:
+  ✓ JWT con Supabase Auth, login/registro.
+  ✓ Middleware requireAuth y requireRole.
+  ✓ Row Level Security con función SECURITY DEFINER.
+
+MODULO 4 – Funcionalidades:
+  ✓ CRUD completo con validación doble (frontend + backend).
+  ✓ Catálogo con filtros, carrito y checkout con total en servidor.
+  ✓ Panel del cajero con ciclo de vida de pedidos.
+  ✓ Supabase Storage para comprobantes de pago.
+
+MODULO 5 – Admin y Produccion:
+  ✓ Dashboard con consultas agregadas y filtro por fechas.
+  ✓ UPSERT para configuraciones clave-valor.
+  ✓ Despliegue en Railway (backend) y Netlify (frontend).
+
+CONCEPTOS CLAVE APRENDIDOS:
+  - Separación frontend/backend/database.
+  - El servidor nunca confía en el cliente (validación doble).
+  - El precio lo calcula el servidor, no el frontend.
+  - Snapshots para preservar integridad histórica.
+  - try/catch/finally para formularios con estado de carga.
+  - CORS, JWT, RLS como capas de seguridad.
+  - Deploy continuo con GitHub + Railway + Netlify.
+
+¡Felicitaciones! Construiste un sistema de producción real.

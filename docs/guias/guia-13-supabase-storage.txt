@@ -1,0 +1,312 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 13 – Supabase Storage: Comprobantes de pago
+Módulo 4 de 5 | Guía 13 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: checkout funcionando. El formulario tiene campo de
+archivo para adjuntar comprobante, pero se guarda como blob URL
+(temporal, solo en el navegador, no visible para el cajero).
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Entendido la diferencia entre blob URL y Storage URL.
+- Creado el bucket en Supabase Storage con las políticas correctas.
+- Implementado la subida del comprobante antes de crear el pedido.
+- Mostrado el comprobante en el panel del cajero.
+
+================================================================
+PARTE 1 – BLOB URL VS STORAGE URL
+================================================================
+
+BLOB URL (URL.createObjectURL):
+  - Se crea así: const url = URL.createObjectURL(archivo)
+  - Resultado: blob:http://localhost:5500/123e4567-...
+  - ¿Qué es?: un puntero en MEMORIA al archivo seleccionado.
+  - ¿Cuánto dura?: hasta que la pestaña se cierra o se llama
+    URL.revokeObjectURL(url).
+  - ¿Puede verla el cajero?: NO. Solo existe en tu navegador.
+  - ¿Es una URL real en internet?: NO.
+
+  Problema: si usamos blob URL como proof_url en el pedido,
+  el cajero intenta abrir esa URL y no encuentra nada.
+
+STORAGE URL (Supabase Storage):
+  - Se crea subiendo el archivo al servidor:
+    supabase.storage.from('bucket').upload(path, file)
+  - Resultado: https://XXXX.supabase.co/storage/v1/object/public/...
+  - ¿Qué es?: una URL REAL en internet, permanente.
+  - ¿Puede verla el cajero?: SÍ, desde cualquier navegador.
+  - ¿Es pública?: depende del bucket (public/private).
+
+================================================================
+PARTE 2 – PREPARAR SUPABASE STORAGE
+================================================================
+
+PASO 1 – Agregar la columna proof_url a la tabla orders
+  En el SQL Editor de Supabase, ejecuta database/add_proof_url.sql
+  (que ya tienes del session anterior) o este SQL directamente:
+
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS proof_url TEXT;
+
+PASO 2 – Crear el bucket en Supabase Dashboard
+  - Supabase Dashboard -> Storage -> New bucket
+  - Name: order-proofs
+  - Public bucket: SI (para que las URLs sean públicas)
+  - File size limit: 5 MB
+  - Allowed MIME types: image/jpeg, image/png, image/webp
+  - Clic en "Create bucket"
+
+PASO 3 – Crear la política de subida para usuarios autenticados
+  En el SQL Editor:
+
+    DROP POLICY IF EXISTS "authenticated_can_upload" ON storage.objects;
+    CREATE POLICY "authenticated_can_upload"
+      ON storage.objects FOR INSERT
+      WITH CHECK (
+        bucket_id = 'order-proofs'
+        AND auth.role() = 'authenticated'
+      );
+
+  NOTA: No uses "CREATE POLICY IF NOT EXISTS" (no existe en PostgreSQL 15).
+  El patrón correcto es DROP IF EXISTS + CREATE.
+
+================================================================
+PARTE 3 – AGREGAR EL CAMPO DE COMPROBANTE AL FORMULARIO
+================================================================
+
+En cart-page.js, agrega el campo de upload al formulario.
+Dentro del método render(), después del select de pago:
+
+    <div class="form-group">
+      <label class="form-label">Comprobante de pago (opcional)</label>
+      <p class="form-hint">
+        Adjunta la foto de tu QR o transferencia.
+        Si no lo tienes ahora, puedes enviarlo por WhatsApp.
+      </p>
+      <div class="proof-upload-area" id="proof-upload-area"
+           onclick="document.getElementById('proof-file-input').click()">
+        <div class="proof-placeholder" id="proof-placeholder">
+          <span style="font-size:2rem;">&#128247;</span>
+          <span>Clic para adjuntar imagen</span>
+          <span class="form-hint">JPG, PNG o WEBP · Max 5MB</span>
+        </div>
+        <img id="proof-preview-img" class="proof-preview-img" style="display:none" />
+      </div>
+      <input type="file" id="proof-file-input" accept="image/*"
+             style="display:none" onchange="CartPage._onProofSelected(this)" />
+    </div>
+
+Agrega el manejador del archivo en CartPage:
+
+  /** Muestra la previsualización del comprobante seleccionado. */
+  _onProofSelected(input) {
+    const file = input.files?.[0];
+    if (!file) return;
+
+    // Validar tipo y tamaño
+    if (!file.type.startsWith('image/')) {
+      Toast.show('Solo se aceptan imágenes (JPG, PNG, WEBP)', 'error');
+      input.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      Toast.show('La imagen no puede superar 5MB', 'error');
+      input.value = '';
+      return;
+    }
+
+    // Guardar referencia al archivo
+    this._proofFile = file;
+
+    // Mostrar previsualización con blob URL (temporal, solo para preview)
+    const blobUrl = URL.createObjectURL(file);
+    const preview = document.getElementById('proof-preview-img');
+    const placeholder = document.getElementById('proof-placeholder');
+    preview.src = blobUrl;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+  },
+
+Agrega también la propiedad al módulo:
+  _proofFile: null,   // archivo seleccionado
+
+================================================================
+PARTE 4 – SUBIR EL COMPROBANTE ANTES DE CREAR EL PEDIDO
+================================================================
+
+Modifica el método _confirmOrder en cart-page.js para subir
+el archivo antes de crear el pedido. Reemplaza el bloque
+del try dentro de _confirmOrder:
+
+    btn.disabled    = true;
+    btn.textContent = 'Subiendo comprobante...';
+
+    try {
+      let proofUrl = null;
+
+      // Intentar subir el comprobante a Supabase Storage
+      if (this._proofFile) {
+        try {
+          const ext      = this._proofFile.name.split('.').pop() || 'jpg';
+          const filePath = `proofs/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+          const { data: uploadData, error: uploadError } =
+            await Auth.supabase.storage
+              .from('order-proofs')
+              .upload(filePath, this._proofFile, {
+                contentType: this._proofFile.type,
+                upsert: false
+              });
+
+          if (uploadError) {
+            // No bloquear el pedido si falla el upload
+            console.warn('[proof-upload]', uploadError.message);
+            Toast.show(
+              'No se pudo guardar el comprobante. Envialo por WhatsApp.',
+              'warning'
+            );
+          } else {
+            // Obtener URL pública del archivo subido
+            const { data: urlData } = Auth.supabase.storage
+              .from('order-proofs')
+              .getPublicUrl(uploadData.path);
+            proofUrl = urlData?.publicUrl || null;
+          }
+        } catch (storageErr) {
+          console.warn('[proof-upload]', storageErr.message);
+          Toast.show(
+            'No se pudo guardar el comprobante. Envialo por WhatsApp.',
+            'warning'
+          );
+        }
+      }
+
+      btn.textContent = 'Confirmando pedido...';
+
+      // Crear el pedido con la URL del comprobante (o null si no se subió)
+      const orderData = {
+        items:            Cart.getItems().map(i => ({ product_id: i.id, quantity: i.qty })),
+        customer_name:    name,
+        customer_phone:   phone,
+        delivery_address: address,
+        notes:            notes || null,
+        payment_method:   payment,
+        proof_url:        proofUrl,
+      };
+
+      const order = await API.post('/api/orders', orderData);
+      Cart.clear();
+      this._proofFile = null;
+      this._renderSuccess(order);
+
+    } catch (err) {
+      this._showError(errEl, err.message || 'Error al procesar el pedido.');
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Confirmar pedido';
+    }
+
+PATRÓN CLAVE: TOLERANCIA A FALLOS
+  El upload está en un try/catch propio (inner try/catch).
+  Si falla: muestra un warning Toast y continúa sin proof_url.
+  El pedido se crea igualmente.
+  Resultado: el fallo de Storage no bloquea al cliente.
+
+================================================================
+PARTE 5 – AGREGAR CSS PARA LA ZONA DE UPLOAD
+================================================================
+
+Agrega al final de styles.css:
+
+/* Zona de upload del comprobante */
+.proof-upload-area {
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  padding: 1.25rem; text-align: center; cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  min-height: 120px; display: flex; align-items: center;
+  justify-content: center;
+}
+.proof-upload-area:hover { border-color: var(--primary); background: var(--accent-light); }
+.proof-placeholder {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .35rem; color: var(--text-muted);
+}
+.proof-preview-img {
+  max-width: 100%; max-height: 220px; border-radius: var(--radius);
+  object-fit: contain;
+}
+
+================================================================
+PARTE 6 – PROBAR EL FLUJO COMPLETO
+================================================================
+
+PASO 1 – Verificar que el bucket existe:
+  Supabase Dashboard -> Storage -> Buckets.
+  Debe aparecer 'order-proofs' como Public.
+
+PASO 2 – Hacer un pedido con comprobante:
+  - Agrega un producto al carrito.
+  - Ve al carrito, completa el formulario.
+  - En el campo comprobante, adjunta una foto.
+  - Confirma el pedido.
+
+PASO 3 – Verificar en Supabase Storage:
+  Storage -> order-proofs -> carpeta proofs/.
+  ¿Aparece el archivo subido?
+
+PASO 4 – Verificar en la tabla orders:
+  Table Editor -> orders.
+  ¿La columna proof_url tiene la URL del archivo?
+
+PASO 5 – Ver el comprobante desde el panel del cajero:
+  Logéate como cajero y abre el pedido.
+  ¿Aparece la imagen del comprobante?
+  ¿El clic abre la imagen en tamaño completo?
+
+PASO 6 – Probar tolerancia a fallos:
+  Temporalmente, cambia el nombre del bucket en el código a
+  'bucket-que-no-existe'. Haz un pedido con comprobante.
+  ¿Aparece el Toast de advertencia?
+  ¿El pedido se crea igualmente?
+  Devuelve el nombre correcto del bucket.
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. ¿Por qué el nombre del archivo incluye Date.now() y
+   Math.random()? ¿Qué problema resolvería si solo usaras
+   el nombre original del archivo del usuario?
+
+2. El bucket es PÚBLICO. ¿Qué significa esto?
+   ¿Podría cualquier persona en internet ver los comprobantes
+   si conoce la URL? ¿Es aceptable para este proyecto?
+
+3. La URL del blob es temporal. ¿Cuándo exactamente se invalida?
+   ¿Qué pasaría si el usuario navega a otra pestaña y vuelve?
+
+4. ¿Por qué no subimos el comprobante desde el backend en lugar
+   del frontend? ¿Qué arquitectura necesitarías para eso?
+   (Pista: multipart/form-data)
+
+5. Si el usuario sube el comprobante, el pedido se crea, pero
+   luego el usuario cancela el pedido: la imagen queda en Storage
+   para siempre. ¿Cómo limpiarías esas imágenes huerfanas?
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Entendiste blob URL vs Storage URL y por qué una es permanente.
+✓ Configuraste el bucket con políticas de escritura correctas.
+✓ Implementaste upload tolerante a fallos en el checkout.
+✓ Mostraste el comprobante en el panel del cajero.
+✓ Comprendiste el patrón "inner try/catch" para operaciones opcionales.
+
+PROXIMA GUIA: Dashboard de administrador con estadísticas y configuración.

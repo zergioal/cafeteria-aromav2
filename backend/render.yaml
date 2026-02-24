@@ -1,0 +1,23 @@
+# Configuración de Render para el backend
+# Subir este archivo en la raíz del repositorio o en /backend
+
+services:
+  - type: web
+    name: aroma-api
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false        # se configura manualmente en Render Dashboard
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false        # se configura manualmente en Render Dashboard
+      - key: FRONTEND_URL
+        sync: false        # URL de Netlify, se configura en Render Dashboard

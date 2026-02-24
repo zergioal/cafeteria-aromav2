@@ -1,0 +1,665 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 10 – CRUD de productos en el panel administrador
+Módulo 4 de 5 | Guía 10 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: autenticación completa, RLS configurado.
+El panel admin muestra "Panel del administrador - próximamente".
+El backend tiene rutas públicas; las rutas admin están vacías.
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Creado el controlador admin de productos con operaciones CRUD.
+- Definido las rutas protegidas de admin en el backend.
+- Implementado la sección de productos en el panel admin del frontend.
+- Aplicado el patrón "modal de formulario" para crear y editar.
+- Implementado validación doble (frontend y backend).
+
+================================================================
+PARTE 1 – ¿QUÉ ES CRUD Y POR QUÉ VALIDAR EN AMBOS LADOS?
+================================================================
+
+CRUD: Create, Read, Update, Delete.
+Las cuatro operaciones básicas de cualquier sistema de datos.
+
+VALIDACIÓN DOBLE:
+
+  Frontend (UX): impide que el formulario se envíe con datos
+  inválidos. Respuesta inmediata al usuario, sin carga al servidor.
+
+  Backend (Seguridad): NUNCA confía en los datos del frontend.
+  Un atacante puede enviar peticiones directas al servidor
+  sin usar el formulario. El servidor SIEMPRE debe validar.
+
+  Ejemplo de ataque sin validación backend:
+    curl -X POST http://localhost:3000/api/admin/products \
+      -H "Authorization: Bearer TOKEN_VALIDO" \
+      -d '{"name": "X", "price": -999, "category_id": "fake-uuid"}'
+
+  Si el backend no valida, se inserta un producto con precio
+  negativo en la base de datos.
+
+================================================================
+PARTE 2 – BACKEND: CONTROLADOR DE ADMIN PARA PRODUCTOS
+================================================================
+
+Crea backend/src/controllers/adminController.js con las
+operaciones de productos y categorías:
+
+--- backend/src/controllers/adminController.js (sección productos) ---
+
+const supabase = require('../services/supabase');
+
+/* ============================================================
+   PRODUCTOS
+   ============================================================ */
+
+/**
+ * GET /api/admin/products
+ * Lista todos los productos (incluyendo inactivos).
+ * Solo admin.
+ */
+async function adminGetProducts(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, category:categories(id, name)')
+      .order('name');
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[admin] adminGetProducts:', err.message);
+    res.status(500).json({ error: 'Error al obtener productos' });
+  }
+}
+
+/**
+ * POST /api/admin/products
+ * Crea un nuevo producto. Solo admin.
+ */
+async function adminCreateProduct(req, res) {
+  try {
+    const { name, description, price, cost, category_id, image_url, active } = req.body;
+
+    // Validacion del lado del servidor (no confiar en el cliente)
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      return res.status(400).json({ error: 'El nombre es obligatorio (minimo 2 caracteres)' });
+    }
+    if (price == null || isNaN(price) || Number(price) < 0) {
+      return res.status(400).json({ error: 'El precio debe ser un número positivo' });
+    }
+
+    const { data, error } = await supabase
+      .from('products')
+      .insert({
+        name:        name.trim(),
+        description: description?.trim() || null,
+        price:       Number(price),
+        cost:        Number(cost) || 0,
+        category_id: category_id || null,
+        image_url:   image_url?.trim() || null,
+        active:      active !== false,  // true por defecto
+      })
+      .select('*, category:categories(id, name)')
+      .single();
+
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('[admin] adminCreateProduct:', err.message);
+    res.status(500).json({ error: 'Error al crear producto' });
+  }
+}
+
+/**
+ * PUT /api/admin/products/:id
+ * Actualiza un producto existente. Solo admin.
+ */
+async function adminUpdateProduct(req, res) {
+  try {
+    const { id } = req.params;
+    const { name, description, price, cost, category_id, image_url, active } = req.body;
+
+    if (!name || name.trim().length < 2) {
+      return res.status(400).json({ error: 'El nombre es obligatorio (minimo 2 caracteres)' });
+    }
+    if (price == null || isNaN(price) || Number(price) < 0) {
+      return res.status(400).json({ error: 'El precio debe ser un número positivo' });
+    }
+
+    const { data, error } = await supabase
+      .from('products')
+      .update({
+        name:        name.trim(),
+        description: description?.trim() || null,
+        price:       Number(price),
+        cost:        Number(cost) || 0,
+        category_id: category_id || null,
+        image_url:   image_url?.trim() || null,
+        active:      Boolean(active),
+        updated_at:  new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select('*, category:categories(id, name)')
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+      }
+      throw error;
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('[admin] adminUpdateProduct:', err.message);
+    res.status(500).json({ error: 'Error al actualizar producto' });
+  }
+}
+
+/**
+ * DELETE /api/admin/products/:id
+ * Elimina un producto. Solo admin.
+ * Nota: en producción es mejor desactivar (active=false) en vez
+ * de eliminar, para preservar el historial de pedidos.
+ */
+async function adminDeleteProduct(req, res) {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ message: 'Producto eliminado correctamente' });
+  } catch (err) {
+    console.error('[admin] adminDeleteProduct:', err.message);
+    res.status(500).json({ error: 'Error al eliminar producto' });
+  }
+}
+
+module.exports = {
+  adminGetProducts,
+  adminCreateProduct,
+  adminUpdateProduct,
+  adminDeleteProduct,
+};
+
+================================================================
+PARTE 3 – BACKEND: RUTAS DE ADMIN
+================================================================
+
+Crea backend/src/routes/admin.js:
+
+--- backend/src/routes/admin.js ---
+
+const express = require('express');
+const router  = express.Router();
+const { requireAuth, requireRole } = require('../middleware/auth');
+const {
+  adminGetProducts,
+  adminCreateProduct,
+  adminUpdateProduct,
+  adminDeleteProduct,
+} = require('../controllers/adminController');
+
+// Todos los endpoints de admin requieren autenticacion Y rol admin
+router.use(requireAuth);
+router.use(requireRole('admin'));
+
+// CRUD de productos
+router.get   ('/products',     adminGetProducts);
+router.post  ('/products',     adminCreateProduct);
+router.put   ('/products/:id', adminUpdateProduct);
+router.delete('/products/:id', adminDeleteProduct);
+
+module.exports = router;
+
+Luego registra las rutas en backend/src/index.js.
+Agrega DESPUÉS de la línea de publicRoutes:
+
+  const adminRoutes = require('./routes/admin');
+  // ...
+  app.use('/api/admin', adminRoutes);
+
+================================================================
+PARTE 4 – FRONTEND: PANEL ADMIN CON GESTIÓN DE PRODUCTOS
+================================================================
+
+Reemplaza el contenido de frontend/js/pages/admin.js
+con la implementación del panel de productos:
+
+--- frontend/js/pages/admin.js ---
+
+const AdminPage = {
+  _products:   [],
+  _categories: [],
+
+  /** Renderiza el panel admin con sus tabs internos. */
+  render() {
+    document.getElementById('admin-root').innerHTML = `
+      <div class="page-header">
+        <h1 class="page-title">Panel de Administracion</h1>
+      </div>
+
+      <!-- Tabs internos del panel admin -->
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" data-panel="products">
+          Productos
+        </button>
+        <button class="admin-tab-btn" data-panel="categories">
+          Categorias
+        </button>
+        <button class="admin-tab-btn" data-panel="users">
+          Usuarios
+        </button>
+        <button class="admin-tab-btn" data-panel="dashboard">
+          Dashboard
+        </button>
+        <button class="admin-tab-btn" data-panel="settings">
+          Configuracion
+        </button>
+      </div>
+
+      <div id="admin-panel-content"></div>
+    `;
+
+    // Navegación entre tabs internos del admin
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab-btn')
+          .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this._renderPanel(btn.dataset.panel);
+      });
+    });
+
+    // Mostrar panel de productos por defecto
+    this._renderPanel('products');
+  },
+
+  /** Renderiza el panel interno correspondiente. */
+  _renderPanel(panel) {
+    switch(panel) {
+      case 'products':   this._renderProducts();   break;
+      case 'categories': this._renderCategories(); break;
+      default:
+        document.getElementById('admin-panel-content').innerHTML =
+          `<p style="color:var(--text-muted);padding:2rem 0;">Seccion en desarrollo...</p>`;
+    }
+  },
+
+  /** =========================================================
+      PANEL: Gestión de productos
+      ========================================================= */
+  async _renderProducts() {
+    const el = document.getElementById('admin-panel-content');
+    el.innerHTML = '<div class="spinner"></div>';
+
+    try {
+      // Cargar productos y categorias en paralelo
+      const [products, categories] = await Promise.all([
+        API.get('/api/admin/products'),
+        API.get('/api/categories'),
+      ]);
+      this._products   = products;
+      this._categories = categories;
+    } catch (err) {
+      el.innerHTML = `<div class="alert alert-error">${escHtml(err.message)}</div>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
+        <h2>Productos (${this._products.length})</h2>
+        <button class="btn btn-primary"
+                onclick="AdminPage._openProductModal(null)">
+          + Nuevo producto
+        </button>
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${this._products.map(p => `
+              <tr>
+                <td>
+                  ${p.image_url
+                    ? `<img src="${escHtml(p.image_url)}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:6px;">`
+                    : ''}
+                  ${escHtml(p.name)}
+                </td>
+                <td>${escHtml(p.category?.name || '—')}</td>
+                <td>${fmtCurrency(p.price)}</td>
+                <td>
+                  <span class="badge ${p.active ? 'badge-paid' : 'badge-canceled'}">
+                    ${p.active ? 'Activo' : 'Inactivo'}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-secondary btn-sm"
+                          onclick="AdminPage._openProductModal(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                    Editar
+                  </button>
+                  <button class="btn btn-danger btn-sm"
+                          onclick="AdminPage._deleteProduct('${p.id}', '${escHtml(p.name)}')">
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal para crear/editar producto -->
+      <div id="product-modal-overlay" style="display:none"
+           class="modal-overlay" onclick="if(event.target===this)AdminPage._closeProductModal()">
+        <div class="modal">
+          <button class="modal-close" onclick="AdminPage._closeProductModal()">x</button>
+          <div id="product-modal-body"></div>
+        </div>
+      </div>
+    `;
+  },
+
+  /** Abre el modal de producto.
+   *  product = null -> crear nuevo
+   *  product = {...} -> editar existente
+   */
+  _openProductModal(product) {
+    const isEdit = !!product;
+    const catOptions = this._categories.map(c =>
+      `<option value="${c.id}" ${product?.category_id === c.id ? 'selected' : ''}>
+        ${escHtml(c.name)}
+       </option>`
+    ).join('');
+
+    document.getElementById('product-modal-body').innerHTML = `
+      <h2 style="margin-bottom:1.25rem;">
+        ${isEdit ? 'Editar producto' : 'Nuevo producto'}
+      </h2>
+
+      <div id="prod-form-error" class="alert alert-error" style="display:none"></div>
+
+      <div class="form-group">
+        <label class="form-label">Nombre *</label>
+        <input type="text" id="prod-name" class="form-input"
+               value="${escHtml(product?.name || '')}" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Descripcion</label>
+        <textarea id="prod-desc" class="form-textarea">${escHtml(product?.description || '')}</textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Precio (Bs) *</label>
+          <input type="number" id="prod-price" class="form-input"
+                 step="0.50" min="0" value="${product?.price || ''}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Costo (Bs)</label>
+          <input type="number" id="prod-cost" class="form-input"
+                 step="0.50" min="0" value="${product?.cost || ''}" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Categoria</label>
+        <select id="prod-category" class="form-select">
+          <option value="">Sin categoría</option>
+          ${catOptions}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">URL de imagen (opcional)</label>
+        <input type="url" id="prod-image" class="form-input"
+               placeholder="https://..." value="${escHtml(product?.image_url || '')}" />
+      </div>
+
+      ${isEdit ? `
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+          <input type="checkbox" id="prod-active"
+                 ${product.active ? 'checked' : ''} />
+          Producto activo (visible en el menú)
+        </label>
+      </div>
+      ` : ''}
+
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="AdminPage._closeProductModal()">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" id="prod-save-btn"
+                onclick="AdminPage._saveProduct(${isEdit ? `'${product.id}'` : 'null'})">
+          ${isEdit ? 'Guardar cambios' : 'Crear producto'}
+        </button>
+      </div>
+    `;
+
+    document.getElementById('product-modal-overlay').style.display = 'flex';
+  },
+
+  _closeProductModal() {
+    document.getElementById('product-modal-overlay').style.display = 'none';
+  },
+
+  /** Guarda el producto (crear o actualizar). */
+  async _saveProduct(productId) {
+    const errEl = document.getElementById('prod-form-error');
+    const btn   = document.getElementById('prod-save-btn');
+    errEl.style.display = 'none';
+
+    const name     = document.getElementById('prod-name')?.value.trim();
+    const price    = document.getElementById('prod-price')?.value;
+    const desc     = document.getElementById('prod-desc')?.value.trim();
+    const cost     = document.getElementById('prod-cost')?.value;
+    const category = document.getElementById('prod-category')?.value;
+    const imageUrl = document.getElementById('prod-image')?.value.trim();
+    const active   = productId
+      ? document.getElementById('prod-active')?.checked
+      : true;
+
+    // Validacion del lado del cliente
+    if (!name || name.length < 2) {
+      return this._showFormError(errEl, 'El nombre es obligatorio (mínimo 2 caracteres).');
+    }
+    if (!price || isNaN(price) || Number(price) < 0) {
+      return this._showFormError(errEl, 'El precio debe ser un número positivo.');
+    }
+
+    btn.disabled    = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+      const payload = {
+        name, description: desc, price: Number(price),
+        cost: Number(cost) || 0, category_id: category || null,
+        image_url: imageUrl || null, active,
+      };
+
+      if (productId) {
+        await API.put(`/api/admin/products/${productId}`, payload);
+        Toast.show('Producto actualizado', 'success');
+      } else {
+        await API.post('/api/admin/products', payload);
+        Toast.show('Producto creado', 'success');
+      }
+
+      this._closeProductModal();
+      this._renderProducts();   // refrescar la lista
+    } catch (err) {
+      this._showFormError(errEl, err.message);
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = productId ? 'Guardar cambios' : 'Crear producto';
+    }
+  },
+
+  _showFormError(errEl, msg) {
+    errEl.textContent   = msg;
+    errEl.style.display = 'block';
+  },
+
+  /** Elimina un producto con confirmación. */
+  async _deleteProduct(id, name) {
+    if (!confirm(`¿Eliminar el producto "${name}"?\nEsta accion no se puede deshacer.`)) return;
+    try {
+      await API.delete(`/api/admin/products/${id}`);
+      Toast.show('Producto eliminado', 'success');
+      this._renderProducts();
+    } catch (err) {
+      Toast.show('Error: ' + err.message, 'error');
+    }
+  },
+
+  /** Renderiza panel de categorías (placeholder) */
+  _renderCategories() {
+    document.getElementById('admin-panel-content').innerHTML =
+      '<p style="padding:1rem;color:var(--text-muted);">Gestión de categorías - se implementa igual que productos.</p>';
+  },
+};
+
+================================================================
+PARTE 5 – AGREGAR CSS PARA EL PANEL ADMIN
+================================================================
+
+Agrega al final de styles.css:
+
+/* ============================================================
+   PANEL ADMIN
+   ============================================================ */
+.admin-tabs {
+  display: flex;
+  gap: .375rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: .5rem;
+}
+
+.admin-tab-btn {
+  background: transparent;
+  border: none;
+  padding: .5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: background var(--transition), color var(--transition);
+}
+.admin-tab-btn:hover { background: var(--surface-2); color: var(--text); }
+.admin-tab-btn.active { background: var(--primary); color: #fff; }
+
+.admin-table-wrap { overflow-x: auto; }
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+.admin-table th,
+.admin-table td {
+  padding: .625rem .875rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.admin-table th {
+  background: var(--surface-2);
+  font-weight: 600;
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.admin-table tbody tr:hover { background: var(--accent-light); }
+
+================================================================
+PARTE 6 – PROBAR EL CRUD COMPLETO
+================================================================
+
+PASO 1 – Con backend corriendo y logueado como admin:
+  Navega a Panel Admin -> pestaña Productos.
+
+PASO 2 – Crear un producto:
+  Clic en "+ Nuevo producto"
+  Llena el formulario: nombre, precio, categoría.
+  Clic en "Crear producto".
+  ¿Aparece en la tabla?
+
+PASO 3 – Editar el producto:
+  Clic en "Editar".
+  Cambia el precio.
+  Clic en "Guardar cambios".
+  ¿Se actualiza en la tabla?
+
+PASO 4 – Probar validación:
+  En el modal, borra el nombre y escribe solo "A".
+  Clic en "Crear producto".
+  ¿Aparece el error "mínimo 2 caracteres"?
+
+PASO 5 – Verificar validación del backend:
+  Usa la consola del navegador:
+    await API.post('/api/admin/products', { name: 'X', price: -5 })
+  ¿El backend rechaza con el mensaje de error correcto?
+
+PASO 6 – Eliminar un producto:
+  Clic en "Eliminar".
+  ¿Aparece el diálogo de confirmación?
+  ¿Se elimina de la tabla?
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. Implementa la gestión de categorías (panel "Categorias")
+   siguiendo exactamente el mismo patrón que los productos.
+   Las categorías tienen solo: name y sort_order.
+
+2. ¿Por qué usamos PUT (reemplaza todo) para actualizar un
+   producto en lugar de PATCH (modifica solo campos enviados)?
+   ¿En qué casos preferirías PATCH?
+
+3. En _renderProducts(), usamos Promise.all() para cargar
+   productos y categorías en paralelo. ¿Qué pasaría si
+   usaras await API.get('/api/admin/products') y luego
+   await API.get('/api/categories') secuencialmente?
+
+4. El botón "Eliminar" usa confirm() del navegador. ¿Qué
+   problemas tiene este enfoque en producción? ¿Cómo lo
+   mejorarías usando el sistema de modal que ya tienes?
+
+5. ¿Por qué adminDeleteProduct no valida si el producto tiene
+   pedidos asociados? ¿Qué problema causaría eliminarlo?
+   ¿Cómo lo solucionarías?
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Creaste el controlador admin con validación doble (backend).
+✓ Definiste rutas protegidas con requireAuth y requireRole.
+✓ Implementaste la tabla de productos con acciones en el frontend.
+✓ Construiste el modal de formulario para crear/editar.
+✓ Probaste el flujo CRUD completo con validación en ambos lados.
+
+PROXIMA GUIA: Catálogo público, carrito completo y checkout con API.

@@ -1,0 +1,395 @@
+================================================================
+CURSO: Desarrollo Web Full-Stack con Node.js y Supabase
+Proyecto: Sistema de Pedidos – Cafetería Aroma (Cochabamba)
+================================================================
+GUIA 07 – Backend: Servidor Express con rutas públicas
+Módulo 2 de 5 | Guía 7 de 15
+================================================================
+
+ESTADO INICIAL
+--------------
+Tienes: frontend completo con carrito funcional.
+El backend tiene package.json y dependencias instaladas, pero
+src/ está vacío.
+
+OBJETIVO
+---------
+Al terminar esta guía habrás:
+- Creado el servidor Express con middleware (CORS, morgan, JSON).
+- Conectado el backend a Supabase con el service_role_key.
+- Creado los endpoints públicos: productos, categorías, settings.
+- Probado la API desde el navegador y el frontend.
+
+================================================================
+PARTE 1 – ARQUITECTURA DEL BACKEND
+================================================================
+
+¿POR QUÉ NECESITAMOS UN BACKEND SI TENEMOS SUPABASE DIRECTAMENTE?
+
+  Supabase tiene un SDK para el frontend que permite leer datos
+  directamente. Entonces, ¿por qué un servidor intermedio?
+
+  Razones:
+  1. SEGURIDAD TOTAL DEL PRECIO:
+     El servidor calcula el total del pedido leyendo los precios
+     de la BD. Si el cliente envía un total falso, se ignora.
+
+  2. LÓGICA DE NEGOCIO COMPLEJA:
+     Verificar inventario, validar datos de múltiples tablas,
+     ejecutar transacciones → difícil de hacer solo en frontend.
+
+  3. SERVICE ROLE KEY:
+     Ciertas operaciones necesitan bypasar RLS. La service_role_key
+     NO puede estar en el frontend. Solo el backend la tiene.
+
+  4. WEBHOOKS Y CRON JOBS:
+     El backend puede recibir webhooks de pagos, enviar emails,
+     ejecutar tareas programadas.
+
+PATRÓN MVC ADAPTADO:
+  routes/      -> definen las URLs disponibles
+  middleware/  -> funciones que se ejecutan antes del controlador
+  controllers/ -> contienen la lógica de cada endpoint
+  services/    -> conexión a servicios externos (Supabase)
+
+================================================================
+PARTE 2 – CREAR LA CONEXIÓN A SUPABASE
+================================================================
+
+Crea backend/src/services/supabase.js:
+
+------------ backend/src/services/supabase.js ------------------
+
+const { createClient } = require('@supabase/supabase-js');
+
+/**
+ * Cliente Supabase con SERVICE ROLE KEY.
+ * Bypasea RLS completamente.
+ * SOLO usar en el backend. NUNCA exponer al frontend.
+ */
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+module.exports = supabase;
+
+----------------------------------------------------------------
+
+NOTAS:
+- process.env.*: Node.js lee las variables del .env gracias
+  a dotenv (lo cargamos como primera línea de index.js).
+- module.exports: forma CommonJS de exportar en Node.js.
+- Importación en otros archivos:
+    const supabase = require('../services/supabase')
+
+================================================================
+PARTE 3 – CREAR LOS CONTROLADORES
+================================================================
+
+--- backend/src/controllers/productsController.js ---
+
+const supabase = require('../services/supabase');
+
+/** GET /api/products - Todos los productos activos con categoría */
+async function getProducts(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        id, name, description, price, image_url,
+        category:categories(id, name)
+      `)
+      .eq('active', true)
+      .order('name');
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[products] getProducts:', err.message);
+    res.status(500).json({ error: 'Error al obtener productos' });
+  }
+}
+
+/** GET /api/products/:id - Un producto por ID */
+async function getProductById(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, category:categories(id, name)')
+      .eq('id', req.params.id)
+      .eq('active', true)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116')
+        return res.status(404).json({ error: 'Producto no encontrado' });
+      throw error;
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('[products] getProductById:', err.message);
+    res.status(500).json({ error: 'Error al obtener el producto' });
+  }
+}
+
+module.exports = { getProducts, getProductById };
+
+
+--- backend/src/controllers/categoriesController.js ---
+
+const supabase = require('../services/supabase');
+
+/** GET /api/categories - Todas las categorías ordenadas */
+async function getCategories(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('id, name, sort_order')
+      .order('sort_order');
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('[categories] getCategories:', err.message);
+    res.status(500).json({ error: 'Error al obtener categorias' });
+  }
+}
+
+module.exports = { getCategories };
+
+
+--- backend/src/controllers/settingsController.js ---
+
+const supabase = require('../services/supabase');
+
+/** GET /api/settings/public - Configuración pública del negocio */
+async function getPublicSettings(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('settings')
+      .select('key, value');
+
+    if (error) throw error;
+
+    // Convertir [{key, value}, ...] a objeto plano:
+    // { whatsapp_number: '+591...', qr_image_url: '...', ... }
+    const settings = {};
+    data.forEach(row => { settings[row.key] = row.value; });
+
+    res.json(settings);
+  } catch (err) {
+    console.error('[settings] getPublicSettings:', err.message);
+    res.status(500).json({ error: 'Error al obtener configuracion' });
+  }
+}
+
+module.exports = { getPublicSettings };
+
+================================================================
+PARTE 4 – CREAR LAS RUTAS PÚBLICAS
+================================================================
+
+--- backend/src/routes/public.js ---
+
+const express    = require('express');
+const router     = express.Router();
+
+const { getProducts, getProductById } = require('../controllers/productsController');
+const { getCategories }               = require('../controllers/categoriesController');
+const { getPublicSettings }           = require('../controllers/settingsController');
+
+router.get('/products',        getProducts);
+router.get('/products/:id',    getProductById);
+router.get('/categories',      getCategories);
+router.get('/settings/public', getPublicSettings);
+
+module.exports = router;
+
+/*
+  ¿Por qué separar rutas de controladores?
+
+  Sin separacion (todo junto):
+    app.get('/products', async (req, res) => {
+      // 50 lineas de logica aqui...
+    });
+    // Archivos de 500+ lineas, difíciles de mantener
+
+  Con separacion:
+    - routes/*.js: SOLO define URLs -> controladores (5 lineas)
+    - controllers/*.js: SOLO contiene logica
+    - Facil de leer, testear y mantener por separado
+*/
+
+================================================================
+PARTE 5 – CREAR EL SERVIDOR PRINCIPAL
+================================================================
+
+--- backend/src/index.js ---
+
+// PRIMERO: cargar variables de entorno
+// Debe estar ANTES de cualquier import que use process.env
+require('dotenv').config();
+
+const express = require('express');
+const cors    = require('cors');
+const morgan  = require('morgan');
+
+const publicRoutes = require('./routes/public');
+
+const app  = express();
+const PORT = process.env.PORT || 3000;
+
+/* =============================================================
+   MIDDLEWARE GLOBAL
+   Se ejecutan en ORDEN para cada peticion.
+   ============================================================= */
+
+// CORS: habilitar peticiones desde el frontend
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5500',
+  credentials: true,
+}));
+
+/*
+  ¿Qué es CORS?
+  El navegador bloquea peticiones cross-origin por seguridad.
+  Sin cors(): fetch a localhost:3000 desde localhost:5500 -> ERROR.
+  Con cors(): el servidor agrega el header:
+    Access-Control-Allow-Origin: http://localhost:5500
+  El navegador permite la peticion.
+*/
+
+// Morgan: log de cada peticion en consola
+// Muestra: GET /api/products 200 12ms
+app.use(morgan('dev'));
+
+// Parsear el body JSON de peticiones POST/PUT/PATCH
+// Sin esto, req.body siempre seria undefined
+app.use(express.json());
+
+/* =============================================================
+   RUTAS
+   ============================================================= */
+
+// Health check: usado por Railway/Render para verificar que
+// el servidor esta vivo
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Rutas publicas (sin autenticacion)
+app.use('/api', publicRoutes);
+
+// Aqui agregaremos en proximas guias:
+// app.use('/api', clientRoutes);
+// app.use('/api/cashier', cashierRoutes);
+// app.use('/api/admin', adminRoutes);
+
+/* =============================================================
+   MANEJO DE ERRORES GLOBAL
+   ============================================================= */
+app.use((err, req, res, next) => {
+  console.error('[error-global]', err.stack);
+  res.status(err.status || 500).json({
+    error: err.message || 'Error interno del servidor'
+  });
+});
+
+/* =============================================================
+   INICIAR
+   ============================================================= */
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Health: http://localhost:${PORT}/health`);
+});
+
+================================================================
+PARTE 6 – PROBAR EL SERVIDOR
+================================================================
+
+PASO 1 – Iniciar el servidor:
+  En la terminal, desde backend/:
+    npm run dev
+
+  Deberías ver:
+    Servidor corriendo en http://localhost:3000
+    Health: http://localhost:3000/health
+
+PASO 2 – Probar en el navegador:
+  http://localhost:3000/health
+  -> { "status": "ok", "timestamp": "..." }
+
+  http://localhost:3000/api/products
+  -> Array JSON con los productos de Supabase
+
+  http://localhost:3000/api/categories
+  -> Array de categorías
+
+  http://localhost:3000/api/settings/public
+  -> Objeto con configuraciones
+
+PASO 3 – Verificar logs en la terminal:
+  GET /api/products 200 45ms
+  GET /api/categories 200 12ms
+
+PASO 4 – Probar desde el frontend (consola del navegador):
+  API.get('/api/products').then(console.log)
+  -> ¿Retorna el array de productos?
+
+================================================================
+ERRORES COMUNES Y SOLUCIONES
+================================================================
+
+"Cannot find module './services/supabase'"
+  -> Verifica la ruta relativa: require('../services/supabase')
+
+"SUPABASE_URL is not defined"
+  -> require('dotenv').config() debe ser LA PRIMERA linea.
+  -> Verifica que backend/.env existe.
+
+"Error al obtener productos" (status 500)
+  -> El error real está en la TERMINAL del backend.
+  -> Busca el mensaje de console.error.
+
+"CORS policy: No Access-Control-Allow-Origin"
+  -> FRONTEND_URL en .env debe coincidir con la URL de Live Server.
+
+================================================================
+PARTE 7 – COMMIT
+================================================================
+
+  git add backend/src/
+  git commit -m "feat: servidor Express con rutas publicas y conexion a Supabase"
+
+================================================================
+ACTIVIDAD PRACTICA
+================================================================
+
+1. Agrega GET /api/products/category/:categoryId que retorne
+   solo los productos de esa categoría.
+   Pista: .eq('category_id', req.params.categoryId)
+
+2. ¿Por qué morgan imprime los logs incluso cuando hay error 500?
+   (Pista: registra la peticion DESPUES de que el handler termina)
+
+3. El health check incluye un timestamp. ¿Qué ventaja tiene
+   para monitoreo y debugging?
+
+4. ¿Qué pasaría si dotenv.config() se pusiera DESPUES de
+   require('./routes/public')? ¿Por qué fallaría?
+
+5. Investiga: ¿qué es una peticion OPTIONS (preflight) en CORS?
+   ¿Cuándo la envía el navegador automáticamente?
+
+================================================================
+RESUMEN
+================================================================
+En esta guia:
+✓ Entendiste la arquitectura de capas: routes -> controllers -> services.
+✓ Conectaste el backend a Supabase con service_role_key.
+✓ Creaste controladores para productos, categorías y settings.
+✓ Definiste rutas públicas y el servidor Express principal.
+✓ Probaste todos los endpoints desde el navegador y el frontend.
+
+PROXIMA GUIA: Autenticacion con JWT y Supabase Auth.
