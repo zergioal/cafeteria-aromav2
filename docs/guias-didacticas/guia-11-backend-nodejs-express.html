@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 11 – Backend: Node.js y Express</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 11 – Backend: Node.js y Express, el Servidor de Aroma</h1>
+        <p class="subtitulo">Módulo 5: Backend | Construyendo la API REST del proyecto</p>
+        <div class="meta">
+            <span class="badge">Nivel: Intermedio</span>
+            <span class="badge">Tiempo estimado: 7 horas</span>
+            <span class="badge">Prerequisito: Guías 06-10</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Entender qué es un servidor backend y por qué lo necesitamos</li>
+            <li>Conocer Node.js y cómo ejecutar JavaScript fuera del navegador</li>
+            <li>Crear un servidor HTTP con Express.js</li>
+            <li>Comprender el patrón REST y los métodos HTTP</li>
+            <li>Organizar el código con rutas y controladores</li>
+            <li>Usar variables de entorno para proteger credenciales</li>
+            <li>Probar la API con Thunder Client</li>
+        </ul>
+    </div>
+
+    <h2>1. ¿Qué es un servidor backend?</h2>
+
+    <div class="analogia">
+        <strong>Analogía del restaurante:</strong> Si el frontend es la <em>sala del restaurante</em> donde están sentados los clientes (los usuarios mirando la web), el backend es la <em>cocina</em> donde realmente se prepara todo. El cliente (el navegador) hace pedidos (requests), el cocinero (el servidor backend) los procesa y devuelve los platos terminados (responses con datos JSON).
+    </div>
+
+    <p>Hasta ahora, nuestro frontend de Aroma hablaba directamente con Supabase. Eso funciona para operaciones simples, pero tiene un problema serio: necesitamos manejar lógica de negocio compleja y proteger credenciales sensibles.</p>
+
+    <h3>¿Por qué necesitamos un backend propio?</h3>
+    <ul>
+        <li><strong>Seguridad:</strong> La clave <code>SERVICE_ROLE_KEY</code> de Supabase da acceso total a la base de datos. Si la ponemos en el frontend, cualquier persona la puede ver inspeccionando el código. El backend la guarda en el servidor, lejos del navegador.</li>
+        <li><strong>Lógica de negocio:</strong> Calcular totales de pedidos, verificar stock, aplicar descuentos. Estas reglas deben vivir en el servidor, no en el navegador (donde el usuario podría modificarlas).</li>
+        <li><strong>Autorización:</strong> Un cliente no debería poder ver los pedidos de otro cliente. El backend verifica quién eres y qué tienes permitido hacer.</li>
+        <li><strong>Validación:</strong> Un pedido no puede tener 0 items, un precio no puede ser negativo. El backend valida estos casos antes de guardar datos.</li>
+        <li><strong>Operaciones complejas:</strong> Generar reportes, enviar emails, integrar con sistemas de pago — todo esto vive en el backend.</li>
+    </ul>
+
+    <div class="proyecto-aroma">
+        <h4>En la Cafetería Aroma:</h4>
+        <p>Nuestro backend es el encargado de recibir los pedidos del cliente, verificar que los productos existan y estén activos, calcular el total con los precios reales de la base de datos (nunca confiando en lo que manda el navegador), y guardar el pedido. También protege las rutas del cajero y del administrador para que solo los usuarios con el rol correcto puedan acceder.</p>
+    </div>
+
+    <hr class="separador">
+
+    <h2>2. Node.js: JavaScript fuera del navegador</h2>
+
+    <p>JavaScript nació para vivir en los navegadores web. Pero en 2009, Ryan Dahl creó <strong>Node.js</strong>: un entorno que permite ejecutar JavaScript en el servidor, fuera del navegador. Node.js usa el mismo motor V8 de Google Chrome que conocemos, pero en lugar de controlar páginas web, controla el sistema operativo, archivos, redes y servidores.</p>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> Es como si el idioma español (JavaScript) que antes solo se hablaba en España (el navegador), ahora también se pudiera hablar en toda América Latina (el servidor). El mismo idioma, contextos totalmente diferentes.
+    </div>
+
+    <h3>npm: el gestor de paquetes</h3>
+    <p>Node.js viene con <strong>npm</strong> (Node Package Manager), que es como una tienda de herramientas para desarrolladores. Con npm podemos instalar librerías que otras personas ya crearon en lugar de escribir todo desde cero.</p>
+
+    <pre><code># Inicializar un proyecto nuevo (crea el archivo package.json)
+npm init -y
+
+# Instalar Express (el framework web)
+npm install express
+
+# Instalar dependencias de desarrollo (solo para trabajar, no para producción)
+npm install --save-dev nodemon
+
+# Instalar varias a la vez
+npm install cors morgan dotenv @supabase/supabase-js
+
+# Ejecutar el servidor (según scripts en package.json)
+npm start          # Modo producción
+npm run dev        # Modo desarrollo (con nodemon)</code></pre>
+
+    <div class="tip">
+        <strong>Tip:</strong> <code>nodemon</code> es una herramienta mágica para desarrollo: reinicia el servidor automáticamente cada vez que guardas un archivo. Sin nodemon, tendrías que detener y reiniciar el servidor manualmente después de cada cambio.
+    </div>
+
+    <h3>El archivo package.json</h3>
+    <p>Este archivo es el "pasaporte" de tu proyecto Node.js. Contiene el nombre, la versión, las dependencias y los scripts para ejecutar el proyecto.</p>
+
+    <pre><code>{
+  "name": "aroma-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.3.1",
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}</code></pre>
+
+    <div class="importante">
+        <strong>Importante:</strong> La línea <code>"type": "module"</code> le dice a Node.js que usamos la sintaxis moderna de ES Modules (<code>import/export</code>) en lugar de la antigua CommonJS (<code>require()</code>). En este proyecto usamos la sintaxis moderna.
+    </div>
+
+    <hr class="separador">
+
+    <h2>3. Express.js: el framework web</h2>
+
+    <p>Express.js es el framework web más popular para Node.js. Sin Express, crear un servidor HTTP en Node puro requiere manejar decenas de detalles tediosos: parsear URLs, manejar distintos métodos HTTP, leer el body de las peticiones, gestionar cabeceras... Express lo simplifica todo con una API elegante y concisa.</p>
+
+    <h3>Tu primer servidor Express</h3>
+
+    <pre><code>// El servidor Express más básico posible
+import express from 'express';
+
+const app = express();
+const PORT = 3000;
+
+// Ruta GET a "/"
+app.get('/', (req, res) => {
+    res.json({ mensaje: 'Cafetería Aroma API funcionando ✅' });
+});
+
+// Iniciar el servidor
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});</code></pre>
+
+    <p>Con solo 10 líneas ya tienes un servidor web funcionando. Cuando abres <code>http://localhost:3000/</code> en el navegador, Express recibe la petición GET, ejecuta la función (el "route handler"), y devuelve el JSON al navegador.</p>
+
+    <h3>Los objetos req y res</h3>
+    <p>Cada ruta recibe dos objetos fundamentales:</p>
+    <ul>
+        <li><strong><code>req</code> (request):</strong> Contiene todo sobre la petición entrante: la URL, el método HTTP, los headers, el body, los parámetros de la URL, la IP del cliente, etc.</li>
+        <li><strong><code>res</code> (response):</strong> Lo usamos para enviar la respuesta: <code>res.json()</code> para JSON, <code>res.send()</code> para texto, <code>res.status(404).json()</code> para errores con código de estado.</li>
+    </ul>
+
+    <hr class="separador">
+
+    <h2>4. HTTP Methods y el diseño REST</h2>
+
+    <p>HTTP define varios "métodos" o "verbos" que indican qué tipo de operación se quiere realizar. En una API REST, cada método tiene un significado específico:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Método</th>
+                <th>Acción</th>
+                <th>Ejemplo en Cafetería Aroma</th>
+                <th>Código de éxito</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>GET</code></td>
+                <td>Obtener / leer datos</td>
+                <td><code>GET /api/products</code> — listar todos los productos</td>
+                <td>200 OK</td>
+            </tr>
+            <tr>
+                <td><code>POST</code></td>
+                <td>Crear un nuevo recurso</td>
+                <td><code>POST /api/orders</code> — crear un pedido nuevo</td>
+                <td>201 Created</td>
+            </tr>
+            <tr>
+                <td><code>PUT</code></td>
+                <td>Reemplazar un recurso completo</td>
+                <td><code>PUT /api/products/:id</code> — actualizar todos los datos de un producto</td>
+                <td>200 OK</td>
+            </tr>
+            <tr>
+                <td><code>PATCH</code></td>
+                <td>Modificar parcialmente</td>
+                <td><code>PATCH /api/orders/:id/status</code> — solo cambiar el estado</td>
+                <td>200 OK</td>
+            </tr>
+            <tr>
+                <td><code>DELETE</code></td>
+                <td>Eliminar un recurso</td>
+                <td><code>DELETE /api/products/:id</code> — eliminar un producto</td>
+                <td>200 OK</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Convenciones REST</h3>
+    <p>REST (Representational State Transfer) es un estilo de diseño para APIs. Sus reglas más importantes son:</p>
+    <ul>
+        <li><strong>Usa sustantivos, no verbos:</strong> La ruta debe ser <code>/api/products</code>, no <code>/api/getProducts</code>. El verbo lo aporta el método HTTP.</li>
+        <li><strong>Usa plural para colecciones:</strong> <code>/api/products</code> (lista), <code>/api/products/5</code> (uno específico).</li>
+        <li><strong>Anida recursos relacionados:</strong> <code>/api/orders/5/items</code> para los items del pedido 5.</li>
+        <li><strong>Devuelve códigos de estado HTTP correctos:</strong> 200 para éxito, 201 para creación, 400 para datos inválidos, 401 para no autenticado, 403 para no autorizado, 404 para no encontrado, 500 para error del servidor.</li>
+    </ul>
+
+    <hr class="separador">
+
+    <h2>5. El servidor real de Aroma (index.js)</h2>
+
+    <p>Ahora veamos el servidor completo de la Cafetería Aroma. Cada parte cumple una función específica:</p>
+
+    <pre><code>// backend/src/index.js
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import { config } from 'dotenv';
+
+// Cargar variables de entorno del archivo .env
+config();
+
+import publicRoutes from './routes/public.js';
+import clientRoutes from './routes/client.js';
+import cashierRoutes from './routes/cashier.js';
+import adminRoutes from './routes/admin.js';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ===== MIDDLEWARES =====
+
+// CORS: permitir peticiones desde el frontend
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5500',
+    credentials: true
+}));
+
+// Parsear JSON del body de las peticiones
+app.use(express.json());
+
+// Logging de peticiones en consola: GET /api/products 200 15ms
+app.use(morgan('dev'));
+
+// ===== RUTAS =====
+app.use('/api', publicRoutes);           // Sin autenticación requerida
+app.use('/api', clientRoutes);           // Con autenticación (clientes)
+app.use('/api/cashier', cashierRoutes);  // Solo cajeros y admin
+app.use('/api/admin', adminRoutes);      // Solo administradores
+
+// Health check: para verificar que el servidor está vivo
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// ===== MANEJO DE ERRORES =====
+// Este middleware especial recibe 4 parámetros (err, req, res, next)
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+        error: err.message || 'Error interno del servidor'
+    });
+});
+
+// 404 para rutas que no existen
+app.use((req, res) => {
+    res.status(404).json({ error: 'Ruta no encontrada' });
+});
+
+app.listen(PORT, () => {
+    console.log(`Servidor Aroma corriendo en puerto ${PORT}`);
+});</code></pre>
+
+    <h3>Desglose de cada parte</h3>
+
+    <h4>¿Qué es un middleware?</h4>
+    <p>Un middleware es una función que se ejecuta entre que llega la petición y que se envía la respuesta. Son como "filtros" o "capas" que procesan la petición en orden. Cada middleware puede:</p>
+    <ul>
+        <li>Modificar <code>req</code> o <code>res</code></li>
+        <li>Terminar la petición enviando una respuesta</li>
+        <li>Llamar a <code>next()</code> para pasar al siguiente middleware</li>
+    </ul>
+
+    <h4>CORS — Cross-Origin Resource Sharing</h4>
+    <p>Por defecto, los navegadores bloquean las peticiones JavaScript hacia un dominio diferente. Como el frontend está en <code>localhost:5500</code> y el backend en <code>localhost:3000</code>, son "orígenes" distintos. El middleware CORS agrega cabeceras especiales a las respuestas que le dicen al navegador "está bien, este dominio tiene permiso".</p>
+
+    <h4>express.json()</h4>
+    <p>Cuando el frontend envía datos (por ejemplo, el formulario de un pedido), los manda en el body de la petición como texto JSON. <code>express.json()</code> lee ese texto y lo convierte automáticamente en un objeto JavaScript accesible como <code>req.body</code>. Sin este middleware, <code>req.body</code> estaría vacío.</p>
+
+    <h4>Morgan — el logger</h4>
+    <p>Morgan imprime en la consola del servidor una línea por cada petición recibida, con el método, la ruta, el código de respuesta y el tiempo. Es invaluable para depurar durante el desarrollo:</p>
+    <pre><code>GET /api/products 200 45ms
+POST /api/orders 201 120ms
+GET /api/products/99 404 8ms</code></pre>
+
+    <h4>El manejador de errores global</h4>
+    <p>Express tiene una forma especial de manejar errores: un middleware con 4 parámetros <code>(err, req, res, next)</code>. Cuando cualquier parte del código llama a <code>next(error)</code> o lanza una excepción, Express la captura y la envía a este manejador. Es el "plan B" que evita que el servidor se caiga.</p>
+
+    <hr class="separador">
+
+    <h2>6. Middlewares y el ciclo Request-Response</h2>
+
+    <p>Entender el flujo de una petición es fundamental. Imagina el camino que recorre una petición <code>GET /api/products</code>:</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido"><strong>Llega la petición</strong> al servidor desde el navegador.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido"><strong>CORS middleware</strong> verifica el origen y agrega los headers de permiso.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido"><strong>express.json()</strong> lee el body si hay uno y lo pone en <code>req.body</code>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido"><strong>Morgan</strong> registra la petición en la consola.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido"><strong>El router</strong> busca la ruta que coincide con <code>GET /api/products</code>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">6</div>
+        <div class="paso-contenido"><strong>El controlador</strong> consulta Supabase y devuelve los datos con <code>res.json()</code>.</div>
+    </div>
+
+    <pre><code>// Un middleware personalizado — puede ser cualquier función
+function logearTiempo(req, res, next) {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next(); // CRÍTICO: siempre llamar next() para continuar el flujo
+            // Si no llamas next(), la petición queda "colgada" para siempre
+}
+
+// Aplicar a todas las rutas
+app.use(logearTiempo);
+
+// Aplicar solo a rutas específicas
+app.use('/api/admin', logearTiempo);</code></pre>
+
+    <div class="warning">
+        <strong>Cuidado:</strong> Si en un middleware olvidas llamar <code>next()</code> y tampoco envías una respuesta con <code>res.json()</code> o similar, la petición quedará "colgada" indefinidamente hasta que el cliente la cancele por timeout. Es uno de los errores más frecuentes al aprender Express.
+    </div>
+
+    <hr class="separador">
+
+    <h2>7. Rutas y Controladores</h2>
+
+    <p>A medida que la aplicación crece, poner todas las rutas en <code>index.js</code> se vuelve inmanejable. Por eso organizamos el código en dos capas:</p>
+    <ul>
+        <li><strong>Rutas (routes/):</strong> Definen qué URL responde a qué función. Solo organizan, no tienen lógica.</li>
+        <li><strong>Controladores (controllers/):</strong> Tienen la lógica real: consultar la BD, validar datos, formatear la respuesta.</li>
+    </ul>
+
+    <pre><code>// backend/src/routes/public.js
+// Este archivo solo define las rutas públicas (sin autenticación)
+import { Router } from 'express';
+import { getProducts, getProductById } from '../controllers/productsController.js';
+import { getCategories } from '../controllers/categoriesController.js';
+
+const router = Router();
+
+// Productos disponibles al público
+router.get('/products', getProducts);
+router.get('/products/:id', getProductById);
+
+// Categorías
+router.get('/categories', getCategories);
+
+export default router;</code></pre>
+
+    <pre><code>// backend/src/controllers/productsController.js
+import supabase from '../services/supabase.js';
+
+// GET /api/products
+// Soporta filtros: /api/products?category=001&search=latte
+export async function getProducts(req, res) {
+    try {
+        // Leer parámetros de la query string
+        const { category, search } = req.query;
+
+        // Construir la consulta base
+        let query = supabase
+            .from('products')
+            .select(`
+                id,
+                nombre,
+                descripcion,
+                precio,
+                imagen_url,
+                category:categories(id, nombre)
+            `)
+            .eq('activo', true)
+            .order('nombre');
+
+        // Agregar filtro de categoría si se especificó
+        if (category) {
+            query = query.eq('category_id', category);
+        }
+
+        // Agregar búsqueda por nombre si se especificó
+        if (search) {
+            query = query.ilike('nombre', `%${search}%`);
+        }
+
+        const { data: products, error } = await query;
+
+        if (error) throw error;
+
+        res.json({ products });
+
+    } catch (error) {
+        console.error('Error obteniendo productos:', error);
+        res.status(500).json({ error: 'Error al obtener productos' });
+    }
+}
+
+// GET /api/products/:id
+export async function getProductById(req, res) {
+    try {
+        const { id } = req.params; // Extraer el :id de la URL
+
+        const { data: product, error } = await supabase
+            .from('products')
+            .select('*, category:categories(id, nombre)')
+            .eq('id', id)
+            .eq('activo', true)
+            .single(); // Esperamos exactamente un resultado
+
+        if (error || !product) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
+        res.json({ product });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener el producto' });
+    }
+}</code></pre>
+
+    <div class="tip">
+        <strong>Tip — req.params vs req.query vs req.body:</strong>
+        <ul>
+            <li><code>req.params</code>: los segmentos dinámicos de la URL. En <code>/products/:id</code>, <code>req.params.id</code> es el valor real (ej: "42").</li>
+            <li><code>req.query</code>: los parámetros después del <code>?</code>. En <code>/products?category=cafes</code>, <code>req.query.category</code> es "cafes".</li>
+            <li><code>req.body</code>: los datos enviados en el cuerpo de la petición (en POST/PUT), como el JSON de un formulario.</li>
+        </ul>
+    </div>
+
+    <hr class="separador">
+
+    <h2>8. Variables de entorno (.env)</h2>
+
+    <p>Las credenciales (contraseñas, claves API, URLs secretas) nunca deben estar escritas directamente en el código. Si subes el código a GitHub con una clave de Supabase, cualquiera puede verla y usar tu base de datos. La solución son las <strong>variables de entorno</strong>.</p>
+
+    <pre><code># backend/.env
+# NUNCA subir este archivo a Git — tiene tus credenciales reales
+PORT=3000
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+FRONTEND_URL=http://localhost:5500</code></pre>
+
+    <pre><code># backend/.env.example
+# Este archivo SÍ va a Git — es la "plantilla" para otros desarrolladores
+PORT=3000
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+FRONTEND_URL=</code></pre>
+
+    <pre><code># backend/.gitignore
+# Asegúrate de que .env esté aquí
+.env
+node_modules/
+*.log</code></pre>
+
+    <pre><code>// Usar las variables de entorno en el código
+// dotenv carga el .env cuando llamamos config() al inicio de index.js
+import { config } from 'dotenv';
+config(); // Esto debe ejecutarse antes de usar process.env
+
+const puerto = process.env.PORT;
+const supabaseUrl = process.env.SUPABASE_URL;
+const servicioKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Usar en la inicialización de Supabase
+const supabase = createClient(supabaseUrl, servicioKey);</code></pre>
+
+    <div class="importante">
+        <strong>Importante:</strong> La <code>SERVICE_ROLE_KEY</code> de Supabase tiene permisos de superusuario: puede leer, escribir y borrar cualquier dato, saltándose todas las reglas de seguridad (RLS). Por eso solo debe existir en el backend, nunca en el frontend. El frontend usa la <code>ANON_KEY</code> que tiene permisos limitados.
+    </div>
+
+    <hr class="separador">
+
+    <h2>9. Probando la API con Thunder Client</h2>
+
+    <p>Thunder Client es una extensión de VS Code que funciona como un cliente HTTP: te permite hacer peticiones a tu API y ver las respuestas, sin necesidad de escribir código de prueba. Es ideal para probar los endpoints mientras los desarrollas.</p>
+
+    <h3>Instalación y primeros pasos</h3>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Abrir VS Code → ir a <strong>Extensions</strong> (Ctrl+Shift+X) → buscar <strong>"Thunder Client"</strong> → instalar.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">Aparecerá un ícono de rayo en el panel lateral izquierdo. Hacer clic en él.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">Clic en <strong>"New Request"</strong> para crear una petición nueva.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">Seleccionar el método <strong>GET</strong> y escribir la URL: <code>http://localhost:3000/api/products</code></div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">Clic en <strong>"Send"</strong> y ver la respuesta JSON en el panel inferior.</div>
+    </div>
+
+    <h3>Peticiones de prueba básicas</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Qué probar</th>
+                <th>Método</th>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Verificar que el servidor vive</td>
+                <td>GET</td>
+                <td>http://localhost:3000/health</td>
+            </tr>
+            <tr>
+                <td>Listar todos los productos</td>
+                <td>GET</td>
+                <td>http://localhost:3000/api/products</td>
+            </tr>
+            <tr>
+                <td>Filtrar por categoría</td>
+                <td>GET</td>
+                <td>http://localhost:3000/api/products?category=001</td>
+            </tr>
+            <tr>
+                <td>Buscar por nombre</td>
+                <td>GET</td>
+                <td>http://localhost:3000/api/products?search=latte</td>
+            </tr>
+            <tr>
+                <td>Obtener un producto</td>
+                <td>GET</td>
+                <td>http://localhost:3000/api/products/1</td>
+            </tr>
+            <tr>
+                <td>Listar categorías</td>
+                <td>GET</td>
+                <td>http://localhost:3000/api/categories</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="tip">
+        <strong>Tip:</strong> Guarda las peticiones en colecciones dentro de Thunder Client (como carpetas). Así no tienes que reescribir las URLs cada vez. Crea una colección llamada "Aroma API" y organiza las peticiones por sección: Públicas, Cliente, Cajero, Admin.
+    </div>
+
+    <hr class="separador">
+
+    <div class="ejercicio">
+        <h4>Ejercicio Final — Construir y probar el endpoint de productos</h4>
+        <p>Es momento de levantar el servidor y ver todo funcionando en vivo.</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">Abrir la terminal en la carpeta <code>backend/</code> e instalar las dependencias: <code>npm install</code></div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">Crear el archivo <code>backend/.env</code> copiando <code>.env.example</code> y llenando con tus credenciales reales de Supabase.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">Iniciar el servidor en modo desarrollo: <code>npm run dev</code>. Deberías ver en la consola: <em>"Servidor Aroma corriendo en puerto 3000"</em>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">Abrir Thunder Client y probar: <code>GET http://localhost:3000/health</code>. Debe responder <code>{ "status": "OK" }</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido">Probar <code>GET http://localhost:3000/api/products</code>. Deberías ver la lista de productos de tu base de datos.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido">Probar el filtro: <code>GET http://localhost:3000/api/products?category=001</code>. Solo deben aparecer los productos de esa categoría.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">7</div>
+            <div class="paso-contenido">Modifica el nombre de un producto en el controlador (agrega un texto de prueba) y guarda el archivo. Observa cómo <strong>nodemon</strong> reinicia el servidor automáticamente.</div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <div class="resumen">
+        <h2>Resumen de la Guía 11</h2>
+        <ul>
+            <li>El <strong>backend</strong> es el servidor que procesa la lógica, protege credenciales y controla el acceso.</li>
+            <li><strong>Node.js</strong> permite ejecutar JavaScript en el servidor usando el motor V8.</li>
+            <li><strong>npm</strong> gestiona las librerías y dependencias del proyecto.</li>
+            <li><strong>Express.js</strong> simplifica la creación de servidores HTTP y APIs.</li>
+            <li>Los <strong>métodos HTTP</strong> (GET, POST, PUT, PATCH, DELETE) indican el tipo de operación.</li>
+            <li>Los <strong>middlewares</strong> son funciones que procesan la petición en secuencia; siempre deben llamar <code>next()</code>.</li>
+            <li>Las <strong>variables de entorno</strong> (<code>.env</code>) protegen las credenciales del código fuente.</li>
+            <li>Separar <strong>rutas y controladores</strong> mantiene el código organizado y mantenible.</li>
+            <li><strong>Thunder Client</strong> permite probar los endpoints de la API sin escribir código.</li>
+        </ul>
+        <p style="color:#e8d5c0; margin-top:14px;">Siguiente paso: Guía 12 — Autenticación JWT y gestión de pedidos en el backend.</p>
+    </div>
+
+</body>
+</html>

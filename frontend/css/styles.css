@@ -244,6 +244,10 @@ a { color: var(--primary); }
   transition: transform var(--transition), box-shadow var(--transition);
 }
 .product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.product-card.in-cart {
+  border-color: var(--success);
+  box-shadow: 0 0 0 2px rgba(42,122,74,.25), var(--shadow-sm);
+}
 .product-image {
   height: 140px;
   background: linear-gradient(135deg, var(--accent-light), var(--surface-2));
@@ -309,7 +313,7 @@ a { color: var(--primary); }
 .product-footer { display: flex; align-items: center; justify-content: space-between; }
 .product-price { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
 .btn-add-cart {
-  background: var(--primary);
+  background: var(--success);
   color: #fff;
   border: none;
   border-radius: var(--radius);
@@ -318,7 +322,21 @@ a { color: var(--primary); }
   font-weight: 600;
   transition: background var(--transition);
 }
-.btn-add-cart:hover { background: var(--primary-dark); }
+.btn-add-cart:hover { background: #1e5c37; }
+
+.btn-remove-cart {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: .4rem .75rem;
+  font-size: .85rem;
+  font-weight: 600;
+  transition: background var(--transition);
+}
+.btn-remove-cart:hover { background: #922b21; }
+
+.product-card-actions { display: flex; gap: .4rem; align-items: center; }
 
 /* ── FILTROS DE CATEGORÍA ───────────────────────────────────── */
 .category-filters {
@@ -589,12 +607,13 @@ a { color: var(--primary); }
 }
 .menu-cart-cta-count {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.15rem;
 }
 .menu-cart-cta-total {
   color: rgba(255,255,255,.75);
-  font-size: .875rem;
+  font-size: 1rem;
 }
+.menu-cart-cta .btn { font-size: 1rem; padding: .65rem 1.4rem; }
 
 /* ── LOGIN ──────────────────────────────────────────────────── */
 .login-container {
@@ -787,7 +806,7 @@ tr:hover > td { background: var(--bg); }
 /* ── TOAST ──────────────────────────────────────────────────── */
 #toast-container {
   position: fixed;
-  bottom: 1.5rem;
+  bottom: 5rem;
   right: 1.5rem;
   z-index: 300;
   display: flex;

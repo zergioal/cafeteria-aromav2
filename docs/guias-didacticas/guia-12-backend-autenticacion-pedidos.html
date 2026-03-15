@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 12 – Backend: Autenticación JWT y Gestión de Pedidos</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 12 – Backend: Autenticación JWT y Gestión de Pedidos</h1>
+        <p class="subtitulo">Módulo 5: Backend | Protegiendo rutas y procesando pedidos</p>
+        <div class="meta">
+            <span class="badge">Nivel: Intermedio</span>
+            <span class="badge">Tiempo estimado: 6 horas</span>
+            <span class="badge">Prerequisito: Guía 11</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Entender qué es JWT y cómo funciona la autenticación con tokens</li>
+            <li>Crear el middleware de autenticación para proteger rutas</li>
+            <li>Implementar control de acceso por roles (cliente, cajero, admin)</li>
+            <li>Construir el controlador de pedidos con validaciones de seguridad</li>
+            <li>Desarrollar el panel del cajero en el backend</li>
+            <li>Crear el CRUD de productos para el administrador</li>
+        </ul>
+    </div>
+
+    <h2>1. ¿Qué es JWT y cómo funciona la autenticación?</h2>
+
+    <div class="analogia">
+        <strong>Analogía del pulsera de evento:</strong> Cuando entras a un concierto, te dan una pulsera (el JWT token) que prueba que pagaste. En cada área VIP o barra, el guardia revisa tu pulsera sin tener que llamar a la taquilla otra vez. El token JWT funciona igual: Supabase lo entrega al hacer login, y el backend lo verifica en cada petición sin consultar la base de datos de autenticación cada vez.
+    </div>
+
+    <p><strong>JWT</strong> (JSON Web Token) es un estándar para transmitir información entre partes de forma segura. Un token JWT tiene tres partes separadas por puntos:</p>
+    <ul>
+        <li><strong>Header:</strong> El algoritmo de firma usado (ej: HS256)</li>
+        <li><strong>Payload:</strong> Los datos: el ID del usuario, cuándo expira, etc.</li>
+        <li><strong>Signature:</strong> Una firma criptográfica que garantiza que nadie modificó el token</li>
+    </ul>
+
+    <pre><code>// Un token JWT se ve así:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLWlkLTEyMyIsImVtYWlsIjoiY2xpZW50ZUBhcm9tYS5jb20iLCJleHAiOjE3MzAwMDAwMDB9.xK9d3mP...
+
+// Decodificado (en jwt.io puedes verlo):
+// Header: { "alg": "HS256", "typ": "JWT" }
+// Payload: { "sub": "user-id-123", "email": "cliente@aroma.com", "exp": 1730000000 }
+// Signature: verificada por Supabase</code></pre>
+
+    <h3>El flujo de autenticación en Aroma</h3>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">El usuario hace login en el frontend → Supabase verifica email/contraseña y devuelve un token JWT.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">El frontend guarda el token (en memoria o sessionStorage).</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">En cada petición al backend, el frontend incluye el token en el header: <code>Authorization: Bearer &lt;token&gt;</code>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">El middleware <code>requireAuth</code> extrae el token, lo verifica con Supabase, y adjunta el usuario a <code>req.user</code>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">El controlador usa <code>req.user.id</code> y <code>req.user.role</code> para hacer su trabajo.</div>
+    </div>
+
+    <hr class="separador">
+
+    <h2>2. El middleware de autenticación</h2>
+
+    <p>Este es el archivo más importante de seguridad en el backend. Cada vez que alguien intenta acceder a una ruta protegida, este middleware se ejecuta primero.</p>
+
+    <pre><code>// backend/src/middleware/auth.js
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+// Middleware: verificar que el usuario está autenticado
+export async function requireAuth(req, res, next) {
+    try {
+        // Paso 1: Leer el header Authorization
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                error: 'Token de autenticación requerido'
+            });
+        }
+
+        // Paso 2: Extraer el token
+        // "Bearer eyJ..." → "eyJ..."
+        const token = authHeader.split(' ')[1];
+
+        // Paso 3: Verificar el token con Supabase Auth
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+
+        if (error || !user) {
+            return res.status(401).json({ error: 'Token inválido o expirado' });
+        }
+
+        // Paso 4: Obtener el perfil del usuario (contiene el rol)
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role, active')
+            .eq('id', user.id)
+            .single();
+
+        // Verificar que la cuenta está activa
+        if (!profile?.active) {
+            return res.status(403).json({ error: 'Cuenta desactivada' });
+        }
+
+        // Paso 5: Adjuntar el usuario al request para los controladores
+        req.user = { ...user, role: profile?.role || 'client' };
+
+        next(); // Todo bien, continuar al controlador
+
+    } catch (error) {
+        console.error('Error en middleware de autenticación:', error);
+        res.status(500).json({ error: 'Error de autenticación' });
+    }
+}
+
+// Middleware: verificar que el usuario tiene el rol adecuado
+// Uso: requireRole('cashier', 'admin') acepta cajeros Y admins
+export function requireRole(...roles) {
+    return (req, res, next) => {
+        // Esta función debe usarse DESPUÉS de requireAuth
+        if (!req.user) {
+            return res.status(401).json({ error: 'No autenticado' });
+        }
+
+        if (!roles.includes(req.user.role)) {
+            return res.status(403).json({
+                error: `Acceso denegado. Rol requerido: ${roles.join(' o ')}`
+            });
+        }
+
+        next();
+    };
+}</code></pre>
+
+    <h3>La diferencia entre 401 y 403</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Significado</th>
+                <th>Ejemplo en Aroma</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>401</strong></td>
+                <td>Unauthorized</td>
+                <td>"No sé quién eres" — falta o es inválido el token</td>
+                <td>Intentar ver pedidos sin haber iniciado sesión</td>
+            </tr>
+            <tr>
+                <td><strong>403</strong></td>
+                <td>Forbidden</td>
+                <td>"Sé quién eres, pero no tienes permiso"</td>
+                <td>Un cliente intentando acceder al panel del cajero</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="tip">
+        <strong>Tip:</strong> Devolver <strong>401</strong> cuando no hay token es correcto porque le dice al cliente "por favor, autentica tu petición". Devolver <strong>403</strong> cuando el usuario existe pero no tiene el rol adecuado le dice "ya sé quién eres, pero esto no te corresponde". Usar el código correcto facilita el debugging.
+    </div>
+
+    <hr class="separador">
+
+    <h2>3. Rutas protegidas con middleware</h2>
+
+    <p>Ahora usamos los middlewares en los archivos de rutas para proteger los endpoints según el nivel de acceso requerido:</p>
+
+    <pre><code>// backend/src/routes/client.js
+// Rutas para clientes autenticados
+import { Router } from 'express';
+import { requireAuth } from '../middleware/auth.js';
+import { createOrder, getMyOrders } from '../controllers/ordersController.js';
+
+const router = Router();
+
+// Aplicar autenticación a TODAS las rutas de este router
+router.use(requireAuth);
+
+router.post('/orders', createOrder);       // Crear un pedido
+router.get('/my-orders', getMyOrders);     // Ver mis pedidos
+
+export default router;</code></pre>
+
+    <pre><code>// backend/src/routes/cashier.js
+// Rutas para el panel del cajero
+import { Router } from 'express';
+import { requireAuth, requireRole } from '../middleware/auth.js';
+import { getCashierOrders, updateOrderStatus } from '../controllers/ordersController.js';
+
+const router = Router();
+
+// Primero verificar que está autenticado,
+// luego verificar que tiene rol de cajero o admin
+router.use(requireAuth);
+router.use(requireRole('cashier', 'admin'));
+
+router.get('/orders', getCashierOrders);
+router.patch('/orders/:id/status', updateOrderStatus);
+
+export default router;</code></pre>
+
+    <pre><code>// backend/src/routes/admin.js
+// Rutas para el panel del administrador
+import { Router } from 'express';
+import { requireAuth, requireRole } from '../middleware/auth.js';
+import { getDashboard, createProduct, updateProduct, deleteProduct } from '../controllers/adminController.js';
+
+const router = Router();
+
+// Solo administradores
+router.use(requireAuth);
+router.use(requireRole('admin'));
+
+router.get('/dashboard', getDashboard);
+router.post('/products', createProduct);
+router.put('/products/:id', updateProduct);
+router.patch('/products/:id', updateProduct);
+router.delete('/products/:id', deleteProduct);
+
+export default router;</code></pre>
+
+    <div class="analogia">
+        <strong>Analogía de la cafetería:</strong> En una cafetería real, hay puertas con acceso restringido. La puerta de la cocina solo la puede abrir el personal (cajeros y cocineros). La oficina del gerente, solo el gerente. Y la sala de clientes es de acceso libre. Los middlewares <code>requireAuth</code> y <code>requireRole</code> son esas puertas con llaves.
+    </div>
+
+    <hr class="separador">
+
+    <h2>4. El controlador de pedidos — createOrder</h2>
+
+    <p>Este es uno de los controladores más complejos porque implementa una regla de seguridad crítica: <strong>nunca confiar en los precios que envía el cliente</strong>.</p>
+
+    <pre><code>// backend/src/controllers/ordersController.js
+import supabase from '../services/supabase.js';
+
+// POST /api/orders
+export async function createOrder(req, res) {
+    try {
+        const userId = req.user.id; // Viene del middleware requireAuth
+
+        // Extraer datos del body
+        const {
+            customer_name,
+            customer_phone,
+            delivery_address,
+            payment_method,
+            notes,
+            items  // Array: [{ product_id: "uuid", quantity: 2 }, ...]
+        } = req.body;
+
+        // ===== VALIDACIONES =====
+
+        if (!customer_name || !customer_phone || !delivery_address) {
+            return res.status(400).json({
+                error: 'Nombre, teléfono y dirección son requeridos'
+            });
+        }
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                error: 'El pedido debe tener al menos un item'
+            });
+        }
+
+        // Validar que las cantidades sean positivas
+        for (const item of items) {
+            if (!item.quantity || item.quantity <= 0) {
+                return res.status(400).json({
+                    error: 'Todas las cantidades deben ser mayores a 0'
+                });
+            }
+        }
+
+        // ===== VERIFICAR PRODUCTOS EN LA BASE DE DATOS =====
+        // Obtenemos los precios REALES desde la BD, NO del cliente
+        const productIds = items.map(item => item.product_id);
+        const { data: products, error: productsError } = await supabase
+            .from('products')
+            .select('id, nombre, precio, activo')
+            .in('id', productIds);
+
+        if (productsError) throw productsError;
+
+        // Verificar que todos los productos existen y están activos
+        for (const item of items) {
+            const product = products.find(p => p.id === item.product_id);
+            if (!product) {
+                return res.status(400).json({
+                    error: `Producto no encontrado: ${item.product_id}`
+                });
+            }
+            if (!product.activo) {
+                return res.status(400).json({
+                    error: `Producto no disponible: ${product.nombre}`
+                });
+            }
+        }
+
+        // ===== CALCULAR TOTAL CON PRECIOS REALES =====
+        const orderItems = items.map(item => {
+            const product = products.find(p => p.id === item.product_id);
+            return {
+                product_id: product.id,
+                product_name: product.nombre,
+                unit_price: product.precio,        // Precio de la BD, no del cliente
+                quantity: item.quantity,
+                subtotal: product.precio * item.quantity
+            };
+        });
+
+        const total = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+        // ===== CREAR EL PEDIDO =====
+        const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .insert({
+                user_id: userId,
+                customer_name,
+                customer_phone,
+                delivery_address,
+                payment_method,
+                notes,
+                total,
+                status: 'pending'
+                // El trigger de la BD genera el código (ej: ARO-0042)
+            })
+            .select()
+            .single();
+
+        if (orderError) throw orderError;
+
+        // ===== INSERTAR LOS ITEMS DEL PEDIDO =====
+        const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(
+                orderItems.map(item => ({ ...item, order_id: order.id }))
+            );
+
+        if (itemsError) throw itemsError;
+
+        // Responder con el pedido creado
+        res.status(201).json({
+            order,
+            message: `Pedido ${order.code} creado exitosamente`
+        });
+
+    } catch (error) {
+        console.error('Error creando pedido:', error);
+        res.status(500).json({ error: 'Error al crear el pedido' });
+    }
+}</code></pre>
+
+    <div class="importante">
+        <strong>Principio de seguridad critico — Nunca confiar en los precios del cliente:</strong> Un usuario malintencionado podría modificar el JavaScript del frontend para enviar <code>{ product_id: "latte-id", quantity: 1, price: 0.01 }</code>. Si el servidor aceptara ese precio, el usuario compraría un café por un centavo. El backend <strong>siempre</strong> obtiene los precios directamente de la base de datos, ignorando cualquier precio que venga en la petición.
+    </div>
+
+    <h3>GET /api/my-orders — Ver mis propios pedidos</h3>
+
+    <pre><code>// GET /api/my-orders
+export async function getMyOrders(req, res) {
+    try {
+        const userId = req.user.id;
+
+        const { data: orders, error } = await supabase
+            .from('orders')
+            .select(`
+                id, code, status, total, created_at,
+                customer_name, payment_method, notes,
+                items:order_items(product_name, unit_price, quantity, subtotal)
+            `)
+            .eq('user_id', userId)           // Solo los pedidos de ESTE usuario
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) throw error;
+
+        res.json({ orders });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener tus pedidos' });
+    }
+}</code></pre>
+
+    <div class="tip">
+        <strong>Tip — Filtrar por user_id:</strong> Aunque podría parecer que la RLS de Supabase ya protege esto, cuando usamos la <code>SERVICE_ROLE_KEY</code> en el backend, la RLS está desactivada. Por eso es <strong>fundamental</strong> filtrar explícitamente con <code>.eq('user_id', userId)</code> donde <code>userId</code> viene del token verificado (no del cliente). Así garantizamos que cada usuario solo ve sus propios pedidos.
+    </div>
+
+    <hr class="separador">
+
+    <h2>5. Panel del Cajero — Backend</h2>
+
+    <p>El cajero necesita ver los pedidos activos, filtrarlos por estado o fecha, y poder cambiar su estado conforme avanza la preparación.</p>
+
+    <pre><code>// GET /api/cashier/orders
+export async function getCashierOrders(req, res) {
+    try {
+        const { status, fecha } = req.query;
+
+        let query = supabase
+            .from('orders')
+            .select(`
+                id, code, status, customer_name, customer_phone,
+                delivery_address, payment_method, total, notes,
+                created_at,
+                items:order_items(
+                    id, product_name, unit_price, quantity, subtotal
+                )
+            `)
+            .order('created_at', { ascending: false });
+
+        // Filtrar por estado si se especificó
+        if (status) {
+            // Soporte para múltiples estados: ?status=pending,confirmed
+            const estados = status.split(',');
+            query = query.in('status', estados);
+        }
+
+        // Filtrar por fecha si se especificó: ?fecha=2024-11-15
+        if (fecha) {
+            const inicio = `${fecha}T00:00:00`;
+            const fin = `${fecha}T23:59:59`;
+            query = query.gte('created_at', inicio).lte('created_at', fin);
+        }
+
+        const { data: orders, error } = await query;
+        if (error) throw error;
+
+        res.json({ orders });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener pedidos' });
+    }
+}
+
+// PATCH /api/cashier/orders/:id/status
+export async function updateOrderStatus(req, res) {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        // Validar que el estado es uno de los permitidos
+        const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                error: `Estado inválido. Valores permitidos: ${validStatuses.join(', ')}`
+            });
+        }
+
+        const { data: order, error } = await supabase
+            .from('orders')
+            .update({
+                status,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        if (!order) {
+            return res.status(404).json({ error: 'Pedido no encontrado' });
+        }
+
+        res.json({
+            order,
+            message: `Estado del pedido ${order.code} actualizado a: ${status}`
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error al actualizar el pedido' });
+    }
+}</code></pre>
+
+    <h3>Los estados de un pedido en Aroma</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Estado</th>
+                <th>Descripción</th>
+                <th>Quién lo cambia</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>pending</code></td>
+                <td>Recién creado, esperando confirmación</td>
+                <td>Sistema (automático al crear)</td>
+            </tr>
+            <tr>
+                <td><code>confirmed</code></td>
+                <td>Cajero confirmó que es válido</td>
+                <td>Cajero</td>
+            </tr>
+            <tr>
+                <td><code>preparing</code></td>
+                <td>En preparación en la cocina</td>
+                <td>Cajero</td>
+            </tr>
+            <tr>
+                <td><code>ready</code></td>
+                <td>Listo para entregar</td>
+                <td>Cajero</td>
+            </tr>
+            <tr>
+                <td><code>delivered</code></td>
+                <td>Entregado al cliente</td>
+                <td>Cajero</td>
+            </tr>
+            <tr>
+                <td><code>cancelled</code></td>
+                <td>Cancelado</td>
+                <td>Cajero o Admin</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr class="separador">
+
+    <h2>6. CRUD de Productos para el Administrador</h2>
+
+    <p>El administrador necesita gestionar el catálogo completo: crear, editar y desactivar productos.</p>
+
+    <pre><code>// backend/src/controllers/adminController.js
+import supabase from '../services/supabase.js';
+
+// POST /api/admin/products — Crear producto
+export async function createProduct(req, res) {
+    try {
+        const { nombre, descripcion, precio, costo, category_id, imagen_url } = req.body;
+
+        // Validar campos obligatorios
+        if (!nombre || !precio || !category_id) {
+            return res.status(400).json({
+                error: 'Nombre, precio y categoría son requeridos'
+            });
+        }
+
+        // Validar que el precio es un número positivo
+        if (isNaN(precio) || precio <= 0) {
+            return res.status(400).json({ error: 'El precio debe ser un número positivo' });
+        }
+
+        const { data: product, error } = await supabase
+            .from('products')
+            .insert({
+                nombre,
+                descripcion,
+                precio: parseFloat(precio),
+                costo: costo ? parseFloat(costo) : null,
+                category_id,
+                imagen_url,
+                activo: true
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.status(201).json({ product });
+
+    } catch (error) {
+        console.error('Error creando producto:', error);
+        res.status(500).json({ error: 'Error al crear producto' });
+    }
+}
+
+// PUT /api/admin/products/:id — Actualizar producto
+export async function updateProduct(req, res) {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+
+        // Asegurar que no se pueda modificar el ID
+        delete updates.id;
+
+        const { data: product, error } = await supabase
+            .from('products')
+            .update({
+                ...updates,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        if (!product) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
+        res.json({ product });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error al actualizar producto' });
+    }
+}
+
+// DELETE /api/admin/products/:id — Soft delete (desactivar)
+export async function deleteProduct(req, res) {
+    try {
+        const { id } = req.params;
+
+        // En lugar de borrar físicamente, desactivamos el producto
+        // Esto preserva el historial de pedidos que referencian este producto
+        const { data: product, error } = await supabase
+            .from('products')
+            .update({ activo: false, updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.json({ message: `Producto "${product.nombre}" desactivado` });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar producto' });
+    }
+}</code></pre>
+
+    <div class="tip">
+        <strong>¿Por qué "soft delete" y no borrar directamente?</strong> Si borramos un producto de la base de datos, los pedidos históricos que lo contengan quedarían con referencias rotas (foreign key violation). Al solo desactivarlo (<code>activo: false</code>), preservamos la integridad del historial. El producto simplemente deja de mostrarse en el menú, pero los registros pasados siguen siendo válidos.
+    </div>
+
+    <hr class="separador">
+
+    <h2>7. El cliente de Supabase en el backend</h2>
+
+    <p>Para centralizar la instancia de Supabase y no crearla en cada archivo, usamos un módulo de servicio:</p>
+
+    <pre><code>// backend/src/services/supabase.js
+import { createClient } from '@supabase/supabase-js';
+
+// Verificar que las variables de entorno están configuradas
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error(
+        'Faltan variables de entorno de Supabase. ' +
+        'Verifica que el archivo .env existe y tiene SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY'
+    );
+}
+
+// Crear cliente con la SERVICE_ROLE_KEY (acceso total, solo para backend)
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    }
+);
+
+export default supabase;</code></pre>
+
+    <div class="importante">
+        <strong>Diferencia SERVICE_ROLE_KEY vs ANON_KEY:</strong>
+        <ul>
+            <li><strong>ANON_KEY (frontend):</strong> Respeta las políticas RLS. Un usuario con esta clave solo puede ver lo que las reglas le permiten.</li>
+            <li><strong>SERVICE_ROLE_KEY (backend):</strong> Salta todas las políticas RLS. Tiene acceso total como administrador de la BD. Por eso NUNCA debe exponerse al cliente.</li>
+        </ul>
+    </div>
+
+    <hr class="separador">
+
+    <h2>8. Probando las rutas protegidas con Thunder Client</h2>
+
+    <p>Para probar los endpoints que requieren autenticación, necesitas obtener primero un token JWT válido.</p>
+
+    <h3>Paso 1: Obtener el token de Supabase</h3>
+    <pre><code>// Hacer POST directamente a la API de autenticación de Supabase
+// URL: https://TU-PROYECTO.supabase.co/auth/v1/token?grant_type=password
+// Body (JSON):
+{
+    "email": "cajero@aroma.com",
+    "password": "tu-contraseña"
+}
+
+// La respuesta incluye:
+{
+    "access_token": "eyJhbGci...",   // ← Este es el JWT
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "refresh_token": "..."
+}</code></pre>
+
+    <h3>Paso 2: Usar el token en Thunder Client</h3>
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Crear una nueva petición en Thunder Client.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">Ir a la pestaña <strong>"Auth"</strong> → seleccionar <strong>"Bearer"</strong>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">Pegar el <code>access_token</code> en el campo "Token".</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">Hacer la petición. Thunder Client agregará automáticamente el header <code>Authorization: Bearer eyJ...</code></div>
+    </div>
+
+    <div class="warning">
+        <strong>Ojo con la expiración:</strong> Los tokens de Supabase expiran en 1 hora por defecto. Si recibes un 401 después de trabajar un rato, simplemente repite el login para obtener un token fresco.
+    </div>
+
+    <hr class="separador">
+
+    <div class="ejercicio">
+        <h4>Ejercicio Final — Probar el sistema completo de autenticación y pedidos</h4>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido"><strong>Probar acceso sin token:</strong> Hacer <code>GET http://localhost:3000/api/my-orders</code> sin ningún header. Debe responder con <code>401 Token de autenticación requerido</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido"><strong>Obtener token:</strong> Hacer POST al endpoint de login de Supabase con las credenciales de un cliente. Guardar el <code>access_token</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido"><strong>Probar ruta protegida:</strong> Repetir el <code>GET /api/my-orders</code> pero ahora con el Bearer token. Debe responder con los pedidos del usuario.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido"><strong>Crear un pedido:</strong> Hacer <code>POST /api/orders</code> con token de cliente y el siguiente body JSON:
+                <pre><code>{
+  "customer_name": "Juan Pérez",
+  "customer_phone": "72345678",
+  "delivery_address": "Av. Arce 123",
+  "payment_method": "qr",
+  "items": [
+    { "product_id": "REEMPLAZAR-CON-ID-REAL", "quantity": 2 }
+  ]
+}</code></pre>
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido"><strong>Panel del cajero:</strong> Obtener token de un cajero y probar <code>GET /api/cashier/orders</code>. Luego cambiar el estado: <code>PATCH /api/cashier/orders/ID/status</code> con body <code>{ "status": "confirmed" }</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido"><strong>Verificar permisos:</strong> Intentar acceder a <code>GET /api/cashier/orders</code> con token de cliente (no cajero). Debe dar <code>403 Acceso denegado</code>.</div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <div class="resumen">
+        <h2>Resumen de la Guía 12</h2>
+        <ul>
+            <li><strong>JWT</strong> es un token que el cliente presenta en cada petición para demostrar su identidad.</li>
+            <li>El token se envía en el header <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+            <li>El middleware <code>requireAuth</code> verifica el token y adjunta el usuario a <code>req.user</code>.</li>
+            <li><code>requireRole()</code> protege rutas por rol: client, cashier, admin.</li>
+            <li><strong>Error 401</strong> = no autenticado (sin token). <strong>Error 403</strong> = sin permiso (token válido pero rol incorrecto).</li>
+            <li>El controlador <code>createOrder</code> <strong>nunca confía en los precios del frontend</strong>; siempre los obtiene de la BD.</li>
+            <li>El <strong>soft delete</strong> desactiva productos en lugar de borrarlos para preservar el historial.</li>
+            <li>La <code>SERVICE_ROLE_KEY</code> salta la RLS — solo debe usarse en el backend.</li>
+        </ul>
+        <p style="color:#e8d5c0; margin-top:14px;">Siguiente paso: Guía 13 — Integración completa del frontend con el backend.</p>
+    </div>
+
+</body>
+</html>

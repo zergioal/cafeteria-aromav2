@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 00 – Introducción al Desarrollo Web y Configuración del Entorno</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .objetivos ul { margin-bottom: 0; }
+        .teoria { margin: 24px 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .warning strong { color: #e65100; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.95em; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .nav-guias { display: flex; justify-content: space-between; margin-top: 30px; }
+        .btn-nav { background: #6F4E37; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .highlight-verde { background: #c8e6c9; padding: 2px 6px; border-radius: 3px; }
+        .highlight-azul { background: #bbdefb; padding: 2px 6px; border-radius: 3px; }
+        .highlight-rojo { background: #ffcdd2; padding: 2px 6px; border-radius: 3px; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+        .numero-concepto { display: inline-block; background: #C8956C; color: white; border-radius: 50%; width: 26px; height: 26px; text-align: center; line-height: 26px; font-weight: bold; margin-right: 8px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <div class="header-guia">
+        <h1>☕ Guía 00 – Introducción al Desarrollo Web y Configuración del Entorno</h1>
+        <p class="subtitulo">Módulo 0 | Antes de escribir código</p>
+        <div class="meta">
+            <span class="badge">Nivel: Principiante</span>
+            <span class="badge">Tiempo estimado: 3 horas</span>
+            <span class="badge">Prerequisito: Ninguno</span>
+        </div>
+    </div>
+
+    <!-- ===== OBJETIVOS ===== -->
+    <div class="objetivos">
+        <h3>¿Qué vas a aprender en esta guía?</h3>
+        <ul>
+            <li>Entender qué vamos a construir y por qué es un proyecto real y valioso</li>
+            <li>Comprender cómo funciona internet con palabras simples y analogías</li>
+            <li>Conocer todas las tecnologías que usaremos y para qué sirve cada una</li>
+            <li>Instalar todas las herramientas necesarias en tu computadora</li>
+            <li>Crear las cuentas en los servicios online que necesitaremos</li>
+            <li>Conocer los fundamentos de Git para no perder nunca tu trabajo</li>
+            <li>Entender la estructura de carpetas del proyecto Cafetería Aroma</li>
+        </ul>
+    </div>
+
+    <!-- ===== SECCIÓN 1: ¿QUÉ VAMOS A CONSTRUIR? ===== -->
+    <h2>1. ¿Qué vamos a construir?</h2>
+
+    <div class="proyecto-aroma">
+        <h4>☕ Proyecto: Cafetería Aroma</h4>
+        <p>Vamos a construir un <strong>sistema web completo y real</strong> para una cafetería. No es un ejercicio de práctica sin sentido: es una aplicación que podría usarse en un negocio real desde el primer día.</p>
+    </div>
+
+    <p>Cuando terminemos el curso, habremos creado un sistema con <strong>cinco partes principales</strong>:</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">
+            <strong>Menú Online</strong> — Los clientes podrán ver todos los productos de la cafetería organizados por categorías (cafés, tés, postres, etc.) con fotos, descripciones y precios. Todo actualizado en tiempo real.
+        </div>
+    </div>
+
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">
+            <strong>Sistema de Pedidos con Carrito</strong> — El cliente hace clic en los productos que quiere, los agrega a un carrito de compras (igual que Amazon o MercadoLibre), puede modificar cantidades y ver el total.
+        </div>
+    </div>
+
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">
+            <strong>Pago por QR o en Caja</strong> — Al finalizar el pedido, el cliente puede elegir pagar escaneando un código QR desde su celular, o pagar directamente en la caja del local.
+        </div>
+    </div>
+
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">
+            <strong>Panel del Cajero</strong> — El empleado de la caja tiene su propia pantalla donde ve todos los pedidos que llegan en tiempo real, puede marcarlos como "en preparación", "listo" o "entregado".
+        </div>
+    </div>
+
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">
+            <strong>Panel de Administrador</strong> — El dueño del negocio puede agregar o eliminar productos, ver reportes de ventas, gestionar usuarios y configurar el sistema.
+        </div>
+    </div>
+
+    <h3>¿Cómo se ve el resultado final?</h3>
+    <p>Imagina que abres el navegador y ves:</p>
+    <pre><code>┌─────────────────────────────────────────────────────┐
+│  ☕ Aroma   [Inicio] [Menú] [Carrito 🛒2] [Contacto] │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│    ╔═══════════════════════════════════════╗        │
+│    ║  Bienvenido a Cafetería Aroma         ║        │
+│    ║  El mejor café de Cochabamba          ║        │
+│    ║  [ Ver Menú ]                         ║        │
+│    ╚═══════════════════════════════════════╝        │
+│                                                     │
+│  Categorías: [Todos] [Cafés] [Tés] [Postres]        │
+│                                                     │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐       │
+│  │ 🍵 Latte  │  │ ☕ Expreso│  │ 🍰 Torta  │       │
+│  │ Bs. 25    │  │ Bs. 15   │  │ Bs. 30    │       │
+│  │[Agregar] │  │[Agregar] │  │[Agregar] │       │
+│  └───────────┘  └───────────┘  └───────────┘       │
+└─────────────────────────────────────────────────────┘</code></pre>
+
+    <div class="tip">
+        <strong>Dato motivador:</strong> Las habilidades que aprenderás en este curso te permiten construir cualquier aplicación web: tiendas online, sistemas de reservas, redes sociales, dashboards empresariales. Cafetería Aroma es tu punto de partida.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 2: ¿CÓMO FUNCIONA INTERNET? ===== -->
+    <h2>2. ¿Cómo funciona Internet? (Teoría fundamental)</h2>
+
+    <p>Antes de escribir una sola línea de código, necesitas entender el "mundo" en el que va a vivir tu aplicación. No te preocupes: lo explicaremos con analogías muy simples.</p>
+
+    <h3>Cliente y Servidor</h3>
+
+    <div class="analogia">
+        <strong>Analogía del restaurante:</strong><br>
+        Imagina un restaurante físico. Tú (el <strong>cliente</strong>) te sientas en una mesa, miras la carta y le haces un pedido al mozo. El mozo lleva tu pedido a la <strong>cocina</strong> (el servidor). La cocina prepara tu plato y el mozo te lo trae. Tú no necesitas saber cómo se cocina; solo pides y recibes.
+        <br><br>
+        En internet funciona exactamente igual:
+        <ul>
+            <li><strong>Cliente</strong> = tu navegador (Chrome, Firefox). Es quien hace las peticiones.</li>
+            <li><strong>Servidor</strong> = una computadora en internet que recibe pedidos y responde con información.</li>
+            <li><strong>Mozo</strong> = el protocolo HTTP, el "mensajero" entre cliente y servidor.</li>
+        </ul>
+    </div>
+
+    <h3>¿Qué es HTTP?</h3>
+    <p><strong>HTTP</strong> significa HyperText Transfer Protocol (Protocolo de Transferencia de HiperTexto). Es el <em>idioma</em> que usan el cliente y el servidor para comunicarse.</p>
+
+    <div class="analogia">
+        <strong>Analogía del idioma:</strong><br>
+        Si tú hablas español y el mozo habla español, se entienden perfectamente. HTTP es el "español" de internet: un conjunto de reglas que tanto el navegador como el servidor conocen, para poder entenderse.
+    </div>
+
+    <p>Cuando escribes una dirección en tu navegador, este le dice al servidor algo como:</p>
+    <pre><code>GET /menu HTTP/1.1
+Host: www.cafeteria-aroma.com</code></pre>
+    <p>Que en español significa: "Hola servidor de cafeteria-aroma.com, ¿me puedes dar la página del menú?"</p>
+
+    <h3>¿Qué es una URL?</h3>
+    <p>Una URL (Uniform Resource Locator) es la <strong>dirección exacta</strong> de un recurso en internet. Analicemos una:</p>
+
+    <pre><code>https://www.cafeteria-aroma.com/menu?categoria=cafes#americano
+
+   ↑      ↑          ↑           ↑          ↑          ↑
+protocolo subdominio dominio    ruta     parámetro   ancla/hash</code></pre>
+
+    <ul>
+        <li><code>https://</code> — El protocolo (HTTP seguro, con cifrado)</li>
+        <li><code>www.</code> — Subdominio (opcional, pero muy común)</li>
+        <li><code>cafeteria-aroma.com</code> — El dominio: el "nombre" del servidor en internet</li>
+        <li><code>/menu</code> — La ruta: qué página o recurso queremos</li>
+        <li><code>?categoria=cafes</code> — Parámetros de búsqueda (filtros, opciones)</li>
+        <li><code>#americano</code> — Ancla: ir directo a una sección dentro de la página</li>
+    </ul>
+
+    <h3>Frontend vs. Backend</h3>
+
+    <div class="analogia">
+        <strong>Analogía del restaurante (continuando):</strong><br>
+        <ul>
+            <li><strong>Frontend</strong> = La sala del restaurante: las mesas, la decoración, el menú impreso, lo que el cliente VE y TOCA. Es todo lo que muestra el navegador: el HTML, CSS y JavaScript que se ejecuta en tu computadora.</li>
+            <li><strong>Backend</strong> = La cocina: el cliente no la ve, pero es donde se prepara TODO. El servidor recibe pedidos, procesa la lógica, consulta la base de datos y devuelve respuestas.</li>
+        </ul>
+    </div>
+
+    <table>
+        <tr>
+            <th>Frontend</th>
+            <th>Backend</th>
+        </tr>
+        <tr>
+            <td>Lo que el usuario ve</td>
+            <td>Lo que el usuario NO ve</td>
+        </tr>
+        <tr>
+            <td>Corre en el navegador del usuario</td>
+            <td>Corre en un servidor (otra computadora)</td>
+        </tr>
+        <tr>
+            <td>HTML, CSS, JavaScript</td>
+            <td>Node.js, Python, PHP, Java, etc.</td>
+        </tr>
+        <tr>
+            <td>Diseño, botones, formularios</td>
+            <td>Lógica de negocio, base de datos, seguridad</td>
+        </tr>
+        <tr>
+            <td>En Aroma: index.html, styles.css, app.js</td>
+            <td>En Aroma: servidor Express + Supabase</td>
+        </tr>
+    </table>
+
+    <h3>¿Qué es una Base de Datos?</h3>
+
+    <div class="analogia">
+        <strong>Analogía de la libreta:</strong><br>
+        En un restaurante sin computadoras, el dueño tiene una libreta donde anota: qué productos tiene, a qué precio, cuántos pedidos se hicieron hoy, quiénes son sus empleados.
+        <br><br>
+        Una <strong>base de datos</strong> es esa libreta, pero digital, organizada en tablas (como hojas de Excel), que puede almacenar millones de registros y consultarlos en milisegundos.
+    </div>
+
+    <p>En Aroma tendremos tablas como:</p>
+    <ul>
+        <li><code>productos</code> — id, nombre, precio, categoría, imagen</li>
+        <li><code>pedidos</code> — id, cliente, total, estado, fecha</li>
+        <li><code>usuarios</code> — id, email, contraseña cifrada, rol</li>
+    </ul>
+
+    <h3>El flujo completo: ¿qué pasa cuando haces clic en "Ver Menú"?</h3>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido"><strong>El usuario hace clic</strong> en el botón "Ver Menú" en su navegador.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido"><strong>JavaScript detecta el clic</strong> y manda una petición HTTP al servidor: "Dame la lista de productos".</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido"><strong>El servidor (Node.js/Express)</strong> recibe la petición y le pregunta a la base de datos: "Dame todos los productos activos".</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido"><strong>La base de datos (Supabase)</strong> busca los productos y los devuelve al servidor en formato JSON.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido"><strong>El servidor responde</strong> al navegador con los datos de los productos.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">6</div>
+        <div class="paso-contenido"><strong>JavaScript en el navegador</strong> recibe los datos y dibuja las tarjetas de productos en la pantalla.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">7</div>
+        <div class="paso-contenido"><strong>El usuario ve el menú</strong> con todos los productos. ¡Todo en menos de un segundo!</div>
+    </div>
+
+    <div class="tip">
+        <strong>Dato clave:</strong> Todo esto lo vas a implementar tú mismo en este curso. Al final, entenderás exactamente qué ocurre en cada uno de estos 7 pasos.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 3: TECNOLOGÍAS ===== -->
+    <h2>3. Las tecnologías que usaremos</h2>
+
+    <p>En desarrollo web moderno se usan muchas herramientas. Aquí tienes una tabla con todo lo que usaremos en el proyecto Aroma, explicado de forma simple:</p>
+
+    <table>
+        <tr>
+            <th>Tecnología</th>
+            <th>¿Qué es?</th>
+            <th>¿Para qué en Aroma?</th>
+            <th>Analogía</th>
+        </tr>
+        <tr>
+            <td><strong>HTML</strong></td>
+            <td>Lenguaje de marcado para estructurar páginas web</td>
+            <td>La estructura de cada página: menú, carrito, formularios</td>
+            <td>Los cimientos y muros de una casa</td>
+        </tr>
+        <tr>
+            <td><strong>CSS</strong></td>
+            <td>Hojas de estilo para dar apariencia visual</td>
+            <td>Colores cafés, tipografías, diseño responsivo del menú</td>
+            <td>La pintura, decoración y muebles de la casa</td>
+        </tr>
+        <tr>
+            <td><strong>JavaScript</strong></td>
+            <td>Lenguaje de programación del navegador</td>
+            <td>Carrito interactivo, cargar productos, gestionar sesiones</td>
+            <td>La electricidad e instalaciones de la casa</td>
+        </tr>
+        <tr>
+            <td><strong>Node.js</strong></td>
+            <td>Entorno para ejecutar JavaScript en el servidor</td>
+            <td>El servidor que recibe pedidos del frontend</td>
+            <td>El motor de un auto (hace funcionar todo)</td>
+        </tr>
+        <tr>
+            <td><strong>Express</strong></td>
+            <td>Framework web para Node.js</td>
+            <td>Define las rutas del API: /productos, /pedidos, /usuarios</td>
+            <td>El GPS del motor (organiza hacia dónde va cada cosa)</td>
+        </tr>
+        <tr>
+            <td><strong>Supabase</strong></td>
+            <td>Base de datos PostgreSQL + autenticación en la nube</td>
+            <td>Guarda productos, pedidos, usuarios y sus contraseñas</td>
+            <td>El archivero del negocio (todo organizado y seguro)</td>
+        </tr>
+        <tr>
+            <td><strong>Git</strong></td>
+            <td>Sistema de control de versiones</td>
+            <td>Historial de todos los cambios del código del proyecto</td>
+            <td>El historial de cambios de un documento Word</td>
+        </tr>
+        <tr>
+            <td><strong>GitHub</strong></td>
+            <td>Plataforma online para guardar repositorios Git</td>
+            <td>Respaldo en la nube del código y colaboración</td>
+            <td>Google Drive pero especializado en código</td>
+        </tr>
+        <tr>
+            <td><strong>Netlify</strong></td>
+            <td>Servicio de hosting para el frontend</td>
+            <td>Publicar el frontend para que el mundo lo vea</td>
+            <td>El local donde pones el negocio (ubicación física)</td>
+        </tr>
+        <tr>
+            <td><strong>Render</strong></td>
+            <td>Servicio de hosting para el backend</td>
+            <td>Publicar el servidor Node.js en internet</td>
+            <td>La bodega/almacén donde está la cocina del negocio</td>
+        </tr>
+    </table>
+
+    <div class="importante">
+        <strong>¡No te abrumes!</strong> No necesitas dominar todo esto antes de empezar. Iremos aprendiendo cada tecnología paso a paso, cuando la necesitemos. Al final del curso, todo tendrá sentido.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 4: INSTALACIÓN ===== -->
+    <h2>4. Instalación de herramientas (paso a paso)</h2>
+
+    <p>Necesitamos instalar 4 programas en tu computadora. Sigue cada paso con cuidado.</p>
+
+    <!-- VS CODE -->
+    <h3><span class="numero-concepto">1</span> Visual Studio Code (VS Code)</h3>
+
+    <p><strong>¿Qué es?</strong> Es el editor de código más popular del mundo entre desarrolladores web. Es como el "Word" de los programadores: un programa donde escribimos todo nuestro código, pero con superpoderes.</p>
+
+    <p><strong>¿Por qué VS Code?</strong> Es gratuito, tiene resaltado de sintaxis (colorea el código para que sea legible), autocompletado inteligente, integración con Git, y miles de extensiones para facilitar el trabajo.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">
+            Abre tu navegador y ve a <code>https://code.visualstudio.com</code>
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">
+            Haz clic en el botón azul grande "Download for Windows" (o el sistema operativo que uses).
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">
+            Ejecuta el instalador descargado. En las opciones, marca <strong>"Agregar al PATH"</strong> y <strong>"Abrir con Code"</strong> en el menú contextual. Esto te permitirá abrir VS Code desde la terminal.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">
+            Abre VS Code. Verás una pantalla de bienvenida. Ciérrala por ahora.
+        </div>
+    </div>
+
+    <h4>Extensiones recomendadas para VS Code</h4>
+    <p>Las extensiones son "plugins" que agregan funcionalidades. Para instalarlas: presiona <code>Ctrl+Shift+X</code> para abrir el panel de extensiones, busca por nombre e instala:</p>
+
+    <table>
+        <tr>
+            <th>Extensión</th>
+            <th>¿Para qué sirve?</th>
+        </tr>
+        <tr>
+            <td><strong>Prettier - Code formatter</strong></td>
+            <td>Formatea automáticamente tu código para que siempre se vea ordenado</td>
+        </tr>
+        <tr>
+            <td><strong>ESLint</strong></td>
+            <td>Detecta errores en tu JavaScript antes de ejecutarlo</td>
+        </tr>
+        <tr>
+            <td><strong>Live Server</strong></td>
+            <td>Abre tu página web en el navegador y la actualiza automáticamente al guardar</td>
+        </tr>
+        <tr>
+            <td><strong>GitLens</strong></td>
+            <td>Muestra información de Git directamente en el código (quién cambió qué y cuándo)</td>
+        </tr>
+        <tr>
+            <td><strong>Auto Rename Tag</strong></td>
+            <td>Al renombrar una etiqueta HTML de apertura, renombra automáticamente la de cierre</td>
+        </tr>
+        <tr>
+            <td><strong>Path Intellisense</strong></td>
+            <td>Autocompletado para rutas de archivos en tu código</td>
+        </tr>
+    </table>
+
+    <!-- NODE.JS -->
+    <h3><span class="numero-concepto">2</span> Node.js</h3>
+
+    <p><strong>¿Qué es?</strong> Node.js es un programa que permite ejecutar JavaScript fuera del navegador, directamente en tu computadora o en un servidor. Antes de Node.js (creado en 2009), JavaScript solo podía correr en navegadores.</p>
+
+    <p><strong>¿Por qué lo necesitamos?</strong> Porque nuestro backend (el servidor de Cafetería Aroma) está escrito en JavaScript usando Node.js. También necesitamos Node para usar <code>npm</code>, el gestor de paquetes que nos permite instalar librerías como Express.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">
+            Ve a <code>https://nodejs.org</code>. Verás dos versiones: <strong>LTS</strong> y "Current". Descarga siempre la versión <strong>LTS</strong> (Long Term Support = Soporte a Largo Plazo). Es la más estable y la recomendada para proyectos serios.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">
+            Instala con todas las opciones por defecto. El instalador también instalará <strong>npm</strong> automáticamente.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">
+            Verifica la instalación. Abre una terminal (en Windows: busca "CMD" o "PowerShell" en el menú de inicio) y ejecuta:
+            <pre><code>node --version
+npm --version</code></pre>
+            Deberías ver algo como <code>v20.11.0</code> y <code>10.2.4</code>. Los números exactos pueden variar, lo importante es que no dé error.
+        </div>
+    </div>
+
+    <div class="tip">
+        <strong>¿Qué es npm?</strong> npm (Node Package Manager) es el gestor de paquetes de Node.js. Es como una "tienda de herramientas" gratuita: con un solo comando puedes instalar cualquiera de los más de 2 millones de librerías disponibles. Por ejemplo: <code>npm install express</code> instala el framework Express.
+    </div>
+
+    <!-- GIT -->
+    <h3><span class="numero-concepto">3</span> Git</h3>
+
+    <p><strong>¿Qué es?</strong> Git es un sistema de control de versiones. Registra todos los cambios que haces en tu código a lo largo del tiempo, permitiéndote volver a cualquier versión anterior, trabajar en equipo sin pisarte con otros, y tener un historial completo de tu proyecto.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">
+            Ve a <code>https://git-scm.com</code> y descarga Git para tu sistema operativo.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">
+            Durante la instalación, cuando te pregunte por el editor por defecto, selecciona <strong>Visual Studio Code</strong>. Para el resto, las opciones por defecto están bien.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">
+            Configura tu identidad (Git necesita saber quién hace los cambios). Abre la terminal y ejecuta estos dos comandos, reemplazando con tus datos:
+            <pre><code>git config --global user.name "Tu Nombre Completo"
+git config --global user.email "tu@email.com"</code></pre>
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">
+            Verifica la instalación:
+            <pre><code>git --version</code></pre>
+            Deberías ver algo como <code>git version 2.43.0</code>.
+        </div>
+    </div>
+
+    <!-- CHROME -->
+    <h3><span class="numero-concepto">4</span> Google Chrome</h3>
+
+    <p><strong>¿Por qué Chrome?</strong> Chrome es el navegador más usado en el mundo y tiene las mejores <strong>DevTools</strong> (herramientas de desarrollo), que son fundamentales para debuggear (encontrar y corregir errores) en páginas web.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">
+            Descarga Chrome desde <code>https://www.google.com/chrome</code> si no lo tienes instalado.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">
+            Aprende a abrir las DevTools: presiona <strong>F12</strong> (o <code>Ctrl+Shift+I</code>) en cualquier página web. Verás un panel con varias pestañas:
+            <ul>
+                <li><strong>Elements</strong>: Muestra el HTML de la página. Puedes hacer clic en cualquier elemento para inspeccionarlo.</li>
+                <li><strong>Console</strong>: Muestra errores de JavaScript y te permite ejecutar código directamente.</li>
+                <li><strong>Network</strong>: Muestra todas las peticiones HTTP que hace la página (muy útil para ver si el API funciona).</li>
+                <li><strong>Application</strong>: Muestra cookies, localStorage y otros datos guardados en el navegador.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tip">
+        <strong>Truco de desarrollador:</strong> Con Chrome DevTools abierto, haz clic derecho en cualquier elemento de cualquier página web y elige "Inspeccionar". Podrás ver cómo está construida esa página. ¡Es una de las mejores formas de aprender!
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 5: CUENTAS ONLINE ===== -->
+    <h2>5. Crear cuentas en servicios online</h2>
+
+    <p>Necesitaremos cuentas en 4 servicios. Todos son gratuitos para proyectos como el nuestro.</p>
+
+    <h3><span class="numero-concepto">1</span> GitHub</h3>
+    <p><strong>¿Qué es?</strong> GitHub es la red social de los programadores. Es un servicio online donde puedes guardar tus proyectos Git, ver el código de millones de proyectos de todo el mundo (incluidos grandes como VS Code, Node.js o React), y colaborar con otros desarrolladores.</p>
+    <p><strong>¿Para qué en Aroma?</strong> Guardaremos todo el código del proyecto en GitHub. Así tendremos un respaldo en la nube y cualquier persona con el enlace podrá ver nuestro trabajo.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Ve a <code>https://github.com</code> y haz clic en "Sign up" (Registrarse).</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">Elige un nombre de usuario (será tu identidad en la comunidad de programadores, elígelo con cuidado).</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">Completa el registro con tu email y una contraseña segura. Confirma tu cuenta desde el email que te llegarán.</div>
+    </div>
+
+    <h3><span class="numero-concepto">2</span> Supabase</h3>
+    <p><strong>¿Qué es?</strong> Supabase es una plataforma que nos ofrece una base de datos PostgreSQL en la nube, autenticación de usuarios (login/registro), almacenamiento de archivos e imágenes, y mucho más, con un plan gratuito muy generoso.</p>
+    <p><strong>¿Para qué en Aroma?</strong> Será nuestra base de datos: guardará los productos, pedidos y usuarios. También manejará el login seguro de los empleados y el administrador.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Ve a <code>https://supabase.com</code> y haz clic en "Start your project".</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">Puedes registrarte con tu cuenta de GitHub (recomendado, es más rápido y conveniente).</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">Una vez dentro, crea una nueva organización con el nombre que quieras (ej: "mi-cafeteria"). Por ahora no crees el proyecto todavía; lo haremos en la guía de base de datos.</div>
+    </div>
+
+    <h3><span class="numero-concepto">3</span> Netlify</h3>
+    <p><strong>¿Qué es?</strong> Netlify es un servicio de hosting (alojamiento web) especializado en el frontend. Con un par de clics puedes publicar tu página web y que todo el mundo la vea en internet, con una URL real como <code>tu-cafeteria.netlify.app</code>.</p>
+    <p><strong>¿Para qué en Aroma?</strong> Publicaremos el frontend (HTML, CSS, JS) de Cafetería Aroma en Netlify. Lo configuraremos más adelante, cerca del final del curso.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Ve a <code>https://netlify.com</code> y crea una cuenta gratuita.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">También puedes registrarte con GitHub. Por ahora solo crea la cuenta; lo usaremos en la guía de despliegue.</div>
+    </div>
+
+    <h3><span class="numero-concepto">4</span> Render</h3>
+    <p><strong>¿Qué es?</strong> Render es un servicio de hosting para el backend. Permite publicar servidores Node.js, Python, Ruby, etc. en internet de forma sencilla y gratuita (con algunas limitaciones en el plan gratis).</p>
+    <p><strong>¿Para qué en Aroma?</strong> Publicaremos el servidor Node.js/Express de Aroma en Render, para que el frontend pueda comunicarse con él desde internet.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Ve a <code>https://render.com</code> y crea una cuenta gratuita (también puedes usar GitHub para el registro).</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">Al igual que Netlify, solo crea la cuenta ahora. Lo configuraremos en la guía final del curso.</div>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 6: CONOCIENDO VS CODE ===== -->
+    <h2>6. Conociendo Visual Studio Code</h2>
+
+    <p>VS Code puede parecer abrumador al principio con tantas opciones. Vamos a conocer las partes más importantes.</p>
+
+    <h3>La interfaz de VS Code</h3>
+
+    <pre><code>┌──────────────────────────────────────────────────────────┐
+│  [≡] Archivo  Editar  Ver  ...              cafeteria-aroma│
+├────┬─────────────────────────────────────────────────────┤
+│ 📁 │  frontend/index.html  ×  │  frontend/css/styles.css  │
+│    ├─────────────────────────────────────────────────────┤
+│ 🔍 │                                                     │
+│    │  1  &lt;!DOCTYPE html&gt;                                  │
+│ 🌿 │  2  &lt;html lang="es"&gt;                                │
+│    │  3    &lt;head&gt;                                        │
+│ 🔌 │  4      &lt;meta charset="UTF-8"&gt;                      │
+│    │  ...                                               │
+│ ⚙️ │                                                     │
+│    ├─────────────────────────────────────────────────────┤
+│    │  TERMINAL                                          │
+│    │  $ node --version                                  │
+│    │  v20.11.0                                          │
+│    │  $                                                 │
+└────┴─────────────────────────────────────────────────────┘</code></pre>
+
+    <ul>
+        <li><strong>Panel izquierdo (barra de actividad):</strong> Los iconos para navegar entre el Explorador de archivos (📁), Búsqueda (🔍), Control de versiones Git (🌿), Extensiones (🔌) y Configuración (⚙️).</li>
+        <li><strong>Panel lateral (sidebar):</strong> Muestra el contenido del panel activo. Si está activo el Explorador, verás el árbol de carpetas y archivos del proyecto.</li>
+        <li><strong>Editor (centro):</strong> Donde escribes el código. Puedes tener múltiples archivos abiertos en pestañas.</li>
+        <li><strong>Terminal integrada (abajo):</strong> Una terminal completa dentro de VS Code. Presiona <code>Ctrl+`</code> (Ctrl + la tecla de la tilde/acento) para abrirla o cerrarla.</li>
+    </ul>
+
+    <h3>Atajos de teclado esenciales</h3>
+
+    <table>
+        <tr>
+            <th>Atajo</th>
+            <th>Acción</th>
+        </tr>
+        <tr>
+            <td><code>Ctrl + S</code></td>
+            <td>Guardar el archivo actual</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + Z</code></td>
+            <td>Deshacer el último cambio</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + Y</code></td>
+            <td>Rehacer (deshacer el deshacer)</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + F</code></td>
+            <td>Buscar texto en el archivo actual</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + H</code></td>
+            <td>Buscar y reemplazar texto</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + P</code></td>
+            <td>Abrir cualquier archivo del proyecto (búsqueda rápida)</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + `</code></td>
+            <td>Abrir/cerrar la terminal integrada</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + Shift + P</code></td>
+            <td>Paleta de comandos (busca cualquier comando de VS Code)</td>
+        </tr>
+        <tr>
+            <td><code>Alt + Shift + F</code></td>
+            <td>Formatear el código automáticamente (Prettier)</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + /</code></td>
+            <td>Comentar/descomentar la línea actual</td>
+        </tr>
+        <tr>
+            <td><code>Ctrl + D</code></td>
+            <td>Seleccionar la siguiente ocurrencia de la palabra seleccionada</td>
+        </tr>
+    </table>
+
+    <div class="tip">
+        <strong>Tip de productividad:</strong> Aprende los atajos de teclado de a poco. No intentes memorizarlos todos hoy. Con el tiempo, usarlos se vuelve automático y te ahorrará mucho tiempo.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 7: GIT ===== -->
+    <h2>7. Primer contacto con Git</h2>
+
+    <p>Git es posiblemente la herramienta más importante de un desarrollador, después de su editor de código. Vamos a entenderlo bien desde el principio.</p>
+
+    <div class="analogia">
+        <strong>Analogía del "control de versiones":</strong><br>
+        ¿Alguna vez has escrito un documento Word y guardado copias como "informe_final.docx", "informe_final_v2.docx", "informe_final_ESTE_SI.docx"? Eso es un control de versiones manual, ¡y es un caos!
+        <br><br>
+        Git hace eso de forma inteligente y automática. Cada vez que terminas una parte de tu código y lo "guardas" en Git (con un <em>commit</em>), Git recuerda exactamente cómo estaban todos los archivos en ese momento. Puedes tener miles de "versiones" y Git las gestiona sin que tengas miles de archivos duplicados.
+        <br><br>
+        Es como un <strong>Ctrl+Z infinito para todo el proyecto</strong>, con descripciones de qué hiciste en cada versión.
+    </div>
+
+    <h3>Conceptos clave de Git</h3>
+
+    <ul>
+        <li><strong>Repositorio (repo):</strong> Una carpeta de proyecto controlada por Git. Contiene todos tus archivos y el historial completo de cambios.</li>
+        <li><strong>Commit:</strong> Un "punto de guardado" con nombre. Es una foto instantánea de todos tus archivos en un momento dado.</li>
+        <li><strong>Branch (rama):</strong> Una línea de desarrollo paralela. Puedes crear una rama para probar algo nuevo sin afectar el código principal.</li>
+        <li><strong>Remote:</strong> Una copia del repositorio en internet (como GitHub). Es tu respaldo en la nube.</li>
+    </ul>
+
+    <h3>Los comandos Git que más usarás</h3>
+
+    <h4>Configurar un nuevo repositorio</h4>
+    <pre><code># Inicializar Git en una carpeta (solo se hace una vez al inicio del proyecto)
+git init
+
+# Vincular con un repositorio de GitHub
+git remote add origin https://github.com/tu-usuario/cafeteria-aroma.git</code></pre>
+
+    <h4>El ciclo diario de trabajo con Git</h4>
+    <pre><code># 1. Ver qué archivos cambiaron
+git status
+
+# 2. Agregar los archivos que quieres guardar en el commit
+git add .          # Agrega TODOS los archivos modificados
+git add index.html # Agrega solo ese archivo específico
+
+# 3. Crear el commit (el "punto de guardado") con un mensaje descriptivo
+git commit -m "Agrego la página del menú con filtros por categoría"
+
+# 4. Subir los cambios a GitHub
+git push origin main</code></pre>
+
+    <h4>Comandos de consulta</h4>
+    <pre><code># Ver el historial de commits (quién hizo qué y cuándo)
+git log
+
+# Ver los cambios que hiciste desde el último commit
+git diff
+
+# Descargar los últimos cambios de GitHub (útil si trabajas en equipo)
+git pull origin main</code></pre>
+
+    <div class="importante">
+        <strong>Regla de oro de Git:</strong> Haz commits <em>frecuentes</em> y con mensajes <em>descriptivos</em>. Un buen mensaje de commit empieza con un verbo en presente: "Agrego...", "Corrijo...", "Actualizo...", "Elimino...". Así, cuando veas el historial, sabes exactamente qué cambió en cada paso.
+    </div>
+
+    <div class="warning">
+        <strong>¿Metiste la pata?</strong> Si rompiste algo y quieres volver al último commit guardado, puedes usar <code>git checkout -- .</code> (con cuidado, esto descarta todos los cambios sin guardar). Si el commit ya fue hecho, <code>git revert</code> crea un nuevo commit que deshace el anterior sin borrar el historial.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 8: ESTRUCTURA DEL PROYECTO ===== -->
+    <h2>8. La estructura de nuestro proyecto</h2>
+
+    <p>Antes de empezar a escribir código, es fundamental entender cómo está organizado el proyecto. Una buena estructura de carpetas hace que el código sea más fácil de entender, mantener y ampliar.</p>
+
+    <pre><code>trabajoBaseTecnicoMedio/
+│
+├── frontend/                  ← TODO lo que ve el usuario en el navegador
+│   ├── index.html             ← La única página HTML (SPA)
+│   ├── css/
+│   │   └── styles.css         ← Todos los estilos visuales
+│   └── js/
+│       ├── config.js          ← Variables de configuración (URL del API, etc.)
+│       ├── api.js             ← Funciones para comunicarse con el servidor
+│       ├── auth.js            ← Manejo de login y sesión del usuario
+│       ├── cart.js            ← Lógica del carrito de compras
+│       ├── app.js             ← Punto de entrada y coordinación general
+│       └── pages/             ← Cada "pantalla" de la aplicación
+│           ├── home.js        ← Pantalla de inicio
+│           ├── menu.js        ← Pantalla del menú con productos
+│           ├── cart-page.js   ← Pantalla del carrito
+│           ├── contact.js     ← Pantalla de contacto
+│           ├── login.js       ← Pantalla de inicio de sesión
+│           ├── cashier.js     ← Panel del cajero
+│           └── admin.js       ← Panel del administrador
+│
+├── backend/                   ← El servidor (no lo ve el usuario)
+│   ├── src/
+│   │   ├── server.js          ← Punto de entrada del servidor
+│   │   ├── routes/            ← Define las URLs del API
+│   │   │   ├── products.js    ← /api/products
+│   │   │   ├── orders.js      ← /api/orders
+│   │   │   └── auth.js        ← /api/auth
+│   │   └── middleware/        ← Funciones intermedias (auth, validación)
+│   └── package.json           ← Lista de dependencias del servidor
+│
+├── database/                  ← Todo relacionado con la base de datos
+│   ├── schema.sql             ← Estructura de las tablas (CREATE TABLE...)
+│   └── seed.sql               ← Datos iniciales (productos de ejemplo)
+│
+└── docs/                      ← Documentación del proyecto
+    ├── guias-didacticas/      ← ¡Estás aquí! Las guías de aprendizaje
+    └── guias/                 ← Guías técnicas de referencia</code></pre>
+
+    <h3>¿Para qué sirve cada parte?</h3>
+
+    <div class="paso">
+        <div class="paso-num">📁</div>
+        <div class="paso-contenido">
+            <strong>frontend/</strong> — Todo lo que va al navegador del cliente. Los archivos de esta carpeta son descargados por el navegador del usuario cuando visita la página. NO deben contener contraseñas ni información confidencial.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">📁</div>
+        <div class="paso-contenido">
+            <strong>backend/</strong> — El servidor Node.js que corre en un servidor remoto (en Render). Maneja la lógica de negocio, verifica permisos, y es el único que puede hablar directamente con la base de datos.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">📁</div>
+        <div class="paso-contenido">
+            <strong>database/</strong> — Los archivos SQL que definen la estructura de la base de datos. Son como el "plano" de cómo están organizadas las tablas, relaciones y datos iniciales.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">📁</div>
+        <div class="paso-contenido">
+            <strong>docs/</strong> — Documentación, guías y notas sobre el proyecto. Muy importante en proyectos reales para que cualquier persona pueda entender el sistema.
+        </div>
+    </div>
+
+    <div class="tip">
+        <strong>Principio de separación de responsabilidades:</strong> Cada carpeta tiene una responsabilidad clara. Frontend = presentación, Backend = lógica, Database = datos. Esta separación hace que si necesitamos cambiar la base de datos, no tengamos que tocar el frontend, y viceversa.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== EJERCICIO FINAL ===== -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final: Verifica tu Entorno de Desarrollo</h4>
+        <p>Antes de avanzar a la siguiente guía, verifica que todo está instalado correctamente siguiendo estos pasos:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                Abre una terminal (CMD, PowerShell o la terminal de VS Code con <code>Ctrl+`</code>) y ejecuta los siguientes comandos. Cada uno debe mostrar un número de versión sin errores:
+                <pre><code>node --version
+npm --version
+git --version</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                Crea una carpeta de práctica llamada <code>mi-primer-proyecto</code> en el escritorio:
+                <pre><code># En la terminal:
+mkdir Desktop/mi-primer-proyecto
+cd Desktop/mi-primer-proyecto</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                Abre esa carpeta en VS Code:
+                <pre><code>code .</code></pre>
+                (El punto <code>.</code> significa "la carpeta actual"). VS Code debería abrirse con esa carpeta como proyecto.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">
+                Inicializa un repositorio Git en esa carpeta. Desde la terminal de VS Code:
+                <pre><code>git init</code></pre>
+                Deberías ver: <code>Initialized empty Git repository in .../mi-primer-proyecto/.git/</code>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido">
+                Crea un archivo de texto simple. En VS Code, usa <code>Ctrl+N</code> para crear un archivo nuevo, escribe "Hola, soy mi primer proyecto web", y guárdalo como <code>README.md</code> con <code>Ctrl+S</code>.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido">
+                Haz tu primer commit:
+                <pre><code>git add .
+git commit -m "Inicio mi primer proyecto web"</code></pre>
+                Deberías ver un mensaje confirmando que el commit fue creado.
+            </div>
+        </div>
+
+        <div class="tip">
+            <strong>¡Felicitaciones!</strong> Si llegaste hasta aquí con todo funcionando, tienes todo lo necesario para comenzar a construir Cafetería Aroma. Pasa a la Guía 01 para empezar con HTML.
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== RESUMEN ===== -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 00</h2>
+        <p style="color: #e8d5c0; margin-bottom: 12px;">En esta guía aprendiste:</p>
+        <ul>
+            <li><strong style="color: #F5DEB3;">El proyecto Cafetería Aroma:</strong> Un sistema web fullstack real con menú online, carrito, pagos QR, panel de cajero y panel de administrador.</li>
+            <li><strong style="color: #F5DEB3;">Cómo funciona internet:</strong> Cliente (navegador) y Servidor, el protocolo HTTP, las URLs, Frontend vs Backend y la Base de Datos.</li>
+            <li><strong style="color: #F5DEB3;">Las 10 tecnologías del proyecto:</strong> HTML, CSS, JS, Node.js, Express, Supabase, Git, GitHub, Netlify y Render, y para qué sirve cada una.</li>
+            <li><strong style="color: #F5DEB3;">Instalación completada:</strong> VS Code con extensiones, Node.js + npm, Git configurado, y Chrome con DevTools.</li>
+            <li><strong style="color: #F5DEB3;">Cuentas creadas:</strong> GitHub, Supabase, Netlify y Render listas para usar.</li>
+            <li><strong style="color: #F5DEB3;">VS Code dominado:</strong> Interfaz, panel de archivos, terminal integrada y los atajos de teclado más importantes.</li>
+            <li><strong style="color: #F5DEB3;">Git comprendido:</strong> qué es el control de versiones, y los comandos <code>git init</code>, <code>git add</code>, <code>git commit</code> y <code>git push</code>.</li>
+            <li><strong style="color: #F5DEB3;">Estructura del proyecto:</strong> Carpetas frontend, backend, database y docs, y la responsabilidad de cada una.</li>
+        </ul>
+    </div>
+
+    <!-- ===== NAVEGACIÓN ===== -->
+    <div class="nav-guias">
+        <span></span>
+        <a href="guia-01-html-basico.html" class="btn-nav">Guía 01: HTML Básico →</a>
+    </div>
+
+</body>
+</html>

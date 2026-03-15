@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 14 – Paneles de Cajero y Administrador</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+        .feature-card { background: #FBF6F0; border: 1px solid #C8956C; border-radius: 8px; padding: 16px 18px; }
+        .feature-card h4 { color: #4A3426; margin-top: 0; margin-bottom: 8px; }
+        .feature-card ul { margin-bottom: 0; }
+        @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 14 – Paneles de Cajero y Administrador</h1>
+        <p class="subtitulo">Módulo 6: Integración | Gestión del negocio en tiempo real</p>
+        <div class="meta">
+            <span class="badge">Nivel: Avanzado</span>
+            <span class="badge">Tiempo estimado: 6 horas</span>
+            <span class="badge">Prerequisito: Guía 13</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Construir el panel del cajero con gestión de pedidos en tiempo real</li>
+            <li>Implementar el cambio de estados del pedido con feedback visual</li>
+            <li>Desarrollar el panel del administrador con dashboard de estadísticas</li>
+            <li>Crear el formulario de gestión de productos (CRUD completo)</li>
+            <li>Construir el endpoint de dashboard en el backend</li>
+            <li>Implementar auto-refresh para mantener los datos actualizados</li>
+        </ul>
+    </div>
+
+    <h2>1. Roles y permisos en Aroma</h2>
+
+    <p>La Cafetería Aroma tiene tres tipos de usuarios, cada uno con su propio nivel de acceso:</p>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h4>Cliente (client)</h4>
+            <ul>
+                <li>Ver el menú público</li>
+                <li>Agregar productos al carrito</li>
+                <li>Hacer pedidos</li>
+                <li>Ver sus propios pedidos</li>
+            </ul>
+        </div>
+        <div class="feature-card">
+            <h4>Cajero (cashier)</h4>
+            <ul>
+                <li>Ver todos los pedidos activos</li>
+                <li>Cambiar el estado de los pedidos</li>
+                <li>Verificar métodos de pago</li>
+                <li>Filtrar pedidos por fecha</li>
+            </ul>
+        </div>
+        <div class="feature-card">
+            <h4>Administrador (admin)</h4>
+            <ul>
+                <li>Todo lo del cajero</li>
+                <li>Ver estadísticas del negocio</li>
+                <li>Crear/editar/eliminar productos</li>
+                <li>Gestionar categorías</li>
+                <li>Ver ventas históricas</li>
+            </ul>
+        </div>
+        <div class="feature-card">
+            <h4>Público (sin login)</h4>
+            <ul>
+                <li>Ver el menú</li>
+                <li>Ver la descripción de productos</li>
+                <li>Ver información de contacto</li>
+                <li>Agregar al carrito (sin confirmar)</li>
+            </ul>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <h2>2. El Panel del Cajero — Frontend</h2>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> El panel del cajero es como la pantalla de comandas en la cocina de un restaurante: muestra todos los pedidos activos, ordenados por tiempo, y el cajero puede actualizar el estado conforme avanza el proceso. Sin esta pantalla, el cajero no sabría qué pedidos tiene pendientes.
+    </div>
+
+    <h3>¿Qué puede hacer el cajero?</h3>
+    <ul>
+        <li>Ver pedidos nuevos en tiempo casi real (auto-refresh cada 30 segundos)</li>
+        <li>Cambiar el estado: Pendiente → Confirmado → Preparando → Listo → Entregado</li>
+        <li>Ver el detalle completo de cada pedido (items, dirección, teléfono)</li>
+        <li>Filtrar pedidos por estado o fecha</li>
+        <li>Cancelar pedidos con motivo</li>
+    </ul>
+
+    <pre><code>// frontend/js/pages/cashier.js
+const CashierPage = {
+    orders: [],
+    selectedOrderId: null,
+    refreshInterval: null,
+
+    async init() {
+        // Verificar que el usuario tiene permiso
+        const session = await Auth.getSession();
+        const role = session?.user?.user_metadata?.role;
+
+        if (role !== 'cashier' && role !== 'admin') {
+            mostrarToast('Acceso denegado', 'error');
+            App.showTab('home');
+            return;
+        }
+
+        await this.cargarPedidos();
+        this.setupFiltros();
+        this.setupAcciones();
+        this.setupAutoRefresh();
+    },
+
+    async cargarPedidos(filtros = {}) {
+        try {
+            // Construir los query params según los filtros seleccionados
+            const params = new URLSearchParams();
+            if (filtros.status) params.set('status', filtros.status);
+            if (filtros.fecha) params.set('fecha', filtros.fecha);
+
+            const queryString = params.toString();
+            const url = `/api/cashier/orders${queryString ? '?' + queryString : ''}`;
+
+            const { orders } = await Api.get(url);
+            this.orders = orders;
+            this.renderizarListaPedidos();
+            this.actualizarContadores();
+
+        } catch (error) {
+            mostrarToast('Error cargando pedidos', 'error');
+            console.error(error);
+        }
+    },
+
+    renderizarListaPedidos() {
+        const lista = document.getElementById('ordersList');
+
+        if (this.orders.length === 0) {
+            lista.innerHTML = `
+                &lt;div class="no-orders"&gt;
+                    &lt;p&gt;No hay pedidos que mostrar&lt;/p&gt;
+                &lt;/div&gt;
+            `;
+            return;
+        }
+
+        lista.innerHTML = this.orders.map(order => `
+            &lt;div class="order-card status-${order.status}"
+                 data-id="${order.id}"&gt;
+                &lt;div class="order-card-header"&gt;
+                    &lt;strong class="order-code"&gt;${order.code}&lt;/strong&gt;
+                    &lt;span class="status-badge badge-${order.status}"&gt;
+                        ${this.getStatusLabel(order.status)}
+                    &lt;/span&gt;
+                    &lt;span class="order-time"&gt;${this.formatTime(order.created_at)}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div class="order-customer"&gt;
+                    &lt;span&gt;Cliente: ${escHtml(order.customer_name)}&lt;/span&gt;
+                    &lt;span&gt;Tel: ${order.customer_phone}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div class="order-items-preview"&gt;
+                    ${order.items?.map(i =>
+                        `&lt;span class="item-tag"&gt;${i.quantity}x ${escHtml(i.product_name)}&lt;/span&gt;`
+                    ).join('') || ''}
+                &lt;/div&gt;
+                &lt;div class="order-footer"&gt;
+                    &lt;span class="order-total"&gt;Bs. ${order.total.toFixed(2)}&lt;/span&gt;
+                    &lt;span class="payment-method"&gt;${order.payment_method?.toUpperCase()}&lt;/span&gt;
+                    &lt;div class="order-actions"&gt;
+                        ${this.getActionButtons(order)}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        `).join('');
+
+        // Event delegation para los botones de acción
+        lista.addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const orderId = btn.closest('[data-id]')?.dataset.id;
+            const action = btn.dataset.action;
+
+            if (action && orderId) {
+                await this.cambiarEstado(orderId, action);
+            }
+        });
+    },
+
+    // Determinar qué botones mostrar según el estado actual
+    getActionButtons(order) {
+        const nextStates = {
+            pending: [{ label: 'Confirmar', next: 'confirmed', style: 'primary' }],
+            confirmed: [{ label: 'Preparando', next: 'preparing', style: 'warning' }],
+            preparing: [{ label: 'Listo', next: 'ready', style: 'success' }],
+            ready: [{ label: 'Entregado', next: 'delivered', style: 'success' }],
+            delivered: [],
+            cancelled: []
+        };
+
+        const buttons = nextStates[order.status] || [];
+        const cancelBtn = ['pending', 'confirmed'].includes(order.status)
+            ? `&lt;button class="btn-action btn-cancel" data-action="cancelled"&gt;Cancelar&lt;/button&gt;`
+            : '';
+
+        return buttons.map(b =>
+            `&lt;button class="btn-action btn-${b.style}" data-action="${b.next}"&gt;
+                ${b.label}
+             &lt;/button&gt;`
+        ).join('') + cancelBtn;
+    },
+
+    async cambiarEstado(orderId, nuevoEstado) {
+        try {
+            const { order } = await Api.patch(
+                `/api/cashier/orders/${orderId}/status`,
+                { status: nuevoEstado }
+            );
+            mostrarToast(
+                `Pedido ${order.code}: ${this.getStatusLabel(nuevoEstado)}`,
+                'success'
+            );
+            await this.cargarPedidos(); // Refrescar la lista
+        } catch (error) {
+            mostrarToast('Error al actualizar el pedido', 'error');
+        }
+    },
+
+    getStatusLabel(status) {
+        const labels = {
+            pending: 'Pendiente',
+            confirmed: 'Confirmado',
+            preparing: 'Preparando',
+            ready: 'Listo',
+            delivered: 'Entregado',
+            cancelled: 'Cancelado'
+        };
+        return labels[status] || status;
+    },
+
+    formatTime(isoDate) {
+        const date = new Date(isoDate);
+        return date.toLocaleTimeString('es-BO', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    },
+
+    actualizarContadores() {
+        const pendientes = this.orders.filter(o => o.status === 'pending').length;
+        const enProceso = this.orders.filter(o =>
+            ['confirmed', 'preparing'].includes(o.status)
+        ).length;
+
+        const elPendientes = document.getElementById('countPending');
+        const elProceso = document.getElementById('countInProgress');
+        if (elPendientes) elPendientes.textContent = pendientes;
+        if (elProceso) elProceso.textContent = enProceso;
+    },
+
+    setupFiltros() {
+        document.getElementById('filterStatus')?.addEventListener('change', (e) => {
+            this.cargarPedidos({ status: e.target.value || undefined });
+        });
+
+        document.getElementById('filterFecha')?.addEventListener('change', (e) => {
+            this.cargarPedidos({ fecha: e.target.value || undefined });
+        });
+
+        document.getElementById('btnRefresh')?.addEventListener('click', () => {
+            this.cargarPedidos();
+        });
+    },
+
+    setupAutoRefresh() {
+        // Refrescar automáticamente cada 30 segundos
+        this.refreshInterval = setInterval(() => {
+            this.cargarPedidos();
+        }, 30000);
+
+        // Limpiar el interval cuando el usuario cambia de tab
+        document.querySelectorAll('[data-tab]').forEach(el => {
+            el.addEventListener('click', () => {
+                if (el.dataset.tab !== 'cashier' && this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                    this.refreshInterval = null;
+                }
+            });
+        });
+    },
+
+    setupAcciones() { /* configuración adicional de UI */ }
+};</code></pre>
+
+    <div class="tip">
+        <strong>Auto-refresh con setInterval:</strong> <code>setInterval(fn, 30000)</code> ejecuta la función cada 30 segundos. Es importante guardar el ID que devuelve y limpiarlo con <code>clearInterval(id)</code> cuando no se necesita más, para evitar llamadas innecesarias al servidor cuando el usuario está en otra sección.
+    </div>
+
+    <hr class="separador">
+
+    <h2>3. El Panel del Administrador — Frontend</h2>
+
+    <p>El administrador tiene acceso a una vista más completa del negocio: estadísticas, gestión de todo el catálogo de productos, y reportes.</p>
+
+    <pre><code>// frontend/js/pages/admin.js
+const AdminPage = {
+    productos: [],
+    categorias: [],
+    editandoId: null,
+
+    async init() {
+        // Cargar todo en paralelo para mayor rapidez
+        await Promise.all([
+            this.cargarEstadisticas(),
+            this.cargarProductos(),
+            this.cargarCategorias()
+        ]);
+        this.setupFormularioProducto();
+        this.setupTabs();
+    },
+
+    // ===== DASHBOARD =====
+    async cargarEstadisticas() {
+        try {
+            const { stats } = await Api.get('/api/admin/dashboard');
+
+            // Actualizar las tarjetas del dashboard
+            this.actualizarCard('totalVentas', `Bs. ${stats.totalVentasHoy.toFixed(2)}`);
+            this.actualizarCard('totalPedidos', stats.totalPedidosHoy);
+            this.actualizarCard('pedidosPendientes', stats.pedidosPendientes);
+            this.actualizarCard('productosActivos', stats.productosActivos);
+
+        } catch (error) {
+            console.error('Error cargando estadísticas:', error);
+        }
+    },
+
+    actualizarCard(id, valor) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = valor;
+    },
+
+    // ===== GESTIÓN DE PRODUCTOS =====
+    async cargarProductos() {
+        try {
+            const { products } = await Api.get('/api/products?all=true');
+            this.productos = products;
+            this.renderizarTablaProductos();
+        } catch (error) {
+            mostrarToast('Error cargando productos', 'error');
+        }
+    },
+
+    renderizarTablaProductos() {
+        const tbody = document.getElementById('productosTableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = this.productos.map(p => `
+            &lt;tr class="${p.activo ? '' : 'inactivo'}"&gt;
+                &lt;td&gt;
+                    ${p.imagen_url
+                        ? `&lt;img src="${p.imagen_url}" alt="${escHtml(p.nombre)}" width="50" height="50" style="border-radius:6px;object-fit:cover"&gt;`
+                        : '—'
+                    }
+                &lt;/td&gt;
+                &lt;td&gt;
+                    &lt;strong&gt;${escHtml(p.nombre)}&lt;/strong&gt;
+                    &lt;br&gt;
+                    &lt;small style="color:#888"&gt;${escHtml(p.descripcion || '')}...&lt;/small&gt;
+                &lt;/td&gt;
+                &lt;td&gt;${escHtml(p.category?.nombre || '—')}&lt;/td&gt;
+                &lt;td&gt;Bs. ${p.precio.toFixed(2)}&lt;/td&gt;
+                &lt;td&gt;
+                    &lt;span class="status-chip ${p.activo ? 'activo' : 'inactivo'}"&gt;
+                        ${p.activo ? 'Activo' : 'Inactivo'}
+                    &lt;/span&gt;
+                &lt;/td&gt;
+                &lt;td&gt;
+                    &lt;button class="btn-icon" onclick="AdminPage.editarProducto('${p.id}')"
+                            title="Editar"&gt;Editar&lt;/button&gt;
+                    &lt;button class="btn-icon btn-danger"
+                            onclick="AdminPage.toggleActivo('${p.id}', ${p.activo})"
+                            title="${p.activo ? 'Desactivar' : 'Activar'}"&gt;
+                        ${p.activo ? 'Desactivar' : 'Activar'}
+                    &lt;/button&gt;
+                &lt;/td&gt;
+            &lt;/tr&gt;
+        `).join('');
+    },
+
+    editarProducto(id) {
+        const producto = this.productos.find(p => p.id === id);
+        if (!producto) return;
+
+        this.editandoId = id;
+
+        // Llenar el formulario con los datos del producto
+        document.getElementById('prodNombre').value = producto.nombre;
+        document.getElementById('prodDescripcion').value = producto.descripcion || '';
+        document.getElementById('prodPrecio').value = producto.precio;
+        document.getElementById('prodCosto').value = producto.costo || '';
+        document.getElementById('prodCategoria').value = producto.category_id;
+        document.getElementById('prodImagen').value = producto.imagen_url || '';
+
+        // Cambiar el título del formulario
+        document.getElementById('formTitle').textContent = 'Editar Producto';
+        document.getElementById('btnFormSubmit').textContent = 'Guardar Cambios';
+
+        // Hacer scroll al formulario
+        document.getElementById('productoForm').scrollIntoView({ behavior: 'smooth' });
+    },
+
+    async guardarProducto(datos) {
+        try {
+            if (this.editandoId) {
+                await Api.put(`/api/admin/products/${this.editandoId}`, datos);
+                mostrarToast('Producto actualizado correctamente', 'success');
+            } else {
+                await Api.post('/api/admin/products', datos);
+                mostrarToast('Producto creado correctamente', 'success');
+            }
+
+            this.editandoId = null;
+            this.resetFormulario();
+            await this.cargarProductos();
+
+        } catch (error) {
+            mostrarToast(error.message || 'Error al guardar producto', 'error');
+        }
+    },
+
+    async toggleActivo(id, estadoActual) {
+        const accion = estadoActual ? 'desactivar' : 'activar';
+        if (!confirm(`¿Deseas ${accion} este producto?`)) return;
+
+        try {
+            await Api.patch(`/api/admin/products/${id}`, { activo: !estadoActual });
+            mostrarToast(`Producto ${accion === 'activar' ? 'activado' : 'desactivado'}`, 'success');
+            await this.cargarProductos();
+        } catch (error) {
+            mostrarToast('Error al cambiar el estado del producto', 'error');
+        }
+    },
+
+    setupFormularioProducto() {
+        const form = document.getElementById('productoForm');
+        if (!form) return;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const datos = {
+                nombre: document.getElementById('prodNombre').value.trim(),
+                descripcion: document.getElementById('prodDescripcion').value.trim(),
+                precio: parseFloat(document.getElementById('prodPrecio').value),
+                costo: parseFloat(document.getElementById('prodCosto').value) || null,
+                category_id: document.getElementById('prodCategoria').value,
+                imagen_url: document.getElementById('prodImagen').value.trim() || null
+            };
+
+            // Validación básica
+            if (!datos.nombre || !datos.precio || !datos.category_id) {
+                mostrarToast('Nombre, precio y categoría son requeridos', 'warning');
+                return;
+            }
+
+            if (datos.precio <= 0) {
+                mostrarToast('El precio debe ser mayor a 0', 'warning');
+                return;
+            }
+
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            await this.guardarProducto(datos);
+            btn.disabled = false;
+        });
+
+        // Botón "Nuevo producto"
+        document.getElementById('btnNuevoProducto')?.addEventListener('click', () => {
+            this.editandoId = null;
+            this.resetFormulario();
+        });
+    },
+
+    resetFormulario() {
+        document.getElementById('productoForm')?.reset();
+        document.getElementById('formTitle').textContent = 'Nuevo Producto';
+        document.getElementById('btnFormSubmit').textContent = 'Crear Producto';
+    },
+
+    async cargarCategorias() {
+        try {
+            const { categories } = await Api.get('/api/categories');
+            this.categorias = categories;
+
+            // Llenar el select de categorías en el formulario
+            const select = document.getElementById('prodCategoria');
+            if (select) {
+                select.innerHTML = `&lt;option value=""&gt;Seleccionar categoría...&lt;/option&gt;` +
+                    categories.map(c =>
+                        `&lt;option value="${c.id}"&gt;${escHtml(c.nombre)}&lt;/option&gt;`
+                    ).join('');
+            }
+        } catch (error) {
+            console.error('Error cargando categorías:', error);
+        }
+    },
+
+    setupTabs() {
+        // Navegación entre secciones del panel admin
+        document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const section = btn.dataset.section;
+
+                document.querySelectorAll('.admin-section').forEach(s =>
+                    s.style.display = 'none'
+                );
+                document.getElementById(`admin-${section}`)?.style.setProperty('display', 'block');
+
+                document.querySelectorAll('.admin-tab-btn').forEach(b =>
+                    b.classList.remove('active')
+                );
+                btn.classList.add('active');
+            });
+        });
+    }
+};</code></pre>
+
+    <hr class="separador">
+
+    <h2>4. El Dashboard del Administrador — Backend</h2>
+
+    <p>El endpoint del dashboard agrega estadísticas del negocio desde múltiples tablas de la base de datos.</p>
+
+    <pre><code>// backend/src/controllers/adminController.js
+
+// GET /api/admin/dashboard
+export async function getDashboard(req, res) {
+    try {
+        const hoy = new Date().toISOString().split('T')[0]; // "2024-11-15"
+        const inicioHoy = `${hoy}T00:00:00`;
+        const finHoy = `${hoy}T23:59:59`;
+
+        // Ejecutar todas las consultas en paralelo para mayor velocidad
+        const [
+            pedidosHoyResult,
+            pendientesResult,
+            productosResult,
+            ventasSemanaResult
+        ] = await Promise.all([
+            // Pedidos de hoy (excluir cancelados)
+            supabase
+                .from('orders')
+                .select('id, total, status')
+                .gte('created_at', inicioHoy)
+                .lte('created_at', finHoy)
+                .neq('status', 'cancelled'),
+
+            // Pedidos pendientes ahora mismo
+            supabase
+                .from('orders')
+                .select('id', { count: 'exact' })
+                .eq('status', 'pending'),
+
+            // Productos activos
+            supabase
+                .from('products')
+                .select('id', { count: 'exact' })
+                .eq('activo', true),
+
+            // Ventas de los últimos 7 días (solo entregados)
+            supabase
+                .from('orders')
+                .select('created_at, total')
+                .gte('created_at', (() => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - 7);
+                    return d.toISOString();
+                })())
+                .eq('status', 'delivered')
+        ]);
+
+        const pedidosHoy = pedidosHoyResult.data || [];
+        const totalVentasHoy = pedidosHoy.reduce((sum, p) => sum + (p.total || 0), 0);
+
+        // Agrupar ventas por día para el gráfico de los últimos 7 días
+        const ventasPorDia = {};
+        (ventasSemanaResult.data || []).forEach(order => {
+            const dia = order.created_at.split('T')[0];
+            ventasPorDia[dia] = (ventasPorDia[dia] || 0) + order.total;
+        });
+
+        res.json({
+            stats: {
+                totalVentasHoy,
+                totalPedidosHoy: pedidosHoy.length,
+                pedidosPendientes: pendientesResult.count || 0,
+                productosActivos: productosResult.count || 0
+            },
+            ventasPorDia
+        });
+
+    } catch (error) {
+        console.error('Error en dashboard:', error);
+        res.status(500).json({ error: 'Error al obtener estadísticas' });
+    }
+}</code></pre>
+
+    <div class="tip">
+        <strong>Promise.all para consultas paralelas:</strong> En lugar de esperar una consulta y luego la siguiente (lento), <code>Promise.all([])</code> lanza todas las consultas al mismo tiempo y espera a que todas terminen. Si tienes 4 consultas que tardan 100ms cada una, con Promise.all tarda ~100ms en total en lugar de ~400ms.
+    </div>
+
+    <hr class="separador">
+
+    <h2>5. Mostrando estadísticas con tarjetas en el HTML</h2>
+
+    <p>El HTML del dashboard del administrador usa tarjetas simples que el JavaScript actualiza dinámicamente:</p>
+
+    <pre><code>&lt;!-- Panel Admin - Dashboard --&gt;
+&lt;div id="admin-dashboard" class="admin-section"&gt;
+    &lt;h2&gt;Dashboard del Día&lt;/h2&gt;
+
+    &lt;div class="stats-grid"&gt;
+        &lt;div class="stat-card"&gt;
+            &lt;div class="stat-label"&gt;Ventas del Día&lt;/div&gt;
+            &lt;div class="stat-value" id="totalVentas"&gt;Cargando...&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="stat-card"&gt;
+            &lt;div class="stat-label"&gt;Pedidos Hoy&lt;/div&gt;
+            &lt;div class="stat-value" id="totalPedidos"&gt;—&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="stat-card warning"&gt;
+            &lt;div class="stat-label"&gt;Pedidos Pendientes&lt;/div&gt;
+            &lt;div class="stat-value" id="pedidosPendientes"&gt;—&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="stat-card"&gt;
+            &lt;div class="stat-label"&gt;Productos Activos&lt;/div&gt;
+            &lt;div class="stat-value" id="productosActivos"&gt;—&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;h3&gt;Ventas de los Últimos 7 Días&lt;/h3&gt;
+    &lt;div id="ventasSemana"&gt;
+        &lt;!-- Aquí se renderiza el gráfico o tabla de ventas --&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Panel Admin - Productos --&gt;
+&lt;div id="admin-productos" class="admin-section" style="display:none"&gt;
+    &lt;div style="display:flex;justify-content:space-between;align-items:center"&gt;
+        &lt;h2&gt;Gestión de Productos&lt;/h2&gt;
+        &lt;button id="btnNuevoProducto" class="btn-primary"&gt;+ Nuevo Producto&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Tabla de productos --&gt;
+    &lt;table&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;Imagen&lt;/th&gt;
+                &lt;th&gt;Nombre&lt;/th&gt;
+                &lt;th&gt;Categoría&lt;/th&gt;
+                &lt;th&gt;Precio&lt;/th&gt;
+                &lt;th&gt;Estado&lt;/th&gt;
+                &lt;th&gt;Acciones&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody id="productosTableBody"&gt;
+            &lt;!-- Generado por JavaScript --&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+
+    &lt;!-- Formulario de producto --&gt;
+    &lt;div class="product-form-container"&gt;
+        &lt;h3 id="formTitle"&gt;Nuevo Producto&lt;/h3&gt;
+        &lt;form id="productoForm"&gt;
+            &lt;label&gt;Nombre *&lt;br&gt;&lt;input id="prodNombre" required placeholder="Ej: Latte Macchiato"&gt;&lt;/label&gt;
+            &lt;label&gt;Descripción&lt;br&gt;&lt;textarea id="prodDescripcion" rows="3"&gt;&lt;/textarea&gt;&lt;/label&gt;
+            &lt;label&gt;Precio (Bs.) *&lt;br&gt;&lt;input id="prodPrecio" type="number" step="0.50" min="0" required&gt;&lt;/label&gt;
+            &lt;label&gt;Costo (Bs.)&lt;br&gt;&lt;input id="prodCosto" type="number" step="0.50" min="0"&gt;&lt;/label&gt;
+            &lt;label&gt;Categoría *&lt;br&gt;&lt;select id="prodCategoria" required&gt;&lt;/select&gt;&lt;/label&gt;
+            &lt;label&gt;URL de imagen&lt;br&gt;&lt;input id="prodImagen" type="url" placeholder="https://..."&gt;&lt;/label&gt;
+            &lt;button type="submit" id="btnFormSubmit" class="btn-primary"&gt;Crear Producto&lt;/button&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+    <hr class="separador">
+
+    <h2>6. Seguridad en los paneles de gestión</h2>
+
+    <p>Más allá de la autenticación en el backend, el frontend también debe ser defensivo para evitar errores y confusión:</p>
+
+    <h3>Validaciones del lado del cliente</h3>
+    <ul>
+        <li><strong>Verificar el rol al inicializar:</strong> Si el módulo <code>CashierPage.init()</code> detecta que el usuario no tiene el rol correcto, redirige inmediatamente.</li>
+        <li><strong>Escapar HTML en datos del usuario:</strong> Siempre usar <code>escHtml()</code> al insertar datos que vienen de la BD en el DOM. Esto previene ataques XSS.</li>
+        <li><strong>Confirmaciones antes de acciones destructivas:</strong> Usar <code>confirm()</code> antes de cancelar un pedido o desactivar un producto.</li>
+        <li><strong>Deshabilitar botones durante peticiones:</strong> Evitar que el cajero haga doble clic y actualice el estado dos veces.</li>
+    </ul>
+
+    <pre><code>// La función escHtml previene ataques XSS al escapar caracteres especiales
+function escHtml(str) {
+    if (typeof str !== 'string') return str;
+    return str
+        .replace(/&amp;/g, '&amp;amp;')
+        .replace(/&lt;/g, '&amp;lt;')
+        .replace(/&gt;/g, '&amp;gt;')
+        .replace(/"/g, '&amp;quot;')
+        .replace(/'/g, '&amp;#039;');
+}
+
+// Ejemplo de uso seguro
+tbody.innerHTML = productos.map(p => `
+    &lt;td&gt;${escHtml(p.nombre)}&lt;/td&gt;  &lt;!-- Seguro --&gt;
+    &lt;td&gt;${p.nombre}&lt;/td&gt;            &lt;!-- Inseguro si p.nombre viene de la BD --&gt;
+`).join('');</code></pre>
+
+    <div class="importante">
+        <strong>XSS — Cross-Site Scripting:</strong> Si un usuario malintencionado registra su nombre como <code>&lt;script&gt;alert('hackeado')&lt;/script&gt;</code> y el sistema lo muestra sin escapar, ese script se ejecutaría en el navegador de cualquier cajero que lo vea. Escapar siempre el HTML externo previene este tipo de ataque.
+    </div>
+
+    <hr class="separador">
+
+    <div class="ejercicio">
+        <h4>Ejercicio Final — Probar los paneles de gestión</h4>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido"><strong>Login como cajero:</strong> Usar las credenciales del usuario cajero. Verificar que aparece el tab "Cajero" en la navegación.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido"><strong>Ver pedidos:</strong> Abrir el panel del cajero. Los pedidos en estado "pending" deben aparecer. Si no hay, crear uno desde otra ventana del navegador con un usuario cliente.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido"><strong>Flujo completo de estados:</strong> Hacer clic en "Confirmar" → el pedido cambia a "confirmed". Luego "Preparando" → "Listo" → "Entregado". Verificar que cada cambio se refleja instantáneamente.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido"><strong>Login como admin:</strong> Cambiar a un usuario con rol admin. Verificar que aparece también el tab "Admin".</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido"><strong>Dashboard:</strong> Abrir el panel de administrador. Verificar que las estadísticas del día se muestran (ventas, pedidos, pendientes, productos activos).</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido"><strong>Crear un producto:</strong> Ir a la sección de productos, llenar el formulario con un nuevo producto y guardarlo. Verificar que aparece en la tabla y en el menú público.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">7</div>
+            <div class="paso-contenido"><strong>Editar y desactivar:</strong> Editar el precio del producto recién creado. Luego desactivarlo y verificar que ya no aparece en el menú público.</div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <div class="resumen">
+        <h2>Resumen de la Guía 14</h2>
+        <ul>
+            <li>El sistema tiene <strong>tres roles</strong>: cliente, cajero y admin, con acceso progresivo.</li>
+            <li>El panel del cajero muestra pedidos activos con <strong>auto-refresh</strong> cada 30 segundos.</li>
+            <li>Los botones de acción del cajero se generan dinámicamente según el <strong>estado actual</strong> del pedido.</li>
+            <li>El panel del admin incluye un <strong>dashboard</strong> con estadísticas del día calculadas en el backend.</li>
+            <li><strong>Promise.all</strong> lanza múltiples consultas en paralelo para optimizar la velocidad.</li>
+            <li>El CRUD de productos incluye <strong>soft delete</strong> (desactivar, no borrar) para preservar el historial.</li>
+            <li>La función <strong>escHtml()</strong> previene ataques XSS al escapar datos dinámicos en el DOM.</li>
+            <li>Los formularios deben validar en el cliente Y en el servidor; ninguna de las dos valida sola es suficiente.</li>
+        </ul>
+        <p style="color:#e8d5c0; margin-top:14px;">Siguiente paso: Guía 15 — Despliegue del proyecto en internet.</p>
+    </div>
+
+</body>
+</html>

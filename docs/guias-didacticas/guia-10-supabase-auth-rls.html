@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 10 – Autenticación y Seguridad: Supabase Auth y RLS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+        .flujo { background: #1e1e1e; color: #d4d4d4; padding: 18px 20px; border-radius: 10px; margin: 16px 0; font-family: 'Courier New', monospace; font-size: 0.93em; line-height: 1.8; border-left: 4px solid #C8956C; }
+        .flujo .verde { color: #6ec97a; }
+        .flujo .amarillo { color: #dcdcaa; }
+        .flujo .rojo { color: #f48771; }
+        .flujo .azul { color: #9cdcfe; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 10 – Autenticación y Seguridad: Supabase Auth y RLS</h1>
+        <p class="subtitulo">Módulo 4: Base de Datos | Protegiendo los datos de Aroma</p>
+        <div class="meta">
+            <span class="badge">Nivel: Intermedio</span>
+            <span class="badge">Tiempo estimado: 5 horas</span>
+            <span class="badge">Prerequisito: Guía 09</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Entender la diferencia entre autenticación y autorización.</li>
+            <li>Conocer cómo Supabase Auth maneja usuarios, sesiones y contraseñas.</li>
+            <li>Entender qué es un JWT y cómo Aroma lo usa para identificar usuarios.</li>
+            <li>Aprender Row Level Security (RLS): el sistema de seguridad a nivel de filas.</li>
+            <li>Distinguir entre la <code>anon key</code> y la <code>service_role key</code>.</li>
+            <li>Implementar todas las políticas de seguridad del proyecto Aroma.</li>
+            <li>Crear usuarios de prueba y asignar roles correctamente.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2>1. ¿Qué es la autenticación?</h2>
+
+    <p>Antes de hablar de código, necesitamos entender dos conceptos que se confunden frecuentemente:</p>
+
+    <table>
+        <tr>
+            <th>Concepto</th>
+            <th>Pregunta que responde</th>
+            <th>Ejemplo en Aroma</th>
+        </tr>
+        <tr>
+            <td><strong>Autenticación</strong></td>
+            <td>¿Quién eres tú?</td>
+            <td>El usuario ingresa email y contraseña; verificamos que es quien dice ser.</td>
+        </tr>
+        <tr>
+            <td><strong>Autorización</strong></td>
+            <td>¿Qué puedes hacer?</td>
+            <td>Un cajero puede ver pedidos pero no puede editar productos del menú.</td>
+        </tr>
+    </table>
+
+    <div class="analogia">
+        <strong>Analogía: El edificio de oficinas</strong><br>
+        Imagina que llegas a trabajar a un edificio corporativo. En la entrada, la recepcionista te pide tu DNI y verifica que estás en la lista de empleados — eso es la <strong>autenticación</strong>. Una vez dentro, tu tarjeta de acceso determina a qué pisos y qué salas puedes entrar — eso es la <strong>autorización</strong>. Puedes estar perfectamente identificado pero sin permiso de entrar a la sala del servidor.
+    </div>
+
+    <p>En Aroma necesitamos ambas capas:</p>
+    <ul>
+        <li><strong>Autenticación:</strong> solo usuarios registrados pueden hacer pedidos.</li>
+        <li><strong>Autorización:</strong> solo admins pueden modificar el menú, solo cajeros pueden cambiar el estado de los pedidos.</li>
+    </ul>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>2. Supabase Auth — Autenticación lista para usar</h2>
+
+    <p>Implementar autenticación desde cero es complejo y riesgoso: hay que manejar el hash de contraseñas, tokens de sesión, expiración, renovación, recuperación de contraseña, etc. Supabase Auth hace todo eso por nosotros.</p>
+
+    <h3>¿Qué hace Supabase Auth por nosotros?</h3>
+    <ul>
+        <li><strong>Nunca guarda contraseñas en texto plano.</strong> Las procesa con bcrypt (algoritmo de hash unidireccional). Ni siquiera el equipo de Supabase puede ver tu contraseña.</li>
+        <li>Genera <strong>JWT tokens</strong> para cada sesión iniciada.</li>
+        <li>Maneja el <strong>refresh automático</strong> de tokens antes de que expiren.</li>
+        <li>Permite login con <strong>email/contraseña</strong> o con proveedores OAuth (Google, GitHub, Apple, etc.).</li>
+        <li>Envía emails de <strong>confirmación y recuperación</strong> de contraseña.</li>
+    </ul>
+
+    <h3>El módulo auth.js de Aroma</h3>
+    <p>Veamos cómo el frontend de Aroma usa Supabase Auth:</p>
+
+    <pre><code>// frontend/js/auth.js
+import { createClient } from '@supabase/supabase-js';
+
+// Crear el cliente de Supabase (solo para auth en el frontend)
+// NOTA: Usamos la ANON KEY (clave pública), nunca la service_role key aquí
+const supabase = createClient(
+    CONFIG.SUPABASE_URL,
+    CONFIG.SUPABASE_ANON_KEY
+);
+
+const Auth = {
+    // Estado del usuario actual en memoria
+    currentUser: null,
+    currentSession: null,
+
+    // ============================================================
+    // Registrar un nuevo usuario
+    async signUp(email, password, fullName) {
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { full_name: fullName }
+                // Estos datos extra se guardan en user_metadata
+                // El trigger handle_new_user los leerá para crear el perfil
+            }
+        });
+
+        if (error) throw error;
+        return data;
+        // Supabase envía un email de confirmación automáticamente
+    },
+
+    // ============================================================
+    // Iniciar sesión
+    async signIn(email, password) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) throw error;
+
+        // Guardar la sesión en el estado y en localStorage
+        this.currentUser    = data.user;
+        this.currentSession = data.session;
+        localStorage.setItem('aroma_session', JSON.stringify(data.session));
+
+        return data;
+        // data.session contiene el JWT (access_token) y el refresh_token
+    },
+
+    // ============================================================
+    // Cerrar sesión
+    async signOut() {
+        await supabase.auth.signOut();
+        // Limpiar el estado local
+        this.currentUser    = null;
+        this.currentSession = null;
+        localStorage.removeItem('aroma_session');
+        Cart.clear(); // Vaciar el carrito al cerrar sesión
+    },
+
+    // ============================================================
+    // Obtener la sesión actual (al cargar la página)
+    async getSession() {
+        const { data: { session } } = await supabase.auth.getSession();
+        this.currentSession = session;
+        this.currentUser    = session?.user || null;
+        return session;
+        // Si el token expiró, Supabase lo renueva automáticamente usando
+        // el refresh_token guardado en el navegador
+    },
+
+    // ============================================================
+    // ¿El usuario está logueado?
+    isLoggedIn() {
+        return !!this.currentUser;
+    },
+
+    // ============================================================
+    // ¿Qué rol tiene el usuario?
+    getRole() {
+        // Primero busca en user_metadata (lo que el usuario puede modificar)
+        // Luego en app_metadata (lo que solo el admin puede modificar — más confiable)
+        return this.currentUser?.app_metadata?.role
+            || this.currentUser?.user_metadata?.role
+            || 'client'; // Por defecto, todos son clientes
+    },
+
+    // ============================================================
+    // Escuchar cambios de autenticación en tiempo real
+    // Útil para actualizar la UI cuando el usuario hace login/logout
+    onAuthStateChange(callback) {
+        supabase.auth.onAuthStateChange((event, session) => {
+            this.currentSession = session;
+            this.currentUser    = session?.user || null;
+            callback(event, session);
+            // event puede ser: SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED, etc.
+        });
+    }
+};</code></pre>
+
+    <div class="tip">
+        <strong>Tip: El operador ?. (optional chaining)</strong><br>
+        En el código ves <code>session?.user</code>. El operador <code>?.</code> significa "si session existe, dame session.user; si session es null o undefined, devuelve undefined en lugar de lanzar un error". Es muy útil cuando trabajas con datos que pueden no existir.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>3. JWT Tokens — La llave de acceso digital</h2>
+
+    <div class="analogia">
+        <strong>Analogía: El ticket de cine infalsificable</strong><br>
+        Un JWT es como un ticket de cine sofisticado: contiene información impresa (a qué función vas, en qué asiento, cuándo vence) y tiene un sello holográfico que nadie puede falsificar sin la máquina del cine. Puedes leer el ticket y saber toda esa información, pero no puedes fabricar uno falso.
+    </div>
+
+    <p>JWT significa <strong>JSON Web Token</strong>. Es un estándar para transmitir información de forma segura entre partes. Un JWT tiene tres partes separadas por puntos:</p>
+
+    <pre><code>eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiMTIzIn0.SflKxwRJSMeKKF2QT4fw
+
+    ↑ HEADER         ↑ PAYLOAD                  ↑ FIRMA DIGITAL
+
+HEADER (decodificado):
+{
+    "alg": "HS256",   ← Algoritmo de firma usado
+    "typ": "JWT"
+}
+
+PAYLOAD (decodificado):
+{
+    "sub":   "uuid-del-usuario",    ← ID del usuario (subject)
+    "email": "juan@ejemplo.com",
+    "role":  "client",
+    "iat":   1710000000,            ← Issued At: cuándo se creó
+    "exp":   1710003600             ← Expiration: cuándo vence (1 hora después)
+}
+
+FIRMA DIGITAL:
+    HMAC-SHA256(base64(header) + "." + base64(payload), CLAVE_SECRETA)
+    ← Solo Supabase conoce la clave secreta para generar y verificar esto</code></pre>
+
+    <h3>Flujo completo del JWT en Aroma</h3>
+
+    <div class="flujo">
+        <span class="verde">1.</span> Usuario hace login → frontend envía email + password a Supabase Auth<br>
+        <span class="verde">2.</span> Supabase verifica credenciales y genera un <span class="amarillo">JWT (access_token)</span><br>
+        <span class="verde">3.</span> Frontend recibe el JWT y lo guarda en <span class="azul">localStorage</span><br>
+        <span class="verde">4.</span> En cada petición a la API, frontend incluye el token:<br>
+           &nbsp;&nbsp;&nbsp;&nbsp;<span class="azul">Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...</span><br>
+        <span class="verde">5.</span> El backend (o Supabase RLS) verifica el JWT con su clave secreta<br>
+        <span class="verde">6.</span> Si es válido, extrae el userID y el rol del payload<br>
+        <span class="verde">7.</span> Autoriza o rechaza la operación según los permisos
+    </div>
+
+    <div class="importante">
+        <strong>Importante: El JWT no es secreto, pero es infalsificable</strong><br>
+        Cualquiera puede <em>leer</em> el contenido de un JWT (está codificado en base64, no cifrado). Sin embargo, <em>nadie puede modificarlo</em> sin invalidar la firma. Si un atacante intenta cambiar su <code>role</code> de "client" a "admin" en el payload, la firma digital ya no coincide y el servidor lo rechaza inmediatamente.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>4. Row Level Security (RLS) — Seguridad a nivel de filas</h2>
+
+    <div class="analogia">
+        <strong>Analogía: El archivero inteligente</strong><br>
+        Imagina una oficina donde hay un enorme archivero con las carpetas de todos los clientes. Sin seguridad, cualquier empleado que llegue puede abrir cualquier cajón y ver los datos de cualquier cliente. Con RLS, hay un sistema automático que, antes de abrir cualquier cajón, verifica: "¿Este empleado tiene permiso para ver estos archivos?" Si no lo tiene, el cajón no se abre, aunque la persona ya esté dentro del edificio.
+    </div>
+
+    <p>RLS es una característica de PostgreSQL que permite definir <strong>políticas de acceso a nivel de cada fila</strong>. En lugar de restringir solo qué tablas puede ver un usuario, podemos definir exactamente qué <em>filas</em> dentro de esas tablas puede leer o modificar.</p>
+
+    <h3>¿Por qué es tan importante?</h3>
+    <p>Sin RLS, si un cliente logra acceder a la API de Supabase, podría ejecutar:</p>
+    <pre><code>SELECT * FROM orders;  -- ¡Vería los pedidos de TODOS los clientes!</code></pre>
+    <p>Con RLS activado y la política correcta, esa misma consulta solo devuelve los pedidos del usuario autenticado. La restricción ocurre dentro de la base de datos, no en el código.</p>
+
+    <h3>Activar RLS en las tablas</h3>
+    <p>Por defecto, RLS está desactivado. Al activarlo, <strong>nadie puede acceder a nada</strong> hasta que creemos políticas explícitas:</p>
+
+    <pre><code>-- Activar RLS en cada tabla (bloquea todo el acceso por defecto)
+ALTER TABLE products      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles      ENABLE ROW LEVEL SECURITY;</code></pre>
+
+    <h3>Crear Políticas (Policies)</h3>
+    <p>Una política define <strong>quién puede hacer qué</strong> en una tabla. Tiene tres componentes clave:</p>
+    <ul>
+        <li><code>FOR SELECT / INSERT / UPDATE / DELETE / ALL</code>: qué operación controla.</li>
+        <li><code>USING (...)</code>: condición para SELECT y DELETE (qué filas son visibles o pueden eliminarse).</li>
+        <li><code>WITH CHECK (...)</code>: condición para INSERT y UPDATE (qué filas pueden crearse o modificarse).</li>
+    </ul>
+
+    <pre><code>-- Política: Cualquiera puede ver los productos activos (menú público)
+-- No necesita autenticación: el restaurante es público
+CREATE POLICY "ver_productos_activos"
+ON products
+FOR SELECT
+USING (activo = true);
+-- USING = la condición que debe cumplir la FILA para ser devuelta
+
+-- Política: Solo admins pueden modificar productos
+CREATE POLICY "admin_modifica_productos"
+ON products
+FOR ALL  -- Controla INSERT, UPDATE y DELETE
+USING (
+    EXISTS (
+        SELECT 1 FROM profiles
+        WHERE profiles.id = auth.uid()  -- auth.uid() = ID del usuario autenticado
+        AND profiles.role = 'admin'
+    )
+);
+
+-- Política: Un cliente solo puede ver SUS propios pedidos
+CREATE POLICY "ver_mis_pedidos"
+ON orders
+FOR SELECT
+USING (user_id = auth.uid());
+-- Solo devuelve filas donde el user_id coincide con el usuario autenticado
+
+-- Política: Cajeros y admins pueden ver TODOS los pedidos
+CREATE POLICY "cajeros_ven_todos_pedidos"
+ON orders
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1 FROM profiles
+        WHERE profiles.id = auth.uid()
+        AND profiles.role IN ('cashier', 'admin')
+    )
+);
+
+-- Política: Un usuario autenticado puede crear sus propios pedidos
+CREATE POLICY "crear_pedidos"
+ON orders
+FOR INSERT
+WITH CHECK (
+    auth.uid() IS NOT NULL     -- Debe estar logueado
+    AND user_id = auth.uid()   -- No puede crear pedidos a nombre de otro
+);
+-- WITH CHECK = condición que deben cumplir los DATOS que se van a insertar</code></pre>
+
+    <div class="tip">
+        <strong>Tip: auth.uid() es la función mágica de RLS</strong><br>
+        <code>auth.uid()</code> es una función de PostgreSQL que Supabase inyecta. Devuelve el UUID del usuario que está ejecutando la consulta, extraído del JWT. Si el usuario no está autenticado, devuelve NULL. Con esto, cada usuario "ve" solo sus propios datos sin que tengamos que filtrar nada en el código.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>5. Service Role Key vs Anon Key — Las dos llaves del castillo</h2>
+
+    <p>Supabase te da dos claves para acceder a tu proyecto, y confundirlas puede ser un grave problema de seguridad.</p>
+
+    <table>
+        <tr>
+            <th>Clave</th>
+            <th>Nivel de acceso</th>
+            <th>¿Dónde usarla?</th>
+            <th>¿RLS la afecta?</th>
+        </tr>
+        <tr>
+            <td><code>anon key</code> (pública)</td>
+            <td>Usuario anónimo</td>
+            <td>Frontend (puede verla el usuario)</td>
+            <td>Sí — respeta todas las políticas</td>
+        </tr>
+        <tr>
+            <td><code>service_role key</code> (secreta)</td>
+            <td>Superadministrador</td>
+            <td>Solo en el servidor/backend</td>
+            <td>No — bypassa todo RLS</td>
+        </tr>
+    </table>
+
+    <div class="importante">
+        <strong>Regla de oro: La service_role key NUNCA va al frontend</strong><br>
+        La <code>service_role key</code> tiene acceso total a tu base de datos, saltándose todas las reglas de seguridad. Si la pones en el código del frontend, cualquier usuario malicioso que inspeccione el código puede robarla y tener acceso completo a todos tus datos. Guárdala solo en el archivo <code>.env</code> del servidor y nunca la incluyas en el repositorio de Git.
+    </div>
+
+    <pre><code>// ============================================================
+// FRONTEND (navegador del usuario - código visible para todos)
+// ============================================================
+
+// ✅ CORRECTO: usa la anon key (pública, protegida por RLS)
+const supabaseClient = createClient(
+    CONFIG.SUPABASE_URL,
+    CONFIG.SUPABASE_ANON_KEY  // ← Esta puede estar en el código del frontend
+);
+
+// ✅ El usuario solo puede hacer lo que las políticas RLS permiten
+
+
+// ============================================================
+// BACKEND (servidor privado - código NO visible para el público)
+// ============================================================
+
+// backend/src/services/supabase.js
+import { createClient } from '@supabase/supabase-js';
+
+// ✅ CORRECTO: usa la service_role key desde variables de entorno
+const supabaseAdmin = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY  // ← Solo en el .env del servidor
+);
+
+// ✅ El backend puede hacer operaciones privilegiadas:
+// - Crear perfiles al registrar usuarios
+// - Ver todos los pedidos para el panel del cajero
+// - Calcular estadísticas sin restricciones de RLS
+export default supabaseAdmin;</code></pre>
+
+    <div class="tip">
+        <strong>Tip: El archivo .env nunca va a GitHub</strong><br>
+        El archivo <code>.env</code> donde guardas tus claves secretas debe estar en el <code>.gitignore</code>. En el repositorio solo va el archivo <code>.env.example</code> con los nombres de las variables pero sin los valores reales. Ejemplo:<br>
+        <code>SUPABASE_URL=https://tu-proyecto.supabase.co</code><br>
+        <code>SUPABASE_SERVICE_ROLE_KEY=tu-clave-aqui</code>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>6. El trigger de profiles — Crear el perfil automáticamente</h2>
+
+    <p>Cuando un usuario se registra en Supabase Auth, se crea automáticamente un registro en la tabla interna <code>auth.users</code>. Pero nuestra tabla pública <code>profiles</code> también necesita un registro para ese usuario. ¿Cómo lo sincronizamos?</p>
+
+    <p>Con un trigger que se ejecuta automáticamente cada vez que Supabase crea un usuario nuevo.</p>
+
+    <pre><code>-- Función que crea el perfil cuando se registra un nuevo usuario
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Insertar en profiles con el mismo id que auth.users
+    INSERT INTO public.profiles (id, full_name)
+    VALUES (
+        NEW.id,                                    -- UUID del nuevo usuario
+        NEW.raw_user_meta_data->>'full_name'        -- Nombre enviado en el signUp()
+        -- El operador ->> extrae un campo de texto de un JSON
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- SECURITY DEFINER: la función se ejecuta con los permisos de quien la creó (admin)
+-- Necesario porque el trigger se dispara desde auth.users (esquema privado)
+-- y necesita insertar en public.profiles
+
+-- Trigger: ejecutar la función DESPUÉS de cada INSERT en auth.users
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION handle_new_user();</code></pre>
+
+    <div class="analogia">
+        <strong>Analogía: El formulario de bienvenida</strong><br>
+        Cuando un empleado nuevo firma su contrato (INSERT en auth.users), automáticamente el departamento de RRHH crea su expediente personal (INSERT en profiles). No depende de que nadie se acuerde de hacerlo manualmente; el proceso es automático y garantizado. Eso hace nuestro trigger.
+    </div>
+
+    <div class="tip">
+        <strong>Tip: SECURITY DEFINER explicado</strong><br>
+        Normalmente una función SQL se ejecuta con los permisos del usuario que la llama. Con <code>SECURITY DEFINER</code>, se ejecuta con los permisos del usuario que la <em>creó</em> (el administrador de la BD). Esto es necesario aquí porque el evento INSERT en <code>auth.users</code> ocurre en un esquema privado al que los usuarios normales no tienen acceso, pero la función necesita poder escribir en <code>public.profiles</code>.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>7. Creando usuarios de prueba</h2>
+
+    <p>Para probar el sistema necesitamos al menos tres usuarios con roles diferentes: admin, cajero y cliente.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">
+            En el dashboard de Supabase, ve a <strong>"Authentication"</strong> en el menú izquierdo.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">
+            Haz clic en la pestaña <strong>"Users"</strong>. Verás la lista de usuarios registrados (vacía al inicio).
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">
+            Haz clic en <strong>"Add user"</strong> y crea los tres usuarios:<br>
+            &bull; Email: <code>admin@aroma.com</code> — Contraseña: <code>Admin1234!</code><br>
+            &bull; Email: <code>cajero@aroma.com</code> — Contraseña: <code>Cajero1234!</code><br>
+            &bull; Email: <code>cliente@aroma.com</code> — Contraseña: <code>Cliente1234!</code>
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">
+            Verifica en el <strong>"Table Editor"</strong> que en la tabla <code>profiles</code> se crearon automáticamente 3 filas (gracias al trigger). Todos deberían tener <code>role = 'client'</code> por defecto.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">
+            Ve al <strong>SQL Editor</strong> y ejecuta el siguiente script para asignar los roles correctos:
+        </div>
+    </div>
+
+    <pre><code>-- Asignar rol de admin al usuario admin@aroma.com
+UPDATE profiles
+SET role = 'admin'
+WHERE id = (
+    SELECT id FROM auth.users WHERE email = 'admin@aroma.com'
+);
+
+-- Asignar rol de cajero al usuario cajero@aroma.com
+UPDATE profiles
+SET role = 'cashier'
+WHERE id = (
+    SELECT id FROM auth.users WHERE email = 'cajero@aroma.com'
+);
+
+-- cliente@aroma.com ya tiene role = 'client' por defecto, no necesita cambio
+
+-- Verificar que los roles quedaron correctamente asignados
+SELECT
+    u.email,
+    p.full_name,
+    p.role,
+    p.active
+FROM profiles p
+JOIN auth.users u ON p.id = u.id
+ORDER BY p.role;</code></pre>
+
+    <div class="warning">
+        <strong>Advertencia: Cambiar roles solo desde el backend o SQL Editor</strong><br>
+        Nunca deberías tener una funcionalidad en el frontend que permita al propio usuario cambiar su rol. La asignación de roles es una operación de administrador que solo debe ocurrir desde el SQL Editor o desde un endpoint del backend protegido. Si usas RLS correctamente, un cliente no puede hacer <code>UPDATE profiles SET role = 'admin'</code> porque la política lo bloquea.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>8. Políticas RLS completas del proyecto Aroma</h2>
+
+    <p>Este es el script completo de todas las políticas que necesita Aroma. Ejecuta este bloque en el SQL Editor de Supabase después de activar RLS en todas las tablas.</p>
+
+    <pre><code>-- =========================================================
+-- PASO 1: Activar RLS en todas las tablas
+-- =========================================================
+ALTER TABLE categories  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles    ENABLE ROW LEVEL SECURITY;
+
+
+-- =========================================================
+-- CATEGORIES
+-- =========================================================
+
+-- Cualquier visitante (sin cuenta) puede ver las categorías activas
+-- Necesario para mostrar el menú en la página pública
+CREATE POLICY "categorias_publicas"
+ON categories FOR SELECT
+USING (activo = true);
+
+-- Solo admin puede crear, editar y eliminar categorías
+CREATE POLICY "admin_gestiona_categorias"
+ON categories FOR ALL
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+);
+
+
+-- =========================================================
+-- PRODUCTS
+-- =========================================================
+
+-- Visitantes pueden ver productos activos (el menú)
+CREATE POLICY "productos_publicos"
+ON products FOR SELECT
+USING (activo = true);
+
+-- Admin puede ver TODOS los productos (incluyendo los desactivados)
+CREATE POLICY "admin_ve_todos_productos"
+ON products FOR SELECT
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+);
+
+-- Solo admin puede crear, editar y eliminar productos
+CREATE POLICY "admin_gestiona_productos"
+ON products FOR ALL
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+);
+
+
+-- =========================================================
+-- ORDERS
+-- =========================================================
+
+-- Un cliente ve únicamente sus propios pedidos
+CREATE POLICY "cliente_ve_sus_pedidos"
+ON orders FOR SELECT
+USING (user_id = auth.uid());
+
+-- Cajeros y admins pueden ver TODOS los pedidos
+CREATE POLICY "staff_ve_todos_pedidos"
+ON orders FOR SELECT
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) IN ('cashier', 'admin')
+);
+
+-- Un usuario autenticado puede crear pedidos (solo los suyos)
+CREATE POLICY "cliente_crea_pedidos"
+ON orders FOR INSERT
+WITH CHECK (
+    auth.uid() IS NOT NULL       -- Debe estar logueado
+    AND user_id = auth.uid()     -- Solo puede crear pedidos a su nombre
+);
+
+-- Cajeros y admins pueden actualizar el estado de los pedidos
+CREATE POLICY "staff_actualiza_pedidos"
+ON orders FOR UPDATE
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) IN ('cashier', 'admin')
+);
+
+-- Solo admin puede eliminar pedidos (operación muy restringida)
+CREATE POLICY "admin_elimina_pedidos"
+ON orders FOR DELETE
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+);
+
+
+-- =========================================================
+-- ORDER_ITEMS
+-- =========================================================
+
+-- Un usuario puede ver los items de sus propios pedidos
+CREATE POLICY "cliente_ve_sus_items"
+ON order_items FOR SELECT
+USING (
+    order_id IN (
+        SELECT id FROM orders WHERE user_id = auth.uid()
+    )
+);
+
+-- Staff puede ver todos los items
+CREATE POLICY "staff_ve_todos_items"
+ON order_items FOR SELECT
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) IN ('cashier', 'admin')
+);
+
+-- Un usuario autenticado puede insertar items en sus pedidos
+CREATE POLICY "cliente_crea_items"
+ON order_items FOR INSERT
+WITH CHECK (
+    order_id IN (
+        SELECT id FROM orders WHERE user_id = auth.uid()
+    )
+);
+
+
+-- =========================================================
+-- PROFILES
+-- =========================================================
+
+-- Cada usuario puede ver y editar solo su propio perfil
+CREATE POLICY "ver_mi_perfil"
+ON profiles FOR SELECT
+USING (id = auth.uid());
+
+-- Admin puede ver todos los perfiles (para el panel de usuarios)
+CREATE POLICY "admin_ve_todos_perfiles"
+ON profiles FOR SELECT
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+);
+
+-- Cada usuario puede actualizar SU perfil (nombre, teléfono)
+-- pero no puede cambiar su propio rol
+CREATE POLICY "actualizar_mi_perfil"
+ON profiles FOR UPDATE
+USING (id = auth.uid())
+WITH CHECK (
+    id = auth.uid()
+    -- Nota: para evitar que el usuario se cambie el rol,
+    -- implementa lógica adicional en el backend
+);
+
+-- Admin puede actualizar cualquier perfil (cambiar roles, desactivar)
+CREATE POLICY "admin_actualiza_perfiles"
+ON profiles FOR UPDATE
+USING (
+    (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+);</code></pre>
+
+    <div class="tip">
+        <strong>Tip: Puedes probar las políticas desde el Table Editor</strong><br>
+        En Supabase, el Table Editor normalmente actúa con la <code>service_role key</code> (bypassa RLS). Para probar las políticas como si fueras un usuario específico, usa el <strong>SQL Editor</strong> y ejecuta: <code>SET LOCAL role TO authenticated;</code> antes de tu consulta. También puedes usar el cliente de Supabase en el navegador con la <code>anon key</code> y hacer login con uno de tus usuarios de prueba.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>9. Resumen del flujo de seguridad en Aroma</h2>
+
+    <p>Veamos cómo todas las piezas encajan cuando un cliente hace un pedido:</p>
+
+    <div class="flujo">
+        <span class="verde">Cliente hace pedido:</span><br>
+        &nbsp;&nbsp;1. Frontend envía email + password → Supabase Auth<br>
+        &nbsp;&nbsp;2. Supabase devuelve <span class="amarillo">JWT</span> con {user_id, role: "client"}<br>
+        &nbsp;&nbsp;3. Frontend guarda JWT en localStorage<br><br>
+        <span class="verde">Frontend crea el pedido:</span><br>
+        &nbsp;&nbsp;4. Frontend llama a Supabase con <span class="azul">anon key</span> + JWT en el header<br>
+        &nbsp;&nbsp;5. Supabase extrae user_id del JWT → <span class="amarillo">auth.uid() = "uuid-del-cliente"</span><br>
+        &nbsp;&nbsp;6. RLS verifica política "cliente_crea_pedidos":<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="verde">auth.uid() IS NOT NULL</span> ← true (está logueado)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="verde">user_id = auth.uid()</span> ← true (el pedido es suyo)<br>
+        &nbsp;&nbsp;7. Pedido creado exitosamente<br><br>
+        <span class="verde">Cajero actualiza el estado:</span><br>
+        &nbsp;&nbsp;8. Cajero logueado → su JWT tiene role: "cashier"<br>
+        &nbsp;&nbsp;9. Cajero llama UPDATE en orders con su JWT<br>
+        &nbsp;&nbsp;10. RLS verifica "staff_actualiza_pedidos":<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="verde">role IN ('cashier', 'admin')</span> ← true<br>
+        &nbsp;&nbsp;11. Estado actualizado a "preparing"<br><br>
+        <span class="rojo">Ataque frustrado:</span><br>
+        &nbsp;&nbsp;12. Cliente malicioso intenta leer pedidos de otros:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>SELECT * FROM orders;</code><br>
+        &nbsp;&nbsp;13. RLS solo devuelve filas donde <span class="amarillo">user_id = auth.uid()</span><br>
+        &nbsp;&nbsp;14. Cliente solo ve SUS propios pedidos. Seguro.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final — Implementa la seguridad completa de Aroma</h4>
+        <p>Completa estos pasos en tu proyecto de Supabase:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                <strong>Activa RLS</strong> en las 5 tablas del proyecto. Verifica en "Authentication" → "Policies" que aparecen todas las tablas con el escudo de RLS activado.
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                <strong>Ejecuta el script completo de políticas</strong> de la Sección 8. Si ya tenías políticas creadas, elimínalas primero para evitar conflictos (<code>DROP POLICY IF EXISTS "nombre_policy" ON tabla;</code>).
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                <strong>Crea los 3 usuarios de prueba</strong> desde Authentication → Users y asigna los roles correspondientes con el script SQL de la Sección 7.
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">
+                <strong>Ejecuta el trigger</strong> <code>handle_new_user</code> de la Sección 6 en el SQL Editor para que los próximos registros creen automáticamente su perfil.
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido">
+                <strong>Prueba la seguridad:</strong> en el SQL Editor ejecuta una consulta de pedidos sin estar autenticado y verifica que RLS devuelve cero filas o un error de permisos.
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido">
+                <strong>Verifica el archivo .env</strong> del proyecto: confirma que la <code>SERVICE_ROLE_KEY</code> está solo en el backend y en ningún archivo del frontend. Confirma que <code>.env</code> está en el <code>.gitignore</code>.
+            </div>
+        </div>
+
+        <div class="tip" style="margin-top: 16px;">
+            <strong>Desafío extra:</strong> Escribe una política RLS que permita que los cajeros puedan ver solo los pedidos del día de hoy (usando <code>created_at &gt;= CURRENT_DATE</code>). Pista: combínala con la verificación de rol en el <code>USING</code>.
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 10</h2>
+        <ul>
+            <li><strong>Autenticación</strong> verifica quién eres. <strong>Autorización</strong> verifica qué puedes hacer. Son conceptos diferentes y complementarios.</li>
+            <li><strong>Supabase Auth</strong> gestiona todo el ciclo de vida de los usuarios: registro, login, tokens, expiración, refresh. Nunca guarda contraseñas en texto plano.</li>
+            <li>Un <strong>JWT</strong> es un token con información del usuario firmado digitalmente. Es legible pero infalsificable. Contiene el user_id, email, rol y fecha de expiración.</li>
+            <li><strong>RLS (Row Level Security)</strong> añade políticas de seguridad a nivel de fila en PostgreSQL. Con <code>auth.uid()</code> podemos hacer que cada usuario solo vea sus propios datos.</li>
+            <li>La <strong>anon key</strong> es pública (va en el frontend, protegida por RLS). La <strong>service_role key</strong> es secreta (solo en el servidor, bypassa RLS).</li>
+            <li>El <strong>trigger</strong> <code>handle_new_user</code> crea automáticamente el perfil en <code>profiles</code> cada vez que un usuario se registra en <code>auth.users</code>.</li>
+            <li>Los <strong>roles</strong> (admin, cashier, client) se guardan en <code>profiles.role</code> y las políticas RLS los consultan en tiempo real con cada operación.</li>
+            <li>Toda la seguridad del sistema depende de que estas capas funcionen juntas: JWT + RLS + políticas bien diseñadas.</li>
+        </ul>
+    </div>
+
+</body>
+</html>

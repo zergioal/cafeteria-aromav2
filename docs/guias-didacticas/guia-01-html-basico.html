@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 01 – HTML Básico: La Estructura de una Página Web</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .objetivos ul { margin-bottom: 0; }
+        .teoria { margin: 24px 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .warning strong { color: #e65100; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.95em; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .nav-guias { display: flex; justify-content: space-between; margin-top: 30px; }
+        .btn-nav { background: #6F4E37; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .highlight-verde { background: #c8e6c9; padding: 2px 6px; border-radius: 3px; }
+        .highlight-azul { background: #bbdefb; padding: 2px 6px; border-radius: 3px; }
+        .highlight-rojo { background: #ffcdd2; padding: 2px 6px; border-radius: 3px; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+        .numero-concepto { display: inline-block; background: #C8956C; color: white; border-radius: 50%; width: 26px; height: 26px; text-align: center; line-height: 26px; font-weight: bold; margin-right: 8px; font-size: 0.9em; }
+        .comparacion { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+        .comparacion-item { padding: 14px; border-radius: 8px; }
+        .comparacion-malo { background: #ffcdd2; border: 2px solid #e57373; }
+        .comparacion-bueno { background: #c8e6c9; border: 2px solid #66bb6a; }
+        .comparacion-item h4 { margin-top: 0; }
+        .comparacion-malo h4 { color: #c62828; }
+        .comparacion-bueno h4 { color: #1b5e20; }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <div class="header-guia">
+        <h1>☕ Guía 01 – HTML Básico: La Estructura de una Página Web</h1>
+        <p class="subtitulo">Módulo 1: HTML | Construyendo el esqueleto de Cafetería Aroma</p>
+        <div class="meta">
+            <span class="badge">Nivel: Principiante</span>
+            <span class="badge">Tiempo estimado: 4 horas</span>
+            <span class="badge">Prerequisito: Guía 00</span>
+        </div>
+    </div>
+
+    <!-- ===== OBJETIVOS ===== -->
+    <div class="objetivos">
+        <h3>¿Qué vas a aprender en esta guía?</h3>
+        <ul>
+            <li>Entender qué es HTML y cuál es su rol en una página web</li>
+            <li>Conocer y escribir la estructura básica de cualquier documento HTML</li>
+            <li>Dominar las etiquetas HTML más importantes y cuándo usar cada una</li>
+            <li>Comprender qué son los atributos HTML y cómo se usan</li>
+            <li>Conocer el HTML semántico y por qué es importante</li>
+            <li>Crear tu primera página web completa desde cero</li>
+            <li>Analizar y entender el HTML real del proyecto Cafetería Aroma</li>
+            <li>Comprender qué es una SPA (Single Page Application) y por qué Aroma la usa</li>
+        </ul>
+    </div>
+
+    <!-- ===== SECCIÓN 1: ¿QUÉ ES HTML? ===== -->
+    <h2>1. ¿Qué es HTML?</h2>
+
+    <p>HTML son las siglas de <strong>HyperText Markup Language</strong>, que en español significa "Lenguaje de Marcado de Hipertexto". Vamos a entender cada palabra:</p>
+
+    <ul>
+        <li><strong>HyperText</strong> = "texto con enlaces". El "hiper" significa que podemos ir más allá de un documento lineal, saltando de una página a otra mediante enlaces (links).</li>
+        <li><strong>Markup</strong> = "marcado". Usamos etiquetas especiales para <em>marcar</em> el texto y decirle al navegador cómo debe interpretarlo.</li>
+        <li><strong>Language</strong> = lenguaje. Es un conjunto de reglas y símbolos con significado propio.</li>
+    </ul>
+
+    <div class="analogia">
+        <strong>Analogía del esqueleto humano:</strong><br>
+        Una página web tiene tres capas, igual que una persona:
+        <ul>
+            <li><strong>HTML = El esqueleto</strong>: Da estructura y forma. Sin él no hay nada. Define que hay una cabeza, un cuerpo, dos piernas, etc.</li>
+            <li><strong>CSS = La ropa y el aspecto</strong>: Da color, forma, belleza. El mismo esqueleto puede verse muy diferente con distintas "ropas".</li>
+            <li><strong>JavaScript = Los músculos y el cerebro</strong>: Da movimiento, interactividad e inteligencia. Permite que la persona haga cosas.</li>
+        </ul>
+        En esta guía nos enfocamos en el <strong>esqueleto</strong>.
+    </div>
+
+    <h3>¿HTML es un lenguaje de programación?</h3>
+
+    <div class="importante">
+        <strong>Aclaración importante:</strong> HTML NO es un lenguaje de programación. Es un <strong>lenguaje de marcado</strong>. La diferencia es fundamental:
+        <ul>
+            <li>Los <strong>lenguajes de programación</strong> (JavaScript, Python, Java) permiten crear lógica: condiciones (if/else), bucles (for/while), funciones, variables.</li>
+            <li>Los <strong>lenguajes de marcado</strong> (HTML, XML) solo describen la <em>estructura</em> y el <em>significado</em> del contenido. No hay lógica.</li>
+        </ul>
+        HTML le dice al navegador: "esto es un título", "esto es un párrafo", "esto es una imagen". No calcula ni toma decisiones.
+    </div>
+
+    <h3>¿Cómo funciona HTML?</h3>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Tú escribes un archivo de texto con extensión <code>.html</code> usando etiquetas especiales como <code>&lt;h1&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;img&gt;</code>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">El navegador (Chrome, Firefox, Edge) <strong>lee</strong> ese archivo de arriba a abajo.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">El navegador <strong>interpreta</strong> cada etiqueta y construye internamente un árbol de objetos llamado DOM (Document Object Model).</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">El navegador <strong>dibuja</strong> (renderiza) el resultado en pantalla: títulos grandes, párrafos de texto, imágenes, botones, etc.</div>
+    </div>
+
+    <div class="tip">
+        <strong>Puedes ver el HTML de cualquier página:</strong> En Chrome, presiona <code>Ctrl+U</code> en cualquier página web para ver su código HTML fuente. O presiona <code>F12</code> y ve a la pestaña "Elements" para verlo de forma interactiva.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 2: MI PRIMER ARCHIVO HTML ===== -->
+    <h2>2. Mi primer archivo HTML</h2>
+
+    <p>Todo documento HTML válido tiene la misma estructura base. Memoriza esta plantilla porque la usarás en cada proyecto que hagas en tu vida:</p>
+
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Mi Página&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- Aquí va el contenido visible --&gt;
+    &lt;h1&gt;Hola Mundo&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>Expliquemos cada línea en detalle:</p>
+
+    <h3>Línea por línea</h3>
+
+    <h4><code>&lt;!DOCTYPE html&gt;</code></h4>
+    <p>Esta no es una etiqueta HTML sino una <strong>declaración</strong> que va al principio del archivo. Le dice al navegador: "Este archivo usa la versión moderna de HTML (HTML5)". Sin esto, el navegador puede interpretar el documento en modo antiguo y las cosas pueden verse raro. <strong>Siempre debe ser la primera línea.</strong></p>
+
+    <h4><code>&lt;html lang="es"&gt;</code></h4>
+    <p>La etiqueta <code>&lt;html&gt;</code> es la <strong>raíz del documento</strong>. Todo el contenido de la página va dentro de ella. El atributo <code>lang="es"</code> le dice al navegador y a los motores de búsqueda que el idioma de la página es español. Esto también ayuda a los lectores de pantalla (para personas con discapacidad visual) a pronunciar correctamente el texto.</p>
+
+    <h4><code>&lt;head&gt;</code></h4>
+    <p>La sección <code>&lt;head&gt;</code> contiene <strong>metadatos</strong>: información SOBRE la página que el navegador necesita, pero que el usuario generalmente no ve directamente. Aquí van el título (que aparece en la pestaña), los estilos CSS, los scripts, y configuraciones importantes.</p>
+
+    <h4><code>&lt;meta charset="UTF-8"&gt;</code></h4>
+    <p>Le dice al navegador qué <strong>codificación de caracteres</strong> usar. UTF-8 es el estándar universal que incluye todos los caracteres: letras del español (ñ, á, é, í, ó, ú), emojis, caracteres chinos, árabes, etc. <strong>Sin esta línea, las tildes y la ñ pueden verse como símbolos extraños.</strong></p>
+
+    <h4><code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code></h4>
+    <p>Esta línea es <strong>indispensable para el diseño responsivo</strong> (que la página se vea bien en celulares). Sin ella, los móviles hacen zoom-out para mostrar la versión "de escritorio" muy pequeña. Con ella, la página se adapta al ancho del dispositivo. En la era del móvil, esta línea es obligatoria.</p>
+
+    <h4><code>&lt;title&gt;Mi Página&lt;/title&gt;</code></h4>
+    <p>El texto dentro de <code>&lt;title&gt;</code> es lo que aparece en la <strong>pestaña del navegador</strong> y en los resultados de Google. Es muy importante para el SEO (posicionamiento en buscadores). Debe ser descriptivo y único para cada página.</p>
+
+    <h4><code>&lt;body&gt;</code></h4>
+    <p>Todo lo que el usuario <strong>ve en la pantalla</strong> va dentro del <code>&lt;body&gt;</code>. Títulos, párrafos, imágenes, botones, formularios, todo. Es el "cuerpo" visible del documento.</p>
+
+    <h4><code>&lt;!-- Comentario --&gt;</code></h4>
+    <p>Los comentarios son notas para los desarrolladores. El navegador los ignora completamente y el usuario no los ve. Son muy útiles para explicar qué hace una sección del código. <strong>Úsalos generosamente: tu yo del futuro te lo agradecerá.</strong></p>
+
+    <div class="ejercicio">
+        <h4>Prueba: Crea tu primer archivo HTML</h4>
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">Abre VS Code. Crea un archivo nuevo con <code>Ctrl+N</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">Guárdalo como <code>mi-primera-pagina.html</code> con <code>Ctrl+S</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">Escribe <code>!</code> y presiona <code>Tab</code>. VS Code generará automáticamente la estructura base completa (esto es Emmet, una herramienta integrada en VS Code).</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">Dentro del <code>&lt;body&gt;</code>, escribe <code>&lt;h1&gt;Hola, soy una página web&lt;/h1&gt;</code></div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido">Haz clic derecho en el archivo en el explorador de VS Code y elige "Open with Live Server". Verás tu página en el navegador.</div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 3: ETIQUETAS ESENCIALES ===== -->
+    <h2>3. Etiquetas HTML esenciales</h2>
+
+    <p>HTML tiene más de 100 etiquetas, pero con 15-20 puedes construir cualquier cosa. Veamos las más importantes.</p>
+
+    <h3><span class="numero-concepto">1</span> Encabezados: <code>h1</code> al <code>h6</code></h3>
+
+    <p>Los encabezados crean jerarquía visual en el texto. Son como los títulos y subtítulos de un libro.</p>
+
+    <pre><code>&lt;h1&gt;Cafetería Aroma&lt;/h1&gt;           &lt;!-- El título más grande --&gt;
+&lt;h2&gt;Nuestro Menú&lt;/h2&gt;              &lt;!-- Sección principal --&gt;
+&lt;h3&gt;Bebidas Calientes&lt;/h3&gt;         &lt;!-- Subsección --&gt;
+&lt;h4&gt;Café Americano&lt;/h4&gt;            &lt;!-- Sub-subsección --&gt;
+&lt;h5&gt;Ingredientes&lt;/h5&gt;              &lt;!-- Raramente necesario --&gt;
+&lt;h6&gt;Nota del barista&lt;/h6&gt;          &lt;!-- Raramente necesario --&gt;</code></pre>
+
+    <div class="importante">
+        <strong>Regla importante:</strong> Solo debe haber <strong>un <code>&lt;h1&gt;</code> por página</strong>. Es el título principal, el más importante. Google lo usa para entender de qué trata la página. Puedes tener muchos <code>&lt;h2&gt;</code>, <code>&lt;h3&gt;</code>, etc., pero el <code>&lt;h1&gt;</code> es único.
+    </div>
+
+    <h3><span class="numero-concepto">2</span> Párrafos y texto: <code>p</code>, <code>strong</code>, <code>em</code>, <code>span</code></h3>
+
+    <pre><code>&lt;p&gt;Bienvenido a Cafetería Aroma, donde cada sorbo es una experiencia.&lt;/p&gt;
+
+&lt;p&gt;
+    Nuestro café viene de &lt;strong&gt;granos seleccionados&lt;/strong&gt; de las
+    mejores regiones de Bolivia. Cada taza es preparada con
+    &lt;em&gt;dedicación y pasión&lt;/em&gt; por nuestros baristas.
+&lt;/p&gt;
+
+&lt;p&gt;
+    El precio especial del día es
+    &lt;span style="color: red;"&gt;Bs. 15&lt;/span&gt;.
+&lt;/p&gt;</code></pre>
+
+    <table>
+        <tr>
+            <th>Etiqueta</th>
+            <th>Significado</th>
+            <th>Resultado visual</th>
+            <th>Cuándo usarla</th>
+        </tr>
+        <tr>
+            <td><code>&lt;p&gt;</code></td>
+            <td>Paragraph (párrafo)</td>
+            <td>Bloque de texto con espacio arriba y abajo</td>
+            <td>Para cualquier bloque de texto</td>
+        </tr>
+        <tr>
+            <td><code>&lt;strong&gt;</code></td>
+            <td>Fuerte/importante</td>
+            <td><strong>Texto en negrita</strong></td>
+            <td>Texto que es semánticamente importante</td>
+        </tr>
+        <tr>
+            <td><code>&lt;em&gt;</code></td>
+            <td>Emphasis (énfasis)</td>
+            <td><em>Texto en cursiva</em></td>
+            <td>Texto que requiere énfasis verbal</td>
+        </tr>
+        <tr>
+            <td><code>&lt;span&gt;</code></td>
+            <td>Sin significado propio</td>
+            <td>Texto sin cambio visual</td>
+            <td>Para aplicar estilos a texto dentro de un párrafo</td>
+        </tr>
+        <tr>
+            <td><code>&lt;br&gt;</code></td>
+            <td>Line break (salto de línea)</td>
+            <td>Salto de línea sin nuevo párrafo</td>
+            <td>Cuando necesitas un salto pero no un párrafo nuevo</td>
+        </tr>
+    </table>
+
+    <div class="warning">
+        <strong>No confundas <code>&lt;strong&gt;</code> con <code>&lt;b&gt;</code>:</strong> Ambas hacen negrita visualmente, pero tienen significados distintos. <code>&lt;strong&gt;</code> significa "este texto es importante" (semántica). <code>&lt;b&gt;</code> solo dice "pon esto en negrita" (visual). Siempre prefiere <code>&lt;strong&gt;</code>. Lo mismo aplica para <code>&lt;em&gt;</code> vs <code>&lt;i&gt;</code>.
+    </div>
+
+    <h3><span class="numero-concepto">3</span> Listas: <code>ul</code>, <code>ol</code>, <code>li</code></h3>
+
+    <p>Las listas son esenciales. En Cafetería Aroma las usamos para la barra de navegación, los ingredientes de los productos y las opciones del menú.</p>
+
+    <pre><code>&lt;!-- Lista desordenada (sin numeración): puntos/viñetas --&gt;
+&lt;ul&gt;
+    &lt;li&gt;Café Americano&lt;/li&gt;
+    &lt;li&gt;Café Latte&lt;/li&gt;
+    &lt;li&gt;Cappuccino&lt;/li&gt;
+    &lt;li&gt;Té Verde&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- Lista ordenada (con numeración): pasos, rankings --&gt;
+&lt;ol&gt;
+    &lt;li&gt;Elige tus productos en el menú&lt;/li&gt;
+    &lt;li&gt;Agrégralos al carrito&lt;/li&gt;
+    &lt;li&gt;Revisa tu pedido&lt;/li&gt;
+    &lt;li&gt;Elige cómo pagar&lt;/li&gt;
+    &lt;li&gt;¡Listo! Recoge tu pedido&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;!-- Lista anidada: listas dentro de listas --&gt;
+&lt;ul&gt;
+    &lt;li&gt;Bebidas calientes
+        &lt;ul&gt;
+            &lt;li&gt;Café Americano&lt;/li&gt;
+            &lt;li&gt;Café con leche&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/li&gt;
+    &lt;li&gt;Bebidas frías
+        &lt;ul&gt;
+            &lt;li&gt;Frappé&lt;/li&gt;
+            &lt;li&gt;Limonada&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+    <div class="tip">
+        <strong>La navegación de un sitio web es una lista:</strong> Aunque la barra de navegación se vea horizontal y elegante gracias a CSS, en el HTML es simplemente un <code>&lt;ul&gt;</code> con <code>&lt;li&gt;</code>. Esto tiene sentido semánticamente porque es una lista de opciones.
+    </div>
+
+    <h3><span class="numero-concepto">4</span> Imágenes: <code>img</code></h3>
+
+    <p>Las imágenes hacen que una página cobre vida. En Aroma, cada producto del menú tiene una foto.</p>
+
+    <pre><code>&lt;!-- Imagen básica --&gt;
+&lt;img src="img/cafe-latte.jpg" alt="Un café latte con arte en la espuma"&gt;
+
+&lt;!-- Imagen con dimensiones definidas --&gt;
+&lt;img src="img/logo.png" alt="Logo de Cafetería Aroma" width="200" height="80"&gt;
+
+&lt;!-- Imagen de internet (URL externa) --&gt;
+&lt;img src="https://ejemplo.com/imagen.jpg" alt="Descripción de la imagen"&gt;</code></pre>
+
+    <div class="importante">
+        <strong>El atributo <code>alt</code> es OBLIGATORIO:</strong> El texto alternativo (alt) es fundamental por tres razones:
+        <ol>
+            <li><strong>Accesibilidad:</strong> Los lectores de pantalla (usados por personas ciegas) leen el alt en voz alta para describir la imagen.</li>
+            <li><strong>SEO:</strong> Google no puede "ver" imágenes, pero sí puede leer el alt. Descríbelo con palabras clave.</li>
+            <li><strong>Fallback:</strong> Si la imagen no carga (mala conexión, ruta incorrecta), el usuario ve el texto del alt en su lugar.</li>
+        </ol>
+    </div>
+
+    <p>El atributo <code>src</code> (source = fuente) indica la ruta de la imagen. Puede ser:</p>
+    <ul>
+        <li><strong>Ruta relativa:</strong> <code>img/foto.jpg</code> — busca el archivo relativo a la ubicación del HTML.</li>
+        <li><strong>Ruta absoluta desde la raíz:</strong> <code>/frontend/img/foto.jpg</code> — desde la raíz del servidor.</li>
+        <li><strong>URL completa:</strong> <code>https://supabase.co/storage/.../foto.jpg</code> — una imagen en otro servidor.</li>
+    </ul>
+
+    <h3><span class="numero-concepto">5</span> Enlaces: <code>a</code></h3>
+
+    <p>Los enlaces son lo que hace de la web una "web" (una red interconectada). La etiqueta <code>&lt;a&gt;</code> significa "anchor" (ancla).</p>
+
+    <pre><code>&lt;!-- Enlace a otra página web --&gt;
+&lt;a href="https://www.google.com"&gt;Ir a Google&lt;/a&gt;
+
+&lt;!-- Enlace que abre en una pestaña nueva --&gt;
+&lt;a href="https://supabase.com" target="_blank" rel="noopener"&gt;
+    Visitar Supabase
+&lt;/a&gt;
+
+&lt;!-- Enlace a otra página del mismo sitio (ruta relativa) --&gt;
+&lt;a href="menu.html"&gt;Ver el Menú&lt;/a&gt;
+
+&lt;!-- Enlace a una sección dentro de la misma página (ancla) --&gt;
+&lt;a href="#contacto"&gt;Ir a Contacto&lt;/a&gt;
+...
+&lt;section id="contacto"&gt;...&lt;/section&gt;
+
+&lt;!-- Enlace de email --&gt;
+&lt;a href="mailto:info@cafeteria-aroma.com"&gt;Envíanos un email&lt;/a&gt;
+
+&lt;!-- Enlace de teléfono (para móviles) --&gt;
+&lt;a href="tel:+59177123456"&gt;Llamar al local&lt;/a&gt;
+
+&lt;!-- Enlace que parece un botón (el estilo lo da CSS) --&gt;
+&lt;a href="menu.html" class="btn-primary"&gt;Ver Menú&lt;/a&gt;</code></pre>
+
+    <div class="tip">
+        <strong>Sobre <code>target="_blank"</code>:</strong> Abre el enlace en una pestaña nueva. Siempre acompáñalo con <code>rel="noopener noreferrer"</code> por seguridad: evita que la página de destino pueda acceder a tu página mediante JavaScript.
+    </div>
+
+    <h3><span class="numero-concepto">6</span> Contenedores: <code>div</code> y <code>span</code></h3>
+
+    <p>Los contenedores son etiquetas que no tienen significado semántico propio: son "cajas" para agrupar y organizar otros elementos.</p>
+
+    <pre><code>&lt;!-- div: contenedor de BLOQUE (ocupa toda la fila) --&gt;
+&lt;div class="tarjeta-producto"&gt;
+    &lt;img src="cafe.jpg" alt="Café"&gt;
+    &lt;h3&gt;Café Americano&lt;/h3&gt;
+    &lt;p&gt;El clásico de siempre.&lt;/p&gt;
+    &lt;span class="precio"&gt;Bs. 15&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;!-- span: contenedor EN LÍNEA (solo ocupa lo que necesita) --&gt;
+&lt;p&gt;
+    El &lt;span class="nombre-producto"&gt;Café Latte&lt;/span&gt;
+    cuesta &lt;span class="precio"&gt;Bs. 25&lt;/span&gt;.
+&lt;/p&gt;</code></pre>
+
+    <table>
+        <tr>
+            <th></th>
+            <th><code>&lt;div&gt;</code></th>
+            <th><code>&lt;span&gt;</code></th>
+        </tr>
+        <tr>
+            <td><strong>Tipo</strong></td>
+            <td>Elemento de bloque</td>
+            <td>Elemento en línea</td>
+        </tr>
+        <tr>
+            <td><strong>Comportamiento</strong></td>
+            <td>Ocupa toda la fila disponible, el siguiente elemento va en la línea siguiente</td>
+            <td>Solo ocupa el espacio de su contenido, el siguiente elemento continúa en la misma línea</td>
+        </tr>
+        <tr>
+            <td><strong>Uso típico</strong></td>
+            <td>Agrupar secciones, tarjetas, columnas</td>
+            <td>Dar estilo a parte de un texto</td>
+        </tr>
+    </table>
+
+    <h3><span class="numero-concepto">7</span> Formularios: <code>form</code>, <code>input</code>, <code>button</code></h3>
+
+    <p>Los formularios permiten al usuario enviar información. En Aroma los usamos para el login, el registro y el formulario de contacto.</p>
+
+    <pre><code>&lt;form action="/login" method="POST"&gt;
+
+    &lt;!-- Etiqueta del campo --&gt;
+    &lt;label for="email"&gt;Correo electrónico:&lt;/label&gt;
+    &lt;input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="tu@email.com"
+        required
+    &gt;
+
+    &lt;label for="password"&gt;Contraseña:&lt;/label&gt;
+    &lt;input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Tu contraseña"
+        required
+    &gt;
+
+    &lt;button type="submit"&gt;Iniciar Sesión&lt;/button&gt;
+    &lt;button type="button" onclick="limpiarFormulario()"&gt;Limpiar&lt;/button&gt;
+
+&lt;/form&gt;</code></pre>
+
+    <p>Tipos de <code>&lt;input&gt;</code> más usados:</p>
+
+    <table>
+        <tr>
+            <th><code>type</code></th>
+            <th>¿Qué hace?</th>
+            <th>Ejemplo en Aroma</th>
+        </tr>
+        <tr>
+            <td><code>text</code></td>
+            <td>Campo de texto libre de una línea</td>
+            <td>Nombre del cliente</td>
+        </tr>
+        <tr>
+            <td><code>email</code></td>
+            <td>Como text pero valida formato de email</td>
+            <td>Email del usuario</td>
+        </tr>
+        <tr>
+            <td><code>password</code></td>
+            <td>Texto oculto con puntos</td>
+            <td>Contraseña del login</td>
+        </tr>
+        <tr>
+            <td><code>number</code></td>
+            <td>Solo acepta números</td>
+            <td>Cantidad de productos</td>
+        </tr>
+        <tr>
+            <td><code>tel</code></td>
+            <td>Número de teléfono</td>
+            <td>Teléfono de contacto</td>
+        </tr>
+        <tr>
+            <td><code>checkbox</code></td>
+            <td>Casilla de selección (on/off)</td>
+            <td>Términos y condiciones</td>
+        </tr>
+        <tr>
+            <td><code>radio</code></td>
+            <td>Selección única entre varias opciones</td>
+            <td>Método de pago (QR o caja)</td>
+        </tr>
+        <tr>
+            <td><code>file</code></td>
+            <td>Selector de archivos</td>
+            <td>Subir imagen de producto (admin)</td>
+        </tr>
+    </table>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 4: ATRIBUTOS HTML ===== -->
+    <h2>4. Atributos HTML</h2>
+
+    <p>Los atributos son información adicional que le damos a las etiquetas. Van siempre dentro de la etiqueta de apertura, con el formato <code>nombre="valor"</code>.</p>
+
+    <div class="analogia">
+        <strong>Analogía de los adjetivos:</strong><br>
+        Si las etiquetas HTML son sustantivos ("imagen", "enlace", "párrafo"), los atributos son adjetivos que los describen y modifican. No es lo mismo "una imagen" que "una imagen con fuente 'foto.jpg', ancho 300px y texto alternativo 'café caliente'".
+    </div>
+
+    <pre><code>&lt;!-- Anatomía de una etiqueta con atributos --&gt;
+&lt;img src="cafe.jpg" alt="Café caliente" width="300" class="foto-producto" id="foto-principal"&gt;
+ ↑    ↑              ↑                   ↑            ↑                     ↑
+ etiq atributo       atributo            atributo     atributo              atributo</code></pre>
+
+    <h3>Los atributos más importantes</h3>
+
+    <table>
+        <tr>
+            <th>Atributo</th>
+            <th>¿Qué hace?</th>
+            <th>Ejemplo</th>
+            <th>Nota</th>
+        </tr>
+        <tr>
+            <td><code>id</code></td>
+            <td>Identificador único en toda la página</td>
+            <td><code>id="boton-carrito"</code></td>
+            <td>No puede repetirse. JavaScript lo usa para encontrar elementos específicos.</td>
+        </tr>
+        <tr>
+            <td><code>class</code></td>
+            <td>Clasifica el elemento en un grupo</td>
+            <td><code>class="tarjeta-producto"</code></td>
+            <td>Puede repetirse en múltiples elementos. CSS y JS lo usan para aplicar estilos/comportamientos a grupos.</td>
+        </tr>
+        <tr>
+            <td><code>href</code></td>
+            <td>URL de destino del enlace</td>
+            <td><code>href="https://..."</code></td>
+            <td>Solo para <code>&lt;a&gt;</code> y <code>&lt;link&gt;</code>.</td>
+        </tr>
+        <tr>
+            <td><code>src</code></td>
+            <td>Ruta del recurso externo</td>
+            <td><code>src="img/cafe.jpg"</code></td>
+            <td>Para <code>&lt;img&gt;</code>, <code>&lt;script&gt;</code>, <code>&lt;iframe&gt;</code>.</td>
+        </tr>
+        <tr>
+            <td><code>alt</code></td>
+            <td>Texto alternativo para imágenes</td>
+            <td><code>alt="Café latte"</code></td>
+            <td>Obligatorio en <code>&lt;img&gt;</code> por accesibilidad.</td>
+        </tr>
+        <tr>
+            <td><code>type</code></td>
+            <td>Tipo de elemento</td>
+            <td><code>type="email"</code></td>
+            <td>Para <code>&lt;input&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;script&gt;</code>.</td>
+        </tr>
+        <tr>
+            <td><code>style</code></td>
+            <td>Estilos CSS aplicados directamente</td>
+            <td><code>style="color: red;"</code></td>
+            <td>Evitar en producción. Dificulta el mantenimiento.</td>
+        </tr>
+        <tr>
+            <td><code>data-*</code></td>
+            <td>Atributos personalizados para JavaScript</td>
+            <td><code>data-tab="menu"</code></td>
+            <td>Muy usado en Aroma para el sistema de pestañas.</td>
+        </tr>
+        <tr>
+            <td><code>disabled</code></td>
+            <td>Desactiva el elemento</td>
+            <td><code>&lt;button disabled&gt;</code></td>
+            <td>El botón no responde a clics. Sin valor.</td>
+        </tr>
+        <tr>
+            <td><code>required</code></td>
+            <td>Campo obligatorio en formularios</td>
+            <td><code>&lt;input required&gt;</code></td>
+            <td>El formulario no se envía si está vacío. Sin valor.</td>
+        </tr>
+        <tr>
+            <td><code>placeholder</code></td>
+            <td>Texto de ayuda dentro del input</td>
+            <td><code>placeholder="Escribe tu nombre"</code></td>
+            <td>Desaparece al escribir. Solo orientativo.</td>
+        </tr>
+    </table>
+
+    <div class="tip">
+        <strong>Los atributos <code>data-*</code>:</strong> Son atributos personalizados que tú mismo inventas. El prefijo <code>data-</code> es obligatorio. Permiten guardar información extra en los elementos HTML que JavaScript puede leer. En Aroma usamos <code>data-tab="menu"</code> para saber a qué pestaña pertenece cada enlace de la navegación.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 5: HTML SEMÁNTICO ===== -->
+    <h2>5. HTML Semántico</h2>
+
+    <p>Una de las decisiones de diseño más importantes en HTML moderno es elegir las etiquetas correctas. Aquí es donde entra el concepto de <strong>semántica</strong>.</p>
+
+    <div class="analogia">
+        <strong>Analogía del lenguaje humano:</strong><br>
+        "Ese objeto redondo y rojo que se come" y "manzana" dicen lo mismo, pero la segunda es mucho más informativa y precisa. En HTML, usar <code>&lt;nav&gt;</code> en vez de <code>&lt;div class="nav"&gt;</code> le dice exactamente al navegador, a Google y a los lectores de pantalla que "esto es una barra de navegación", sin ambigüedad.
+    </div>
+
+    <h3>¿Por qué importa el HTML semántico?</h3>
+    <ul>
+        <li><strong>Accesibilidad:</strong> Los lectores de pantalla (para personas con discapacidad visual) usan las etiquetas semánticas para navegar la página. Un usuario ciego puede saltar directamente a la <code>&lt;nav&gt;</code> o al <code>&lt;main&gt;</code>.</li>
+        <li><strong>SEO (posicionamiento en buscadores):</strong> Google entiende mejor la estructura de tu página y puede indexarla de forma más precisa.</li>
+        <li><strong>Legibilidad del código:</strong> Cuando lees <code>&lt;header&gt;</code>, sabes instantáneamente qué es. Con <code>&lt;div class="header"&gt;</code>, tienes que confiar en que el nombre de la clase sea descriptivo.</li>
+    </ul>
+
+    <h3>Las etiquetas semánticas principales</h3>
+
+    <pre><code>&lt;!-- Estructura semántica de una página web típica --&gt;
+&lt;body&gt;
+
+    &lt;header&gt;
+        &lt;!-- Encabezado de la página o sección: logo, título, eslogan --&gt;
+        &lt;h1&gt;Cafetería Aroma&lt;/h1&gt;
+    &lt;/header&gt;
+
+    &lt;nav&gt;
+        &lt;!-- Navegación principal del sitio --&gt;
+        &lt;ul&gt;
+            &lt;li&gt;&lt;a href="/"&gt;Inicio&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="/menu"&gt;Menú&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/nav&gt;
+
+    &lt;main&gt;
+        &lt;!-- Contenido principal y único de la página --&gt;
+
+        &lt;section&gt;
+            &lt;!-- Sección temática: un grupo de contenido relacionado --&gt;
+            &lt;h2&gt;Nuestros Productos Destacados&lt;/h2&gt;
+
+            &lt;article&gt;
+                &lt;!-- Contenido independiente que tiene sentido por sí solo --&gt;
+                &lt;h3&gt;Café Americano&lt;/h3&gt;
+                &lt;p&gt;El clásico infalible.&lt;/p&gt;
+            &lt;/article&gt;
+
+        &lt;/section&gt;
+
+        &lt;aside&gt;
+            &lt;!-- Contenido secundario, relacionado pero no esencial --&gt;
+            &lt;h3&gt;Promoción del día&lt;/h3&gt;
+            &lt;p&gt;2x1 en frappés&lt;/p&gt;
+        &lt;/aside&gt;
+
+    &lt;/main&gt;
+
+    &lt;footer&gt;
+        &lt;!-- Pie de página: información de contacto, copyright, links --&gt;
+        &lt;p&gt;&copy; 2025 Cafetería Aroma. Todos los derechos reservados.&lt;/p&gt;
+    &lt;/footer&gt;
+
+&lt;/body&gt;</code></pre>
+
+    <h3>Comparación: sin semántica vs. con semántica</h3>
+
+    <div class="comparacion">
+        <div class="comparacion-item comparacion-malo">
+            <h4>❌ Sin semántica (evitar)</h4>
+            <pre style="background:#c62828; color: white; margin:0; padding:10px; font-size:0.85em; border-radius:6px; border:none;"><code style="color:white; background:none;">&lt;div class="header"&gt;
+  &lt;div class="logo"&gt;Aroma&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="nav"&gt;
+  &lt;div class="nav-item"&gt;Menú&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="contenido"&gt;
+  &lt;div class="seccion"&gt;
+    &lt;div class="articulo"&gt;...&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="footer"&gt;...&lt;/div&gt;</code></pre>
+        </div>
+        <div class="comparacion-item comparacion-bueno">
+            <h4>✅ Con semántica (correcto)</h4>
+            <pre style="background:#1b5e20; color: white; margin:0; padding:10px; font-size:0.85em; border-radius:6px; border:none;"><code style="color:white; background:none;">&lt;header&gt;
+  &lt;h1&gt;Aroma&lt;/h1&gt;
+&lt;/header&gt;
+&lt;nav&gt;
+  &lt;a href="/menu"&gt;Menú&lt;/a&gt;
+&lt;/nav&gt;
+&lt;main&gt;
+  &lt;section&gt;
+    &lt;article&gt;...&lt;/article&gt;
+  &lt;/section&gt;
+&lt;/main&gt;
+&lt;footer&gt;...&lt;/footer&gt;</code></pre>
+        </div>
+    </div>
+
+    <table>
+        <tr>
+            <th>Etiqueta</th>
+            <th>Significado</th>
+            <th>Cuándo usarla</th>
+        </tr>
+        <tr>
+            <td><code>&lt;header&gt;</code></td>
+            <td>Encabezado</td>
+            <td>Logo, título de la página, o encabezado de una sección/artículo</td>
+        </tr>
+        <tr>
+            <td><code>&lt;nav&gt;</code></td>
+            <td>Navegación</td>
+            <td>Menú de navegación principal o secundario</td>
+        </tr>
+        <tr>
+            <td><code>&lt;main&gt;</code></td>
+            <td>Contenido principal</td>
+            <td>El contenido único y principal de la página. Solo uno por página.</td>
+        </tr>
+        <tr>
+            <td><code>&lt;section&gt;</code></td>
+            <td>Sección temática</td>
+            <td>Grupo de contenido relacionado con un tema específico</td>
+        </tr>
+        <tr>
+            <td><code>&lt;article&gt;</code></td>
+            <td>Contenido independiente</td>
+            <td>Contenido que tiene sentido por sí solo: una noticia, un producto, un post</td>
+        </tr>
+        <tr>
+            <td><code>&lt;aside&gt;</code></td>
+            <td>Contenido lateral</td>
+            <td>Publicidad, widgets, información complementaria</td>
+        </tr>
+        <tr>
+            <td><code>&lt;footer&gt;</code></td>
+            <td>Pie de página</td>
+            <td>Copyright, links legales, datos de contacto</td>
+        </tr>
+    </table>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 6: EJERCICIO PRIMERA PÁGINA ===== -->
+    <h2>6. Ejercicio – Mi primera página web completa</h2>
+
+    <div class="ejercicio">
+        <h4>Crea una página web para una cafetería imaginaria</h4>
+        <p>Sigue estos pasos para crear tu primera página web completa. Abre VS Code, crea un nuevo archivo llamado <code>practica-html.html</code> y escribe el siguiente código:</p>
+
+        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Cafetería El Rincón – Mi primera página HTML&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+    &lt;header&gt;
+        &lt;h1&gt;Cafetería El Rincón ☕&lt;/h1&gt;
+        &lt;p&gt;El sabor de casa en cada taza&lt;/p&gt;
+    &lt;/header&gt;
+
+    &lt;nav&gt;
+        &lt;ul&gt;
+            &lt;li&gt;&lt;a href="#bienvenida"&gt;Inicio&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="#menu"&gt;Nuestro Menú&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="#contacto"&gt;Contacto&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/nav&gt;
+
+    &lt;main&gt;
+
+        &lt;!-- Sección de bienvenida --&gt;
+        &lt;section id="bienvenida"&gt;
+            &lt;h2&gt;Bienvenido&lt;/h2&gt;
+            &lt;p&gt;
+                En &lt;strong&gt;Cafetería El Rincón&lt;/strong&gt; te ofrecemos el mejor café
+                de la ciudad. Cada taza es preparada con &lt;em&gt;granos seleccionados&lt;/em&gt;
+                y mucho amor.
+            &lt;/p&gt;
+            &lt;a href="#menu"&gt;Ver nuestro menú completo&lt;/a&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Sección del menú --&gt;
+        &lt;section id="menu"&gt;
+            &lt;h2&gt;Nuestro Menú&lt;/h2&gt;
+
+            &lt;h3&gt;Bebidas Calientes&lt;/h3&gt;
+            &lt;ul&gt;
+                &lt;li&gt;Café Americano – Bs. 15&lt;/li&gt;
+                &lt;li&gt;Café con Leche – Bs. 18&lt;/li&gt;
+                &lt;li&gt;Cappuccino – Bs. 22&lt;/li&gt;
+                &lt;li&gt;Té Verde – Bs. 12&lt;/li&gt;
+            &lt;/ul&gt;
+
+            &lt;h3&gt;Cómo hacer tu pedido&lt;/h3&gt;
+            &lt;ol&gt;
+                &lt;li&gt;Elige tu bebida favorita del menú&lt;/li&gt;
+                &lt;li&gt;Díselo al barista en la barra&lt;/li&gt;
+                &lt;li&gt;Paga en caja&lt;/li&gt;
+                &lt;li&gt;Recoge tu pedido cuando te llamemos&lt;/li&gt;
+            &lt;/ol&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Sección de contacto --&gt;
+        &lt;section id="contacto"&gt;
+            &lt;h2&gt;Encuéntranos&lt;/h2&gt;
+            &lt;p&gt;&lt;strong&gt;Dirección:&lt;/strong&gt; Av. Heroínas 123, Cochabamba&lt;/p&gt;
+            &lt;p&gt;&lt;strong&gt;Horario:&lt;/strong&gt; Lunes a Viernes, 7:00 - 20:00&lt;/p&gt;
+            &lt;p&gt;&lt;strong&gt;Teléfono:&lt;/strong&gt;
+                &lt;a href="tel:+59177123456"&gt;77 123 456&lt;/a&gt;
+            &lt;/p&gt;
+        &lt;/section&gt;
+
+    &lt;/main&gt;
+
+    &lt;footer&gt;
+        &lt;p&gt;&copy; 2025 Cafetería El Rincón. Hecho con amor por [Tu nombre].&lt;/p&gt;
+    &lt;/footer&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">Escribe o copia el código anterior en tu archivo <code>practica-html.html</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">Abre la página con Live Server (clic derecho → "Open with Live Server").</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">Observa el resultado. Verás la página sin estilos (solo el HTML puro). Se ve "fea", pero la estructura es correcta. En la próxima guía agregaremos CSS.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">Haz clic en los enlaces de la navegación. Deben saltar a las secciones correspondientes de la página.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido">Abre las DevTools con <code>F12</code> → pestaña "Elements". Explora el árbol HTML. Haz clic en diferentes elementos y observa cómo se resaltan en la página.</div>
+        </div>
+
+        <div class="tip">
+            <strong>Personaliza:</strong> Cambia el nombre de la cafetería, los precios, los productos, el horario. Añade más secciones. Experimenta. No hay errores posibles en HTML que rompan algo grave.
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 7: EL HTML REAL DE AROMA ===== -->
+    <h2>7. Aplicando en Cafetería Aroma – El HTML real del proyecto</h2>
+
+    <p>Ahora vamos a analizar el archivo HTML real del proyecto Cafetería Aroma. Este es el <code>frontend/index.html</code> que ya existe en nuestro repositorio:</p>
+
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Cafetería Aroma&lt;/title&gt;
+    &lt;link rel="stylesheet" href="css/styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+    &lt;!-- BARRA DE NAVEGACIÓN --&gt;
+    &lt;nav class="navbar"&gt;
+        &lt;div class="nav-brand"&gt;
+            &lt;span class="brand-icon"&gt;☕&lt;/span&gt;
+            &lt;span class="brand-name"&gt;Aroma&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;ul class="nav-links" id="navLinks"&gt;
+            &lt;li&gt;&lt;a href="#" class="nav-link active" data-tab="home"&gt;Inicio&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="#" class="nav-link" data-tab="menu"&gt;Menú&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="#" class="nav-link" data-tab="cart"&gt;
+                Carrito &lt;span id="cartBadge" class="cart-badge"&gt;0&lt;/span&gt;
+            &lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="#" class="nav-link" data-tab="contact"&gt;Contacto&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/nav&gt;
+
+    &lt;!-- CONTENIDO PRINCIPAL - Sistema de Tabs (pestañas) --&gt;
+    &lt;main class="main-content" id="appContent"&gt;
+
+        &lt;!-- Tab: Inicio --&gt;
+        &lt;section id="tab-home" class="tab-content active"&gt;
+            &lt;div class="hero"&gt;
+                &lt;h1&gt;Bienvenido a Cafetería Aroma&lt;/h1&gt;
+                &lt;p&gt;El mejor café de Cochabamba&lt;/p&gt;
+                &lt;button onclick="App.showTab('menu')"&gt;Ver Menú&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Tab: Menú --&gt;
+        &lt;section id="tab-menu" class="tab-content"&gt;
+            &lt;div class="menu-filters"&gt;
+                &lt;!-- filtros por categoría --&gt;
+            &lt;/div&gt;
+            &lt;div id="productGrid" class="product-grid"&gt;
+                &lt;!-- Los productos se cargan con JavaScript --&gt;
+            &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Tab: Carrito --&gt;
+        &lt;section id="tab-cart" class="tab-content"&gt;
+            &lt;div id="cartItems"&gt;&lt;/div&gt;
+            &lt;div id="cartSummary"&gt;&lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Tab: Contacto --&gt;
+        &lt;section id="tab-contact" class="tab-content"&gt;
+            &lt;!-- información de contacto --&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Tab: Login (solo si no hay sesión) --&gt;
+        &lt;section id="tab-login" class="tab-content"&gt;
+            &lt;!-- formulario de login/registro --&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Tab: Panel Cajero --&gt;
+        &lt;section id="tab-cashier" class="tab-content"&gt;
+            &lt;!-- panel de gestión de pedidos --&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Tab: Panel Admin --&gt;
+        &lt;section id="tab-admin" class="tab-content"&gt;
+            &lt;!-- panel de administración --&gt;
+        &lt;/section&gt;
+
+    &lt;/main&gt;
+
+    &lt;!-- Scripts al final del body --&gt;
+    &lt;script src="js/config.js"&gt;&lt;/script&gt;
+    &lt;script src="js/auth.js"&gt;&lt;/script&gt;
+    &lt;script src="js/api.js"&gt;&lt;/script&gt;
+    &lt;script src="js/cart.js"&gt;&lt;/script&gt;
+    &lt;script src="js/pages/home.js"&gt;&lt;/script&gt;
+    &lt;script src="js/pages/menu.js"&gt;&lt;/script&gt;
+    &lt;script src="js/pages/login.js"&gt;&lt;/script&gt;
+    &lt;script src="js/pages/cart-page.js"&gt;&lt;/script&gt;
+    &lt;script src="js/pages/contact.js"&gt;&lt;/script&gt;
+    &lt;script src="js/pages/cashier.js"&gt;&lt;/script&gt;
+    &lt;script src="js/pages/admin.js"&gt;&lt;/script&gt;
+    &lt;script src="js/app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <h3>Análisis detallado: cada parte explicada</h3>
+
+    <h4>¿Por qué <code>data-tab</code> en los links de navegación?</h4>
+    <pre><code>&lt;a href="#" class="nav-link" data-tab="menu"&gt;Menú&lt;/a&gt;</code></pre>
+    <p>En lugar de apuntar a otra página (<code>href="menu.html"</code>), el enlace apunta a <code>#</code> (no va a ningún lado). El atributo <code>data-tab="menu"</code> es como un "mensaje secreto" para JavaScript. Cuando el usuario hace clic, JavaScript lee el valor de <code>data-tab</code> y sabe que debe mostrar la sección con <code>id="tab-menu"</code> y ocultar todas las demás. Así funciona el sistema de pestañas sin recargar la página.</p>
+
+    <h4>¿Qué es el sistema de "tabs" o pestañas?</h4>
+    <p>Aroma usa una técnica donde <strong>todas las secciones de la aplicación existen en el HTML al mismo tiempo</strong>, pero solo una se muestra a la vez. CSS oculta las secciones con <code>display: none</code>, y JavaScript las muestra/oculta según el enlace que el usuario clicó. Esto evita tener que cargar una nueva página cada vez que el usuario navega.</p>
+
+    <pre><code>&lt;!-- Todas las secciones existen en el DOM, pero solo una tiene la clase "active" --&gt;
+&lt;section id="tab-home" class="tab-content active"&gt;...&lt;/section&gt;   &lt;!-- VISIBLE --&gt;
+&lt;section id="tab-menu" class="tab-content"&gt;...&lt;/section&gt;          &lt;!-- OCULTO --&gt;
+&lt;section id="tab-cart" class="tab-content"&gt;...&lt;/section&gt;          &lt;!-- OCULTO --&gt;</code></pre>
+
+    <h4>¿Por qué el productGrid está vacío en el HTML?</h4>
+    <pre><code>&lt;div id="productGrid" class="product-grid"&gt;
+    &lt;!-- Los productos se cargan con JavaScript --&gt;
+&lt;/div&gt;</code></pre>
+    <p>El <code>div</code> con id <code>productGrid</code> está vacío intencionalmente. Los productos <strong>no están escritos en el HTML</strong> porque vienen de la base de datos (Supabase). Cuando la aplicación carga, JavaScript hace una petición al servidor, recibe la lista de productos en formato JSON, y <em>genera dinámicamente</em> el HTML de cada tarjeta de producto. Esto permite que:</p>
+    <ul>
+        <li>El administrador agregue o quite productos desde el panel, sin tocar el HTML.</li>
+        <li>Los precios se actualicen automáticamente.</li>
+        <li>Solo se muestren los productos disponibles.</li>
+    </ul>
+
+    <h4>¿Por qué los scripts están al final del body?</h4>
+    <pre><code>&lt;!-- Al final del &lt;body&gt;, NO en el &lt;head&gt; --&gt;
+&lt;script src="js/config.js"&gt;&lt;/script&gt;
+&lt;script src="js/app.js"&gt;&lt;/script&gt;</code></pre>
+    <p>Porque el navegador lee el HTML de <strong>arriba hacia abajo</strong>. Si los scripts estuvieran en el <code>&lt;head&gt;</code>, el JavaScript intentaría manipular elementos del HTML que todavía no han sido leídos (porque están más abajo), y daría errores. Colocando los scripts al final del <code>&lt;body&gt;</code>, garantizamos que todo el HTML ya fue procesado cuando JavaScript empieza a ejecutarse.</p>
+
+    <h4>¿Para qué sirve <code>id="appContent"</code>?</h4>
+    <pre><code>&lt;main class="main-content" id="appContent"&gt;</code></pre>
+    <p>El <code>id="appContent"</code> es el "punto de control" de JavaScript para toda la aplicación. El archivo <code>js/app.js</code> busca este elemento y lo usa como la raíz del sistema de pestañas. Cuando JavaScript necesita mostrar u ocultar secciones, sabe que todas están dentro de <code>appContent</code>.</p>
+
+    <h4>¿Por qué hay tantos archivos JavaScript?</h4>
+    <p>Cada archivo JS tiene una responsabilidad específica:</p>
+    <table>
+        <tr>
+            <th>Archivo</th>
+            <th>Responsabilidad</th>
+        </tr>
+        <tr>
+            <td><code>config.js</code></td>
+            <td>Variables globales: URL del API, claves de Supabase. Va primero porque los demás lo necesitan.</td>
+        </tr>
+        <tr>
+            <td><code>auth.js</code></td>
+            <td>Login, logout, verificar si el usuario está autenticado, obtener su rol.</td>
+        </tr>
+        <tr>
+            <td><code>api.js</code></td>
+            <td>Funciones para comunicarse con el servidor: <code>getProducts()</code>, <code>createOrder()</code>, etc.</td>
+        </tr>
+        <tr>
+            <td><code>cart.js</code></td>
+            <td>Lógica del carrito: agregar, quitar, calcular totales, guardar en localStorage.</td>
+        </tr>
+        <tr>
+            <td><code>pages/menu.js</code></td>
+            <td>Todo lo relacionado con la pantalla del menú: renderizar productos, filtros por categoría.</td>
+        </tr>
+        <tr>
+            <td><code>pages/cashier.js</code></td>
+            <td>El panel del cajero: ver pedidos en tiempo real, cambiar estados.</td>
+        </tr>
+        <tr>
+            <td><code>app.js</code></td>
+            <td>El coordinador principal. Inicializa todo y gestiona el sistema de pestañas. Va al final porque necesita todos los demás.</td>
+        </tr>
+    </table>
+
+    <div class="tip">
+        <strong>Principio de responsabilidad única:</strong> Cada archivo JS hace una sola cosa y la hace bien. Esto facilita encontrar bugs, hacer cambios sin romper otras partes, y entender el código. Es una práctica profesional fundamental.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== SECCIÓN 8: SPA ===== -->
+    <h2>8. El concepto de SPA (Single Page Application)</h2>
+
+    <p>Cafetería Aroma es una <strong>SPA</strong> (Single Page Application = Aplicación de Una Sola Página). Entender este concepto es fundamental para comprender cómo funciona todo el sistema.</p>
+
+    <h3>Web tradicional (Multi-Page Application)</h3>
+
+    <div class="analogia">
+        <strong>Analogía del libro de papel:</strong><br>
+        En una web tradicional, cada sección es una página separada. Cuando haces clic en "Ver Menú", el navegador descarga completamente una nueva página (menu.html) desde el servidor. Es como cambiar de hoja en un libro físico: tienes que pasar la página completa.
+        <br><br>
+        <ul>
+            <li>El usuario hace clic en "Menú" → El navegador pide <code>menu.html</code> al servidor</li>
+            <li>El servidor envía <code>menu.html</code> completo</li>
+            <li>El navegador descarga y dibuja toda la página desde cero</li>
+            <li>Hay un momento de "pantalla en blanco" o carga visible</li>
+        </ul>
+    </div>
+
+    <h3>SPA (Single Page Application)</h3>
+
+    <div class="analogia">
+        <strong>Analogía del control remoto:</strong><br>
+        En una SPA, toda la aplicación es UNA sola página HTML. No hay recarga. JavaScript muestra y oculta secciones según lo que el usuario quiere ver, como cambiar de canal en la TV: no cambias el televisor, solo cambia el contenido en la misma pantalla.
+        <br><br>
+        <ul>
+            <li>El usuario hace clic en "Menú" → JavaScript oculta el inicio y muestra el menú</li>
+            <li>No hay petición al servidor (o solo una petición de datos, no de HTML)</li>
+            <li>El cambio es instantáneo, sin parpadeos</li>
+            <li>La URL puede cambiar (usando History API) para que el botón "atrás" funcione</li>
+        </ul>
+    </div>
+
+    <h3>¿Qué pasa técnicamente en Aroma?</h3>
+
+    <pre><code>/* CSS que hace el sistema de tabs funcionar */
+
+/* Por defecto, todas las secciones están ocultas */
+.tab-content {
+    display: none;   /* ← OCULTO */
+}
+
+/* Solo la sección con clase "active" se muestra */
+.tab-content.active {
+    display: block;  /* ← VISIBLE */
+}</code></pre>
+
+    <pre><code>/* JavaScript que cambia qué sección está "active" */
+
+function showTab(tabName) {
+    // 1. Ocultar TODAS las secciones
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // 2. Mostrar SOLO la sección pedida
+    document.getElementById('tab-' + tabName).classList.add('active');
+
+    // 3. Actualizar qué link de la nav está resaltado
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+}</code></pre>
+
+    <h3>Ventajas y desventajas de SPA</h3>
+
+    <table>
+        <tr>
+            <th></th>
+            <th>Multi-Page (web tradicional)</th>
+            <th>SPA (como Aroma)</th>
+        </tr>
+        <tr>
+            <td><strong>Velocidad de navegación</strong></td>
+            <td>Más lenta (recarga completa)</td>
+            <td>Muy rápida (solo cambia el contenido)</td>
+        </tr>
+        <tr>
+            <td><strong>Experiencia de usuario</strong></td>
+            <td>Parpadeos al cambiar de página</td>
+            <td>Fluida, como una app móvil</td>
+        </tr>
+        <tr>
+            <td><strong>Complejidad del código</strong></td>
+            <td>Más simple al principio</td>
+            <td>Más complejo (requiere JavaScript)</td>
+        </tr>
+        <tr>
+            <td><strong>SEO (Google)</strong></td>
+            <td>Excelente (Google indexa fácil)</td>
+            <td>Requiere configuración extra</td>
+        </tr>
+        <tr>
+            <td><strong>Ejemplo de uso</strong></td>
+            <td>Blogs, sitios de noticias, e-commerce</td>
+            <td>Apps web: Gmail, Google Maps, Trello</td>
+        </tr>
+    </table>
+
+    <div class="proyecto-aroma">
+        <h4>¿Por qué Aroma usa SPA?</h4>
+        <p>Cafetería Aroma es una <strong>aplicación de gestión</strong> (pedidos, panel del cajero, panel del admin), no un blog o tienda para indexar en Google. Lo que necesitamos es velocidad y buena experiencia de usuario: que el cajero pueda cambiar el estado de un pedido sin recargar la página, que el menú filtre productos instantáneamente, que el carrito se actualice en tiempo real. Para eso, una SPA es la elección perfecta.</p>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== EJERCICIO FINAL ===== -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final: Estructura HTML completa de Aroma</h4>
+        <p>Crea un archivo <code>index-practica.html</code> con toda la estructura de secciones (tabs) de Cafetería Aroma. No necesitas llenar el contenido de cada sección, pero sí crear todas las secciones con sus IDs correctos:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                Crea el archivo con la estructura base HTML5 (DOCTYPE, html, head, body).
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                En el <code>&lt;head&gt;</code>, agrega un título: "Cafetería Aroma – Práctica HTML".
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                Crea una <code>&lt;nav&gt;</code> con links que usen <code>data-tab</code> para: home, menu, cart, contact.
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">
+                Dentro de un <code>&lt;main id="appContent"&gt;</code>, crea 7 secciones con los IDs: <code>tab-home</code>, <code>tab-menu</code>, <code>tab-cart</code>, <code>tab-contact</code>, <code>tab-login</code>, <code>tab-cashier</code>, <code>tab-admin</code>.
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido">
+                Agrega al menos un <code>&lt;h2&gt;</code> y un <code>&lt;p&gt;</code> dentro de cada sección para identificarla.
+            </div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido">
+                Valida tu HTML: ve a <code>https://validator.w3.org</code>, elige "Validate by Direct Input", pega tu HTML y verifica que no haya errores.
+            </div>
+        </div>
+
+        <div class="tip">
+            <strong>Pista:</strong> La sección <code>tab-home</code> debe tener la clase <code>active</code> además de <code>tab-content</code>, ya que es la que se muestra al cargar la página. Las demás solo tienen <code>tab-content</code>.
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ===== RESUMEN ===== -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 01</h2>
+        <p style="color: #e8d5c0; margin-bottom: 12px;">En esta guía aprendiste:</p>
+        <ul>
+            <li><strong style="color: #F5DEB3;">Qué es HTML:</strong> Un lenguaje de marcado (no de programación) que define la estructura de una página web. Es el "esqueleto" del sitio.</li>
+            <li><strong style="color: #F5DEB3;">Estructura base:</strong> Todo HTML válido comienza con DOCTYPE, tiene head y body. Cada línea tiene un propósito específico.</li>
+            <li><strong style="color: #F5DEB3;">Etiquetas esenciales:</strong> Encabezados (h1-h6), párrafos (p), texto (strong, em, span), listas (ul, ol, li), imágenes (img), enlaces (a), contenedores (div, span) y formularios (form, input, button).</li>
+            <li><strong style="color: #F5DEB3;">Atributos HTML:</strong> id (único), class (grupo), href, src, alt, data-*, required, placeholder. Son "adjetivos" que modifican el comportamiento y significado de las etiquetas.</li>
+            <li><strong style="color: #F5DEB3;">HTML Semántico:</strong> Usar header, nav, main, section, article, aside, footer en vez de div para todo. Mejora accesibilidad, SEO y legibilidad del código.</li>
+            <li><strong style="color: #F5DEB3;">El HTML de Cafetería Aroma:</strong> Un sistema de tabs donde todas las secciones viven en el mismo archivo HTML. Los productos no están en el HTML, sino que JavaScript los carga dinámicamente desde la base de datos.</li>
+            <li><strong style="color: #F5DEB3;">SPA (Single Page Application):</strong> Toda la app en un solo archivo HTML. JavaScript muestra/oculta secciones según la acción del usuario, sin recargar la página. Más rápido y fluido que las webs tradicionales.</li>
+        </ul>
+    </div>
+
+    <!-- ===== NAVEGACIÓN ===== -->
+    <div class="nav-guias">
+        <a href="guia-00-introduccion-y-herramientas.html" class="btn-nav">← Guía 00: Introducción</a>
+        <a href="#" class="btn-nav">Guía 02: CSS →</a>
+    </div>
+
+</body>
+</html>

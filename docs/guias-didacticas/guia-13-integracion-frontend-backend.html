@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 13 – Integración: Conectando Frontend y Backend</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+        .error-box { background: #1e1e1e; color: #f48771; padding: 16px 20px; border-radius: 8px; border-left: 4px solid #f44747; margin: 14px 0; font-family: 'Courier New', monospace; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 13 – Integración: Conectando Frontend y Backend</h1>
+        <p class="subtitulo">Módulo 6: Integración | El proyecto completo funcionando</p>
+        <div class="meta">
+            <span class="badge">Nivel: Intermedio-Avanzado</span>
+            <span class="badge">Tiempo estimado: 6 horas</span>
+            <span class="badge">Prerequisito: Guías 11-12</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Entender qué es CORS y por qué el navegador lo aplica</li>
+            <li>Implementar el módulo de login y registro en el frontend</li>
+            <li>Construir la página de carrito con checkout integrado</li>
+            <li>Crear el módulo <code>App</code> que orquesta toda la aplicación</li>
+            <li>Crear el módulo <code>Api</code> que centraliza las llamadas al backend</li>
+            <li>Diagnosticar y resolver los errores más comunes de integración</li>
+        </ul>
+    </div>
+
+    <h2>1. CORS — Por qué el navegador bloquea las peticiones</h2>
+
+    <div class="analogia">
+        <strong>Analogía del guardia de seguridad:</strong> Imagina que el servidor backend es un edificio con guardia en la entrada. Por defecto, el guardia solo deja entrar a personas del mismo edificio. Si alguien viene de otro edificio (otro dominio u origen), el guardia lo bloquea aunque tenga buenas intenciones. CORS es el procedimiento que le dice al guardia: "está bien dejar pasar a las personas de estos otros edificios específicos".
+    </div>
+
+    <p>CORS (Cross-Origin Resource Sharing) es una política de seguridad del navegador. Cuando el frontend en <code>localhost:5500</code> hace una petición fetch a <code>localhost:3000</code>, el navegador detecta que son "orígenes" distintos (diferente puerto = diferente origen) y bloquea la petición a menos que el servidor lo permita explícitamente.</p>
+
+    <h3>El error CORS en acción</h3>
+    <p>Si el backend no tiene CORS configurado correctamente, verás este error en la consola del navegador:</p>
+
+    <div class="error-box">Access to fetch at 'http://localhost:3000/api/products' from origin 'http://localhost:5500' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.</div>
+
+    <h3>La solución: configurar CORS en el backend</h3>
+    <pre><code>// backend/src/index.js
+import cors from 'cors';
+
+app.use(cors({
+    origin: process.env.FRONTEND_URL,  // Solo permite peticiones de esta URL
+    credentials: true                  // Necesario si usas cookies o Authorization headers
+}));
+
+// Para desarrollo, también puedes temporalmente permitir todos los orígenes:
+// app.use(cors()); // ← Solo en desarrollo, NUNCA en producción</code></pre>
+
+    <div class="importante">
+        <strong>Importante:</strong> CORS es una política que aplica el <em>navegador</em>, no el servidor. Herramientas como Thunder Client o Postman no tienen esta restricción, por eso las peticiones funcionan ahí aunque CORS falle en el navegador. Esto puede llevar a confusión: "en Thunder Client funciona pero en la web no" — la respuesta casi siempre es CORS.
+    </div>
+
+    <hr class="separador">
+
+    <h2>2. El módulo Api.js — Centralizando las peticiones</h2>
+
+    <p>En lugar de escribir <code>fetch()</code> en cada parte del frontend, creamos un módulo centralizado que maneja automáticamente el token de autenticación, la URL base, y los errores.</p>
+
+    <pre><code>// frontend/js/api.js
+const Api = {
+
+    // Obtener la URL base del backend desde la configuración
+    get baseUrl() {
+        return window.CONFIG?.API_BASE_URL || 'http://localhost:3000';
+    },
+
+    // Método genérico para hacer peticiones
+    async request(method, endpoint, body = null) {
+        const url = `${this.baseUrl}${endpoint}`;
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // Agregar token de autenticación si el usuario está logueado
+        const session = await Auth.getSession();
+        if (session?.access_token) {
+            headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
+        const options = { method, headers };
+        if (body) {
+            options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url, options);
+
+        // Leer el cuerpo de la respuesta como JSON
+        const data = await response.json();
+
+        // Si el servidor devolvió un error, lanzarlo como excepción
+        if (!response.ok) {
+            throw new Error(data.error || `Error HTTP ${response.status}`);
+        }
+
+        return data;
+    },
+
+    // Métodos de conveniencia
+    get(endpoint) {
+        return this.request('GET', endpoint);
+    },
+
+    post(endpoint, body) {
+        return this.request('POST', endpoint, body);
+    },
+
+    put(endpoint, body) {
+        return this.request('PUT', endpoint, body);
+    },
+
+    patch(endpoint, body) {
+        return this.request('PATCH', endpoint, body);
+    },
+
+    delete(endpoint) {
+        return this.request('DELETE', endpoint);
+    }
+};</code></pre>
+
+    <div class="tip">
+        <strong>Por qué centralizar las peticiones:</strong> Si mañana necesitas cambiar la URL del backend o agregar un nuevo header a todas las peticiones (por ejemplo, un header de versión de API), solo tienes que cambiar un archivo. Sin esta centralización, tendrías que buscar y modificar cada <code>fetch()</code> en todo el proyecto.
+    </div>
+
+    <hr class="separador">
+
+    <h2>3. El módulo login.js del frontend</h2>
+
+    <p>La página de login maneja tanto el formulario de inicio de sesión como el de registro, con sus respectivas validaciones y feedback visual.</p>
+
+    <pre><code>// frontend/js/pages/login.js
+const LoginPage = {
+
+    init() {
+        this.setupForms();
+        this.setupTabs();
+    },
+
+    setupForms() {
+        // ===== FORMULARIO DE LOGIN =====
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            const btn = e.target.querySelector('button[type="submit"]');
+
+            // Deshabilitar el botón para evitar doble envío
+            btn.disabled = true;
+            btn.textContent = 'Iniciando sesión...';
+            errorDiv.textContent = '';
+
+            try {
+                await Auth.signIn(email, password);
+                mostrarToast('¡Bienvenido a Aroma!', 'success');
+                App.showTab('home');
+                App.updateUserUI();
+            } catch (error) {
+                errorDiv.textContent = 'Email o contraseña incorrectos';
+            } finally {
+                // El bloque finally siempre se ejecuta, haya error o no
+                btn.disabled = false;
+                btn.textContent = 'Iniciar Sesión';
+            }
+        });
+
+        // ===== FORMULARIO DE REGISTRO =====
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirm = document.getElementById('registerConfirm').value;
+            const errorDiv = document.getElementById('registerError');
+
+            // Validación básica en el frontend
+            if (password !== confirm) {
+                errorDiv.textContent = 'Las contraseñas no coinciden';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorDiv.textContent = 'La contraseña debe tener al menos 6 caracteres';
+                return;
+            }
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Creando cuenta...';
+            errorDiv.textContent = '';
+
+            try {
+                await Auth.signUp(email, password, name);
+                mostrarToast('Cuenta creada exitosamente. ¡Inicia sesión!', 'success');
+                // Cambiar automáticamente al tab de login
+                document.querySelector('[data-form="login"]').click();
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Error al crear la cuenta';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Crear Cuenta';
+            }
+        });
+    },
+
+    setupTabs() {
+        document.querySelectorAll('.auth-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const form = btn.dataset.form;
+
+                // Actualizar estado activo de los tabs
+                document.querySelectorAll('.auth-tab-btn').forEach(b =>
+                    b.classList.remove('active')
+                );
+                btn.classList.add('active');
+
+                // Mostrar/ocultar formularios
+                document.getElementById('loginForm').style.display =
+                    form === 'login' ? 'block' : 'none';
+                document.getElementById('registerForm').style.display =
+                    form === 'register' ? 'block' : 'none';
+            });
+        });
+    }
+};</code></pre>
+
+    <h3>El módulo Auth.js</h3>
+    <p>El módulo Auth encapsula toda la comunicación con Supabase Auth desde el frontend:</p>
+
+    <pre><code>// frontend/js/auth.js
+const Auth = {
+
+    async signIn(email, password) {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+        if (error) throw error;
+        return data;
+    },
+
+    async signUp(email, password, fullName) {
+        const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { full_name: fullName }
+            }
+        });
+        if (error) throw error;
+        return data;
+    },
+
+    async signOut() {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+    },
+
+    async getSession() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        return session;
+    },
+
+    isLoggedIn() {
+        // Verificación síncrona básica
+        return !!supabaseClient.auth.currentSession;
+    },
+
+    getRole() {
+        const session = supabaseClient.auth.currentSession;
+        return session?.user?.user_metadata?.role || 'client';
+    }
+};</code></pre>
+
+    <hr class="separador">
+
+    <h2>4. La página del carrito y el checkout</h2>
+
+    <p>Esta es la página más crítica del flujo de usuario: muestra los productos seleccionados, permite modificar cantidades, y procesa el pedido enviándolo al backend.</p>
+
+    <pre><code>// frontend/js/pages/cart-page.js
+const CartPage = {
+
+    init() {
+        this.renderCart();
+        this.setupCheckoutForm();
+        Cart.updateBadge();
+    },
+
+    renderCart() {
+        const items = Cart.getItems();
+        const container = document.getElementById('cartItems');
+
+        if (items.length === 0) {
+            container.innerHTML = `
+                &lt;div class="empty-cart"&gt;
+                    &lt;p&gt;Tu carrito está vacío&lt;/p&gt;
+                    &lt;button onclick="App.showTab('menu')"&gt;Ver el Menú&lt;/button&gt;
+                &lt;/div&gt;
+            `;
+            document.getElementById('checkoutForm').style.display = 'none';
+            return;
+        }
+
+        // Renderizar items del carrito
+        container.innerHTML = items.map(item => `
+            &lt;div class="cart-item" data-id="${item.id}"&gt;
+                &lt;img src="${item.imagen || ''}" alt="${escHtml(item.nombre)}"&gt;
+                &lt;div class="cart-item-info"&gt;
+                    &lt;h4&gt;${escHtml(item.nombre)}&lt;/h4&gt;
+                    &lt;span&gt;Bs. ${item.precio.toFixed(2)} c/u&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div class="cart-item-controls"&gt;
+                    &lt;button class="btn-qty" data-action="decrease" data-id="${item.id}"&gt;−&lt;/button&gt;
+                    &lt;span class="qty"&gt;${item.cantidad}&lt;/span&gt;
+                    &lt;button class="btn-qty" data-action="increase" data-id="${item.id}"&gt;+&lt;/button&gt;
+                &lt;/div&gt;
+                &lt;span class="cart-item-subtotal"&gt;
+                    Bs. ${(item.precio * item.cantidad).toFixed(2)}
+                &lt;/span&gt;
+                &lt;button class="btn-remove" data-id="${item.id}"&gt;Eliminar&lt;/button&gt;
+            &lt;/div&gt;
+        `).join('');
+
+        // Mostrar total
+        document.getElementById('cartSummary').innerHTML = `
+            &lt;div class="cart-total"&gt;
+                &lt;span&gt;Total:&lt;/span&gt;
+                &lt;strong&gt;Bs. ${Cart.getTotal().toFixed(2)}&lt;/strong&gt;
+            &lt;/div&gt;
+        `;
+
+        // Solo mostrar el formulario si el usuario está autenticado
+        document.getElementById('checkoutForm').style.display =
+            Auth.isLoggedIn() ? 'block' : 'none';
+
+        if (!Auth.isLoggedIn()) {
+            document.getElementById('cartSummary').innerHTML += `
+                &lt;p class="login-required"&gt;
+                    &lt;a href="#" onclick="App.showTab('login')"&gt;Inicia sesión&lt;/a&gt;
+                    para hacer tu pedido
+                &lt;/p&gt;
+            `;
+        }
+
+        // Usar event delegation para los controles del carrito
+        container.addEventListener('click', (e) => {
+            const id = e.target.dataset.id;
+            const action = e.target.dataset.action;
+
+            if (e.target.classList.contains('btn-remove')) {
+                Cart.removeItem(id);
+                this.renderCart();
+            } else if (action === 'increase') {
+                const item = Cart.getItems().find(i => i.id === id);
+                Cart.updateQuantity(id, item.cantidad + 1);
+                this.renderCart();
+            } else if (action === 'decrease') {
+                const item = Cart.getItems().find(i => i.id === id);
+                if (item.cantidad <= 1) {
+                    Cart.removeItem(id);
+                } else {
+                    Cart.updateQuantity(id, item.cantidad - 1);
+                }
+                this.renderCart();
+            }
+        });
+    },
+
+    setupCheckoutForm() {
+        document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const items = Cart.getItems();
+            if (items.length === 0) {
+                mostrarToast('El carrito está vacío', 'warning');
+                return;
+            }
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Procesando pedido...';
+
+            try {
+                // Enviar el pedido al backend
+                const respuesta = await Api.post('/api/orders', {
+                    customer_name: document.getElementById('customerName').value,
+                    customer_phone: document.getElementById('customerPhone').value,
+                    delivery_address: document.getElementById('deliveryAddress').value,
+                    payment_method: document.querySelector('[name="paymentMethod"]:checked').value,
+                    notes: document.getElementById('orderNotes').value,
+                    // Solo enviamos product_id y quantity, NO el precio
+                    items: items.map(item => ({
+                        product_id: item.id,
+                        quantity: item.cantidad
+                    }))
+                });
+
+                // Limpiar el carrito y mostrar confirmación
+                Cart.clear();
+                mostrarToast(`Pedido ${respuesta.order.code} confirmado`, 'success', 5000);
+                this.mostrarConfirmacion(respuesta.order);
+
+            } catch (error) {
+                mostrarToast(error.message || 'Error al crear el pedido', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Confirmar Pedido';
+            }
+        });
+    },
+
+    mostrarConfirmacion(order) {
+        document.getElementById('tab-cart').innerHTML = `
+            &lt;div class="order-success"&gt;
+                &lt;div class="success-icon" style="font-size:3em;margin-bottom:16px"&gt;✅&lt;/div&gt;
+                &lt;h2&gt;Pedido Confirmado&lt;/h2&gt;
+                &lt;p class="order-code" style="font-size:1.5em;color:#6F4E37;font-weight:bold"&gt;
+                    ${order.code}
+                &lt;/p&gt;
+                &lt;p&gt;Recibirás tu pedido en aproximadamente 30-45 minutos&lt;/p&gt;
+                &lt;p&gt;Total: &lt;strong&gt;Bs. ${order.total.toFixed(2)}&lt;/strong&gt;&lt;/p&gt;
+                &lt;button onclick="App.showTab('home')" style="margin-top:16px"&gt;
+                    Volver al Inicio
+                &lt;/button&gt;
+            &lt;/div&gt;
+        `;
+    }
+};</code></pre>
+
+    <div class="tip">
+        <strong>Event delegation:</strong> En lugar de agregar un listener a cada botón de "aumentar", "disminuir" y "eliminar", usamos un único listener en el contenedor padre y verificamos qué elemento fue clickeado. Esto es más eficiente y funciona aunque el contenido se re-renderice dinámicamente.
+    </div>
+
+    <hr class="separador">
+
+    <h2>5. El módulo App.js — El orquestador</h2>
+
+    <p><code>App</code> es el módulo central que inicializa la aplicación, maneja la navegación entre secciones y coordina el estado del usuario.</p>
+
+    <pre><code>// frontend/js/app.js
+const App = {
+    currentTab: 'home',
+
+    init() {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar si hay una sesión guardada
+            await this.checkSession();
+
+            // Configurar los listeners de navegación
+            this.setupNavigation();
+
+            // Actualizar el badge del carrito
+            Cart.updateBadge();
+
+            // Mostrar el tab inicial
+            this.showTab('home');
+
+            // Inicializar los módulos de cada página
+            if (typeof HomePage !== 'undefined') HomePage.init();
+            if (typeof MenuPage !== 'undefined') MenuPage.init();
+            if (typeof CartPage !== 'undefined') CartPage.init();
+            if (typeof LoginPage !== 'undefined') LoginPage.init();
+            if (typeof ContactPage !== 'undefined') ContactPage.init();
+        });
+    },
+
+    async checkSession() {
+        const session = await Auth.getSession();
+        this.updateUserUI(session);
+
+        if (session?.user) {
+            const role = session.user.user_metadata?.role;
+            // Mostrar tabs de cajero y admin según el rol
+            if (role === 'cashier' || role === 'admin') {
+                this.showNavItem('cashier');
+            }
+            if (role === 'admin') {
+                this.showNavItem('admin');
+            }
+        }
+    },
+
+    updateUserUI(session) {
+        const userGreeting = document.getElementById('userGreeting');
+        const loginLink = document.getElementById('loginNavLink');
+
+        if (session?.user) {
+            const nombre = session.user.user_metadata?.full_name || session.user.email;
+            if (userGreeting) {
+                userGreeting.innerHTML = `
+                    &lt;span&gt;${escHtml(nombre)}&lt;/span&gt;
+                    &lt;button onclick="App.logout()" class="btn-logout"&gt;Salir&lt;/button&gt;
+                `;
+            }
+            if (loginLink) loginLink.style.display = 'none';
+        } else {
+            if (userGreeting) userGreeting.innerHTML = '';
+            if (loginLink) loginLink.style.display = 'block';
+        }
+    },
+
+    async logout() {
+        await Auth.signOut();
+        this.updateUserUI(null);
+        this.showTab('home');
+        mostrarToast('Sesión cerrada', 'info');
+        // Ocultar tabs de cajero y admin
+        this.hideNavItem('cashier');
+        this.hideNavItem('admin');
+    },
+
+    showTab(tabName) {
+        // Ocultar todos los tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.style.display = 'none';
+        });
+
+        // Mostrar el tab solicitado
+        const targetTab = document.getElementById(`tab-${tabName}`);
+        if (targetTab) {
+            targetTab.style.display = 'block';
+            this.currentTab = tabName;
+        }
+
+        // Actualizar la navegación activa
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.toggle('active', link.dataset.tab === tabName);
+        });
+
+        // Scroll al inicio
+        window.scrollTo(0, 0);
+    },
+
+    setupNavigation() {
+        document.querySelectorAll('[data-tab]').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showTab(el.dataset.tab);
+            });
+        });
+    },
+
+    showNavItem(name) {
+        const el = document.getElementById(`nav-${name}`);
+        if (el) el.style.display = 'block';
+    },
+
+    hideNavItem(name) {
+        const el = document.getElementById(`nav-${name}`);
+        if (el) el.style.display = 'none';
+    }
+};
+
+App.init();</code></pre>
+
+    <hr class="separador">
+
+    <h2>6. Diagnóstico: Errores comunes de integración</h2>
+
+    <p>La integración frontend-backend produce errores muy específicos. Aquí están los más frecuentes y sus soluciones:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Error</th>
+                <th>Causa</th>
+                <th>Solución</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CORS policy blocked</td>
+                <td>El backend no permite el origen del frontend</td>
+                <td>Verificar <code>FRONTEND_URL</code> en el <code>.env</code> del backend y el middleware cors</td>
+            </tr>
+            <tr>
+                <td>401 Unauthorized</td>
+                <td>El token no se está enviando o está expirado</td>
+                <td>Verificar que <code>Api.js</code> agrega el header Authorization. Hacer login nuevamente si el token expiró</td>
+            </tr>
+            <tr>
+                <td>404 Cannot GET /api/...</td>
+                <td>El servidor no está corriendo o la ruta está mal escrita</td>
+                <td>Verificar que el backend está corriendo (<code>npm run dev</code>) y que la ruta existe</td>
+            </tr>
+            <tr>
+                <td>Failed to fetch / NetworkError</td>
+                <td>El backend no está accesible desde el frontend</td>
+                <td>Probar <code>http://localhost:3000/health</code> en el navegador. Verificar puerto</td>
+            </tr>
+            <tr>
+                <td>Productos no aparecen</td>
+                <td>Están marcados como inactivos en la BD</td>
+                <td>Verificar que <code>activo = true</code> en los registros de la tabla <code>products</code></td>
+            </tr>
+            <tr>
+                <td>Total incorrecto</td>
+                <td>Los precios se están guardando como strings en lugar de números</td>
+                <td>Usar <code>parseFloat()</code> al leer precios, verificar el tipo en Supabase (numeric, no text)</td>
+            </tr>
+            <tr>
+                <td>req.body es undefined</td>
+                <td>Falta el middleware <code>express.json()</code> en el backend</td>
+                <td>Agregar <code>app.use(express.json())</code> en <code>index.js</code> antes de las rutas</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Herramientas de diagnóstico</h3>
+
+    <div class="tip">
+        <strong>Tip — Usar la consola del navegador:</strong> La pestaña "Network" (Red) de las DevTools del navegador (F12) muestra todas las peticiones HTTP, su estado, los headers enviados y recibidos, y la respuesta. Es la primera herramienta a usar cuando algo falla en la integración.
+    </div>
+
+    <pre><code>// En el frontend, agregar logs para depurar
+async function cargarProductos() {
+    try {
+        console.log('Cargando productos...'); // ¿Se ejecuta esta línea?
+        const data = await Api.get('/api/products');
+        console.log('Respuesta:', data); // ¿Qué devuelve el backend?
+        renderizarProductos(data.products);
+    } catch (error) {
+        console.error('Error completo:', error); // ¿Qué tipo de error es?
+    }
+}</code></pre>
+
+    <hr class="separador">
+
+    <h2>7. El módulo Cart.js — Gestión del carrito con localStorage</h2>
+
+    <p>El carrito persiste en el navegador usando <code>localStorage</code> para que no se pierda al recargar la página.</p>
+
+    <pre><code>// frontend/js/cart.js
+const Cart = {
+
+    getItems() {
+        const items = localStorage.getItem('aroma_cart');
+        return items ? JSON.parse(items) : [];
+    },
+
+    saveItems(items) {
+        localStorage.setItem('aroma_cart', JSON.stringify(items));
+        this.updateBadge();
+    },
+
+    addItem(product) {
+        const items = this.getItems();
+        const existing = items.find(i => i.id === product.id);
+
+        if (existing) {
+            // Si ya está en el carrito, aumentar la cantidad
+            existing.cantidad += 1;
+        } else {
+            // Agregar nuevo item con cantidad 1
+            items.push({ ...product, cantidad: 1 });
+        }
+
+        this.saveItems(items);
+        mostrarToast(`${product.nombre} agregado al carrito`, 'success');
+    },
+
+    removeItem(productId) {
+        const items = this.getItems().filter(i => i.id !== productId);
+        this.saveItems(items);
+    },
+
+    updateQuantity(productId, newQty) {
+        if (newQty <= 0) {
+            this.removeItem(productId);
+            return;
+        }
+        const items = this.getItems().map(i =>
+            i.id === productId ? { ...i, cantidad: newQty } : i
+        );
+        this.saveItems(items);
+    },
+
+    getTotal() {
+        return this.getItems().reduce((sum, i) => sum + (i.precio * i.cantidad), 0);
+    },
+
+    getCount() {
+        return this.getItems().reduce((sum, i) => sum + i.cantidad, 0);
+    },
+
+    clear() {
+        localStorage.removeItem('aroma_cart');
+        this.updateBadge();
+    },
+
+    updateBadge() {
+        const badge = document.getElementById('cartBadge');
+        const count = this.getCount();
+        if (badge) {
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+};</code></pre>
+
+    <hr class="separador">
+
+    <div class="ejercicio">
+        <h4>Ejercicio Final — Probar el flujo completo de usuario</h4>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido"><strong>Levantar el backend:</strong> Abrir una terminal, ir a la carpeta <code>backend/</code> y ejecutar <code>npm run dev</code>. Verificar que no hay errores.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido"><strong>Abrir el frontend:</strong> Usar Live Server de VS Code para abrir <code>frontend/index.html</code> en el navegador.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido"><strong>Verificar la carga de productos:</strong> La página del menú debe mostrar los productos cargados desde la API. Abrir DevTools → Network para ver la petición a <code>/api/products</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido"><strong>Probar el login:</strong> Iniciar sesión con un usuario de prueba. Verificar que el nombre aparece en la barra de navegación.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido"><strong>Agregar productos al carrito:</strong> Desde el menú, agregar 2-3 productos. Verificar que el badge del carrito se actualiza.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido"><strong>Hacer el checkout:</strong> Ir al carrito, llenar el formulario con datos de prueba y confirmar el pedido. Verificar que aparece el mensaje de confirmación con el código del pedido.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">7</div>
+            <div class="paso-contenido"><strong>Verificar en la BD:</strong> Abrir Supabase → Table Editor → tabla <code>orders</code>. El pedido recién creado debe aparecer con estado <code>pending</code>.</div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <div class="resumen">
+        <h2>Resumen de la Guía 13</h2>
+        <ul>
+            <li><strong>CORS</strong> es la política del navegador que bloquea peticiones entre orígenes distintos; se configura en el backend con el middleware <code>cors</code>.</li>
+            <li>El módulo <strong>Api.js</strong> centraliza todas las peticiones y agrega automáticamente el token de autenticación.</li>
+            <li>El módulo <strong>LoginPage</strong> maneja login y registro con feedback visual y gestión de errores.</li>
+            <li>El <strong>checkout</strong> envía solo <code>product_id</code> y <code>quantity</code> al backend; los precios los calcula el servidor.</li>
+            <li>El módulo <strong>App</strong> orquesta la navegación, verifica la sesión al inicio y actualiza la UI según el rol.</li>
+            <li>El <strong>carrito</strong> persiste en <code>localStorage</code> y se sincroniza con la UI mediante el badge.</li>
+            <li>La pestaña <strong>Network</strong> de DevTools es la herramienta principal para depurar problemas de integración.</li>
+        </ul>
+        <p style="color:#e8d5c0; margin-top:14px;">Siguiente paso: Guía 14 — Paneles de cajero y administrador.</p>
+    </div>
+
+</body>
+</html>

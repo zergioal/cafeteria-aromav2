@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 08 – Módulos, Fetch API y localStorage | Cafetería Aroma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+        .arquitectura { background: #1e1e1e; color: #d4d4d4; font-family: 'Courier New', monospace; font-size: 0.9em; padding: 20px; border-radius: 10px; line-height: 2; border-left: 4px solid #C8956C; margin: 16px 0; }
+        .arquitectura .file { color: #9cdcfe; }
+        .arquitectura .arrow { color: #C8956C; }
+        .arquitectura .comment { color: #6a9955; }
+        .arquitectura .dep { color: #4ec9b0; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 08 – JavaScript Avanzado: Módulos, Fetch API y localStorage</h1>
+        <p class="subtitulo">Módulo 3: JavaScript | El carrito de compras y la comunicación con el servidor</p>
+        <div class="meta">
+            <span class="badge">Nivel: Intermedio</span>
+            <span class="badge">Tiempo estimado: 7 horas</span>
+            <span class="badge">Prerequisito: Guías 06-07</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+            <li>Usar <code>localStorage</code> para persistir datos en el navegador entre sesiones.</li>
+            <li>Implementar el módulo completo del carrito de compras (<code>cart.js</code>) de Aroma.</li>
+            <li>Comprender qué es una Promise y cómo funciona la programación asíncrona.</li>
+            <li>Usar la Fetch API para hacer peticiones HTTP GET y POST.</li>
+            <li>Escribir código asíncrono legible con <code>async/await</code> y manejar errores con <code>try/catch</code>.</li>
+            <li>Analizar el módulo <code>api.js</code> de Aroma y entender los headers de autenticación.</li>
+            <li>Comprender la arquitectura de módulos del proyecto y el orden de carga de los archivos.</li>
+            <li>Analizar el módulo <code>menu.js</code> completo con carga de datos, filtros y renderizado.</li>
+        </ul>
+    </div>
+
+    <!-- SECCIÓN 1 -->
+    <h2>1. localStorage – Guardar Datos en el Navegador</h2>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> Imagina que cada sitio web tiene una pequeña libreta personal que el navegador guarda en la computadora del usuario. Cuando el usuario cierra la ventana y vuelve después, el sitio puede leer esa libreta y recordar lo que guardó: qué productos hay en el carrito, si el usuario está logueado, qué idioma prefiere. Solo ese sitio web puede leer su propia libreta; otros sitios no tienen acceso.
+    </div>
+
+    <p><code>localStorage</code> es un espacio de almacenamiento en el navegador que persiste incluso después de cerrar y reabrir el navegador (a diferencia de <code>sessionStorage</code>, que se borra al cerrar la pestaña).</p>
+
+    <pre><code>// Guardar un valor simple
+localStorage.setItem('usuario', 'Ana');
+
+// Leer ese valor después (incluso en otra sesión)
+const nombre = localStorage.getItem('usuario'); // "Ana"
+
+// IMPORTANTE: localStorage solo guarda strings
+// Para objetos y arrays, debes convertirlos con JSON
+
+// Guardar un array de objetos
+const carrito = [
+    { id: 1, nombre: "Café Latte", precio: 18, cantidad: 2 },
+    { id: 2, nombre: "Jugo de Naranja", precio: 12, cantidad: 1 }
+];
+localStorage.setItem('carrito', JSON.stringify(carrito));
+
+// Leer y convertir de vuelta a objeto JavaScript
+const carritoGuardado = localStorage.getItem('carrito'); // String JSON
+const carritoParsed = JSON.parse(carritoGuardado);       // Array de objetos
+
+// Eliminar un item específico
+localStorage.removeItem('usuario');
+
+// Limpiar TODO el localStorage (¡cuidado!)
+localStorage.clear();
+
+// Patrón seguro para leer (protege contra JSON malformado o clave inexistente)
+function leerDelStorage(clave, valorPorDefecto = null) {
+    try {
+        const guardado = localStorage.getItem(clave);
+        return guardado ? JSON.parse(guardado) : valorPorDefecto;
+    } catch (error) {
+        console.error('Error leyendo localStorage:', error);
+        return valorPorDefecto;
+    }
+}</code></pre>
+
+    <table>
+        <thead>
+            <tr><th>Característica</th><th>localStorage</th><th>sessionStorage</th><th>Cookies</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Persiste al cerrar</td><td>Sí</td><td>No</td><td>Configurable</td></tr>
+            <tr><td>Capacidad</td><td>~5-10 MB</td><td>~5-10 MB</td><td>~4 KB</td></tr>
+            <tr><td>Acceso desde JS</td><td>Sí</td><td>Sí</td><td>Sí (si no es httpOnly)</td></tr>
+            <tr><td>Enviado al servidor</td><td>No</td><td>No</td><td>Sí (en cada request)</td></tr>
+            <tr><td>Uso en Aroma</td><td>Carrito, sesión</td><td>No se usa</td><td>No se usa</td></tr>
+        </tbody>
+    </table>
+
+    <div class="warning">
+        <strong>No guardes información sensible en localStorage:</strong> es accesible desde cualquier código JavaScript de la página. Si hay un ataque XSS, el atacante puede leer todo el localStorage. En Aroma guardamos el token de sesión en localStorage por simplicidad, pero en aplicaciones de alta seguridad se usarían cookies httpOnly.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 2 -->
+    <h2>2. El Módulo Cart de Aroma (<code>cart.js</code>)</h2>
+
+    <div class="proyecto-aroma">
+        <h4>Archivo real del proyecto: <code>frontend/js/cart.js</code></h4>
+        <p>Este módulo implementa toda la lógica del carrito de compras. Es un excelente ejemplo del Module Pattern combinado con localStorage. Lee cada método con atención.</p>
+    </div>
+
+    <pre><code>// frontend/js/cart.js
+const Cart = {
+    // Clave única para identificar los datos en localStorage
+    STORAGE_KEY: 'aroma_cart',
+
+    // Obtener el carrito actual desde localStorage
+    getItems() {
+        try {
+            const guardado = localStorage.getItem(this.STORAGE_KEY);
+            return guardado ? JSON.parse(guardado) : [];
+        } catch {
+            return []; // Si el JSON está corrupto, devolvemos array vacío
+        }
+    },
+
+    // Guardar el carrito en localStorage y actualizar el badge
+    saveItems(items) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+        this.updateBadge(); // Siempre actualizar el contador visual
+    },
+
+    // Agregar un producto (o incrementar cantidad si ya existe)
+    addItem(producto, cantidad = 1) {
+        const items = this.getItems();
+        const indice = items.findIndex(item =&gt; item.id === producto.id);
+
+        if (indice &gt;= 0) {
+            // El producto ya está en el carrito: solo sumamos cantidad
+            items[indice].cantidad += cantidad;
+        } else {
+            // Producto nuevo: crear el objeto y agregarlo
+            items.push({
+                id: producto.id,
+                nombre: producto.nombre,
+                precio: producto.precio,
+                imagen: producto.imagen_url,
+                cantidad: cantidad
+            });
+        }
+
+        this.saveItems(items);
+        mostrarToast(`${producto.nombre} agregado al carrito`, 'success');
+    },
+
+    // Eliminar un producto completo del carrito
+    removeItem(productoId) {
+        // filter devuelve todos los items EXCEPTO el que tiene ese id
+        const items = this.getItems().filter(item =&gt; item.id !== productoId);
+        this.saveItems(items);
+    },
+
+    // Cambiar la cantidad de un producto específico
+    updateQuantity(productoId, nuevaCantidad) {
+        if (nuevaCantidad &lt;= 0) {
+            // Si la cantidad llega a 0 o menos, eliminar el producto
+            this.removeItem(productoId);
+            return;
+        }
+
+        // map: recorrer todos los items y modificar solo el que corresponde
+        const items = this.getItems().map(item =&gt;
+            item.id === productoId
+                ? { ...item, cantidad: nuevaCantidad } // Spread + override
+                : item                                  // Los demás sin cambio
+        );
+        this.saveItems(items);
+    },
+
+    // Calcular el precio total del carrito
+    getTotal() {
+        return this.getItems().reduce(
+            (total, item) =&gt; total + (item.precio * item.cantidad),
+            0 // Valor inicial del acumulador
+        );
+    },
+
+    // Contar la cantidad total de unidades en el carrito
+    getCount() {
+        return this.getItems().reduce(
+            (total, item) =&gt; total + item.cantidad,
+            0
+        );
+    },
+
+    // Vaciar el carrito completamente
+    clear() {
+        localStorage.removeItem(this.STORAGE_KEY);
+        this.updateBadge();
+    },
+
+    // Actualizar el número rojo (badge) sobre el ícono del carrito en la navbar
+    updateBadge() {
+        const badge = document.getElementById('cartBadge');
+        if (badge) {
+            const count = this.getCount();
+            badge.textContent = count;
+            badge.style.display = count &gt; 0 ? 'flex' : 'none';
+        }
+    }
+};</code></pre>
+
+    <h3>Analizando las decisiones de diseño</h3>
+
+    <h4>El patrón "obtener → modificar → guardar"</h4>
+    <p>Todos los métodos que modifican el carrito siguen la misma estructura: (1) leer el estado actual con <code>getItems()</code>, (2) crear la nueva versión del array, (3) guardar con <code>saveItems()</code>. Esto garantiza que el localStorage siempre tenga el estado más reciente.</p>
+
+    <h4>Inmutabilidad con <code>map</code> y spread operator</h4>
+    <p>En <code>updateQuantity</code>, en lugar de modificar el objeto directamente (<code>item.cantidad = nuevaCantidad</code>), creamos un nuevo objeto con el spread: <code>{ ...item, cantidad: nuevaCantidad }</code>. Esto es la programación inmutable: nunca mutamos los datos originales, creamos versiones nuevas. Es más predecible y fácil de depurar.</p>
+
+    <h4>¿Por qué <code>STORAGE_KEY</code> como constante del objeto?</h4>
+    <p>Si mañana necesitas cambiar la clave de localStorage (por ejemplo, para evitar conflictos con otra aplicación), solo cambias un lugar: la definición de <code>STORAGE_KEY</code>. Si hubieras escrito <code>'aroma_cart'</code> repetido en 5 métodos, tendrías que cambiar 5 lugares y es fácil olvidar uno.</p>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 3 -->
+    <h2>3. Promises – La Programación Asíncrona</h2>
+
+    <div class="analogia">
+        <strong>Analogía de la pizzería:</strong> Cuando llamas a una pizzería y pides una pizza, no te quedas paralizado en la silla esperando a que llegue. Te dan un número de pedido (una promesa) y sigues con tu vida. Cuando llegue la pizza (la promesa se resolvió), el repartidor toca el timbre y recibes el resultado. Si hubo un problema (se quemó la pizza → la promesa fue rechazada), te llaman para decirte que no puede entregarse.
+    </div>
+
+    <p>En JavaScript, muchas operaciones son <strong>asíncronas</strong>: tardan tiempo y no deben bloquear todo lo demás mientras esperan. Pedir datos a un servidor puede tardar 200ms, 500ms o más. Una <strong>Promise</strong> representa un valor que todavía no está disponible pero estará en algún momento (o fallará).</p>
+
+    <pre><code>// Una Promise puede estar en 3 estados:
+// - pending (esperando): todavía no se resolvió ni rechazó
+// - fulfilled (resuelta): la operación terminó con éxito
+// - rejected (rechazada): la operación falló
+
+// Crear una Promise manualmente (para entender cómo funciona)
+const miPromesa = new Promise((resolve, reject) =&gt; {
+    // Simulando una operación que tarda 1 segundo
+    setTimeout(() =&gt; {
+        const exito = true;
+        if (exito) {
+            resolve("¡Operación exitosa!");  // Resolver con un valor
+        } else {
+            reject("Hubo un error");         // Rechazar con un mensaje de error
+        }
+    }, 1000);
+});
+
+// Consumir la Promise con .then() y .catch()
+miPromesa
+    .then(resultado =&gt; {
+        console.log(resultado); // "¡Operación exitosa!"
+    })
+    .catch(error =&gt; {
+        console.error(error);   // Solo se ejecuta si fue rechazada
+    })
+    .finally(() =&gt; {
+        console.log("Esto se ejecuta siempre, haya éxito o error");
+    });
+
+// Fetch API - la forma nativa de hacer peticiones HTTP
+// fetch() devuelve una Promise que se resuelve con un objeto Response
+fetch('https://mi-api.com/productos')
+    .then(response =&gt; {
+        // Primero verificar si la respuesta fue exitosa (código 200-299)
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        return response.json(); // .json() también devuelve una Promise
+    })
+    .then(datos =&gt; {
+        console.log(datos);          // El array de productos
+        renderizarProductos(datos);
+    })
+    .catch(error =&gt; {
+        console.error('Error al cargar:', error);
+    });</code></pre>
+
+    <div class="tip">
+        <strong>¿Por qué dos <code>.then()</code>?</strong> <code>fetch()</code> resuelve cuando recibe los headers de la respuesta, no cuando tiene el cuerpo completo. <code>response.json()</code> lee el cuerpo y devuelve otra Promise. Por eso necesitas un segundo <code>.then()</code> para procesar los datos reales.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 4 -->
+    <h2>4. async/await – Promises que Parecen Código Síncrono</h2>
+
+    <p><code>async/await</code> es "azúcar sintáctica" sobre las Promises. Hace exactamente lo mismo que <code>.then()/.catch()</code>, pero el código se lee de arriba hacia abajo, como si fuera síncrono. Esto lo hace mucho más fácil de entender y de depurar.</p>
+
+    <pre><code>// El mismo código: versión con .then() y versión con async/await
+
+// VERSIÓN 1: con .then() y .catch()
+function cargarProductos() {
+    fetch('/api/products')
+        .then(r =&gt; r.json())
+        .then(datos =&gt; renderizarProductos(datos.products))
+        .catch(err =&gt; mostrarError(err));
+}
+
+// VERSIÓN 2: con async/await (más legible)
+async function cargarProductos() {
+    try {
+        const respuesta = await fetch('/api/products');
+        const datos = await respuesta.json();
+        renderizarProductos(datos.products);
+    } catch (error) {
+        mostrarError(error);
+    }
+}
+
+// async: indica que la función va a contener operaciones asíncronas
+// await: "espera aquí hasta que esta Promise se resuelva, luego continúa"
+
+// Ejemplo más complejo con múltiples awaits
+async function iniciarPaginaMenu() {
+    try {
+        // Esperar que carguen los productos
+        const resProductos = await fetch('/api/products');
+        const { products } = await resProductos.json();
+
+        // Esperar que carguen las categorías
+        const resCategorias = await fetch('/api/categories');
+        const { categories } = await resCategorias.json();
+
+        // Ahora tenemos ambos datos disponibles
+        renderizarFiltros(categories);
+        renderizarProductos(products);
+
+    } catch (error) {
+        console.error('Error al iniciar el menú:', error);
+        mostrarToast('Error al cargar el menú', 'error');
+    }
+}</code></pre>
+
+    <h3>try/catch para manejo de errores</h3>
+    <p>Con <code>async/await</code>, usamos <code>try/catch</code> en lugar de <code>.catch()</code>. El bloque <code>try</code> contiene el código que puede fallar; si falla, el error "cae" al bloque <code>catch</code> para manejarlo sin que la aplicación explote.</p>
+
+    <pre><code>async function miOperacion() {
+    try {
+        // Código que puede lanzar un error
+        const datos = await fetch('/api/algo');
+        const json = await datos.json();
+        // Si llega aquí, todo salió bien
+        return json;
+    } catch (error) {
+        // Se ejecuta si CUALQUIER línea del try lanza un error
+        console.error('Error:', error.message);
+        // Puedes devolver un valor por defecto, mostrar un mensaje, etc.
+        return null;
+    } finally {
+        // Se ejecuta SIEMPRE: tanto en éxito como en error
+        // Útil para ocultar spinners de carga
+        ocultarSpinner();
+    }
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 5 -->
+    <h2>5. El Módulo API de Aroma (<code>api.js</code>)</h2>
+
+    <div class="proyecto-aroma">
+        <h4>Archivo real del proyecto: <code>frontend/js/api.js</code></h4>
+        <p>Este módulo centraliza todas las peticiones HTTP al backend. En lugar de escribir <code>fetch(...)</code> con todos sus headers y opciones en cada lugar, tenemos un módulo que lo hace por nosotros de forma consistente.</p>
+    </div>
+
+    <pre><code>// frontend/js/api.js
+const Api = {
+    // URL base del servidor (definida en config.js)
+    BASE_URL: CONFIG.API_BASE_URL,
+
+    // Obtener el token de autenticación desde localStorage
+    getToken() {
+        const session = localStorage.getItem('aroma_session');
+        if (!session) return null;
+        const { access_token } = JSON.parse(session);
+        return access_token;
+    },
+
+    // Función base que hace la petición HTTP con todos los headers correctos
+    async request(endpoint, opciones = {}) {
+        const url = `${this.BASE_URL}${endpoint}`;
+        const token = this.getToken();
+
+        // Construir los headers, empezando con los por defecto
+        const headers = {
+            'Content-Type': 'application/json', // Indicamos que enviamos JSON
+            ...opciones.headers                  // Spread: agrega headers extra si los hay
+        };
+
+        // Si el usuario está logueado, agregar el token de autenticación
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        // Hacer la petición
+        const respuesta = await fetch(url, {
+            ...opciones,  // Spread: copia method, body, etc. de opciones
+            headers       // Pero siempre usa nuestros headers (sobreescribe los de opciones)
+        });
+
+        // Si el código HTTP no es 2xx, lanzar un error con el mensaje del servidor
+        if (!respuesta.ok) {
+            const error = await respuesta.json().catch(() =&gt; ({}));
+            throw new Error(error.message || `Error ${respuesta.status}`);
+        }
+
+        return respuesta.json(); // Devolver el JSON de la respuesta
+    },
+
+    // Métodos de conveniencia que usan request() internamente
+
+    get(endpoint) {
+        return this.request(endpoint, { method: 'GET' });
+    },
+
+    post(endpoint, datos) {
+        return this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(datos) // Convertir objeto a string JSON
+        });
+    },
+
+    put(endpoint, datos) {
+        return this.request(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(datos)
+        });
+    },
+
+    patch(endpoint, datos) {
+        return this.request(endpoint, {
+            method: 'PATCH',
+            body: JSON.stringify(datos)
+        });
+    }
+};
+
+// Ejemplos de uso desde otros módulos:
+// const { products } = await Api.get('/api/products');
+// const { categories } = await Api.get('/api/categories');
+// const pedido = await Api.post('/api/orders', { items: carrito });
+// await Api.patch('/api/products/abc-123', { activo: false });</code></pre>
+
+    <h3>Explicación de las decisiones clave</h3>
+
+    <h4>¿Qué es <code>Authorization: Bearer token</code>?</h4>
+    <p>Cuando el servidor necesita saber quién está haciendo la petición (para verificar permisos), el cliente incluye un token en el header de autorización. El formato estándar es:</p>
+    <pre><code>Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code></pre>
+    <p>"Bearer" significa "portador": quien tenga este token, tiene los permisos asociados a él. El servidor lo verifica y sabe que la petición viene de un usuario autenticado con cierto rol (admin, cashier, customer).</p>
+
+    <h4>¿Qué hace el spread operator <code>...opciones</code>?</h4>
+    <p>Permite pasar opciones adicionales a <code>fetch()</code> de forma flexible. Si llamas <code>Api.post('/api/orders', datos)</code>, las opciones son <code>{ method: 'POST', body: ... }</code>. El spread las copia al objeto de configuración de fetch. Es como mezclar dos objetos donde las propiedades de la derecha sobreescriben las de la izquierda si hay conflicto.</p>
+
+    <h4>¿Por qué verificamos <code>respuesta.ok</code>?</h4>
+    <p>La Promise de <code>fetch()</code> solo se rechaza si hay un error de red (sin conexión, DNS falla, etc.). Si el servidor responde con códigos de error como <code>404 Not Found</code> o <code>500 Internal Server Error</code>, la Promise igualmente se resuelve. Debemos verificar <code>respuesta.ok</code> (que es <code>true</code> solo para códigos 200-299) y lanzar manualmente el error si es necesario.</p>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 6 -->
+    <h2>6. Arquitectura de Módulos del Proyecto</h2>
+
+    <p>Aroma no usa el sistema de módulos ES6 (<code>import/export</code>) porque es JavaScript "vanilla" cargado directamente con etiquetas <code>&lt;script&gt;</code>. En cambio, cada módulo es un objeto global (<code>const Cart = {...}</code>, <code>const Api = {...}</code>) que está disponible en todos los archivos cargados después de él.</p>
+
+    <div class="arquitectura">
+        <span class="comment">Orden de carga en el HTML (de arriba hacia abajo)</span><br><br>
+        <span class="file">config.js</span>      <span class="arrow">→</span> <span class="dep">Define CONFIG</span>  <span class="comment">(constantes globales)</span><br>
+        <span class="file">auth.js</span>        <span class="arrow">→</span> <span class="dep">Define Auth</span>    <span class="comment">(depende de CONFIG)</span><br>
+        <span class="file">api.js</span>         <span class="arrow">→</span> <span class="dep">Define Api</span>     <span class="comment">(depende de CONFIG)</span><br>
+        <span class="file">cart.js</span>        <span class="arrow">→</span> <span class="dep">Define Cart</span>    <span class="comment">(independiente)</span><br>
+        <span class="file">pages/home.js</span>  <span class="arrow">→</span> <span class="dep">Define HomePage</span> <span class="comment">(usa Api)</span><br>
+        <span class="file">pages/menu.js</span>  <span class="arrow">→</span> <span class="dep">Define MenuPage</span> <span class="comment">(usa Api, Cart)</span><br>
+        <span class="file">pages/login.js</span> <span class="arrow">→</span> <span class="dep">Define LoginPage</span> <span class="comment">(usa Auth, Api)</span><br>
+        <span class="file">pages/cart-page.js</span> <span class="arrow">→</span> <span class="dep">Define CartPage</span> <span class="comment">(usa Cart, Api)</span><br>
+        <span class="file">pages/cashier.js</span>  <span class="arrow">→</span> <span class="dep">Define CashierPage</span> <span class="comment">(usa Api)</span><br>
+        <span class="file">pages/admin.js</span>    <span class="arrow">→</span> <span class="dep">Define AdminPage</span>   <span class="comment">(usa Api)</span><br>
+        <span class="file">app.js</span>         <span class="arrow">→</span> <span class="dep">Define App</span>     <span class="comment">(usa todo lo anterior)</span>
+    </div>
+
+    <div class="importante">
+        <strong>El orden de carga importa:</strong> si <code>api.js</code> se cargara antes que <code>config.js</code>, la línea <code>BASE_URL: CONFIG.API_BASE_URL</code> fallaría porque <code>CONFIG</code> no existiría todavía. Siempre carga las dependencias antes que quienes las usan.
+    </div>
+
+    <p>En el HTML de Aroma, los scripts se cargan así:</p>
+    <pre><code>&lt;!-- Al final del &lt;body&gt;, en orden de dependencias --&gt;
+&lt;script src="js/config.js"&gt;&lt;/script&gt;
+&lt;script src="js/auth.js"&gt;&lt;/script&gt;
+&lt;script src="js/api.js"&gt;&lt;/script&gt;
+&lt;script src="js/cart.js"&gt;&lt;/script&gt;
+&lt;script src="js/pages/home.js"&gt;&lt;/script&gt;
+&lt;script src="js/pages/menu.js"&gt;&lt;/script&gt;
+&lt;script src="js/pages/login.js"&gt;&lt;/script&gt;
+&lt;script src="js/pages/cart-page.js"&gt;&lt;/script&gt;
+&lt;script src="js/pages/cashier.js"&gt;&lt;/script&gt;
+&lt;script src="js/pages/admin.js"&gt;&lt;/script&gt;
+&lt;script src="js/app.js"&gt;&lt;/script&gt;  &lt;!-- Siempre el último --&gt;</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 7 -->
+    <h2>7. Cargando Productos desde la API (<code>menu.js</code>)</h2>
+
+    <div class="proyecto-aroma">
+        <h4>Archivo real del proyecto: <code>frontend/js/pages/menu.js</code></h4>
+        <p>Este es el módulo más completo de las páginas. Combina peticiones a la API, manejo de estado local, filtros, búsqueda y renderizado dinámico. Analiza el código línea por línea.</p>
+    </div>
+
+    <pre><code>// frontend/js/pages/menu.js
+const MenuPage = {
+    // Estado local del módulo (datos que viven en memoria mientras la app está abierta)
+    productos: [],      // Todos los productos cargados de la API
+    categorias: [],     // Todas las categorías
+    filtroActual: 'todos', // Categoría seleccionada actualmente
+    busqueda: '',       // Texto de búsqueda actual
+
+    // Inicializar la página del menú
+    async init() {
+        // Promise.all ejecuta ambas peticiones EN PARALELO (más rápido)
+        // En vez de esperar que carguen categorías y LUEGO productos (secuencial),
+        // los pedimos al mismo tiempo y esperamos a que AMBOS terminen
+        await Promise.all([
+            this.cargarCategorias(),
+            this.cargarProductos()
+        ]);
+
+        // Solo cuando ambos están listos, configuramos la interactividad
+        this.setupFiltros();
+        this.setupBusqueda();
+    },
+
+    // Cargar la lista de productos desde el backend
+    async cargarProductos() {
+        try {
+            // Mostrar spinner de carga mientras esperamos
+            document.getElementById('productGrid').innerHTML =
+                '&lt;div class="loading"&gt;Cargando productos...&lt;/div&gt;';
+
+            // Petición al backend usando nuestro módulo Api
+            const { products } = await Api.get('/api/products');
+
+            // Guardar en el estado local del módulo
+            this.productos = products;
+
+            // Renderizar con los filtros aplicados
+            this.renderizarProductos(this.productosFiltrados());
+
+        } catch (error) {
+            console.error('Error cargando productos:', error);
+            document.getElementById('productGrid').innerHTML =
+                '&lt;div class="error"&gt;Error al cargar productos. Intenta de nuevo.&lt;/div&gt;';
+        }
+    },
+
+    // Cargar las categorías para los botones de filtro
+    async cargarCategorias() {
+        try {
+            const { categories } = await Api.get('/api/categories');
+            this.categorias = categories;
+            this.renderizarFiltros();
+        } catch (error) {
+            console.error('Error cargando categorías:', error);
+        }
+    },
+
+    // Calcular qué productos mostrar según el filtro y la búsqueda actuales
+    productosFiltrados() {
+        return this.productos.filter(p =&gt; {
+            // ¿El producto coincide con la categoría seleccionada?
+            const coincideCategoria =
+                this.filtroActual === 'todos' ||
+                p.category_id === this.filtroActual;
+
+            // ¿El nombre del producto contiene el texto buscado?
+            const coincideBusqueda =
+                !this.busqueda ||
+                p.nombre.toLowerCase().includes(this.busqueda.toLowerCase());
+
+            // Solo incluir si cumple AMBAS condiciones
+            return coincideCategoria &amp;&amp; coincideBusqueda;
+        });
+    },
+
+    // Configurar los botones de filtro por categoría (Event Delegation)
+    setupFiltros() {
+        document.getElementById('menuFilters').addEventListener('click', (e) =&gt; {
+            if (e.target.classList.contains('filter-btn')) {
+                // Actualizar el filtro activo
+                this.filtroActual = e.target.dataset.category || 'todos';
+
+                // Actualizar la apariencia de los botones
+                document.querySelectorAll('.filter-btn').forEach(btn =&gt;
+                    btn.classList.remove('active')
+                );
+                e.target.classList.add('active');
+
+                // Volver a renderizar con el nuevo filtro
+                this.renderizarProductos(this.productosFiltrados());
+            }
+        });
+    },
+
+    // Configurar la búsqueda en tiempo real
+    setupBusqueda() {
+        const inputBusqueda = document.getElementById('searchInput');
+        if (!inputBusqueda) return;
+
+        inputBusqueda.addEventListener('input', (e) =&gt; {
+            this.busqueda = e.target.value;
+            this.renderizarProductos(this.productosFiltrados());
+        });
+    },
+
+    // Renderizar el grid de productos en el DOM
+    renderizarProductos(productos) {
+        const grid = document.getElementById('productGrid');
+
+        if (productos.length === 0) {
+            grid.innerHTML = '&lt;p class="empty"&gt;No se encontraron productos&lt;/p&gt;';
+            return;
+        }
+
+        // map() crea un array de strings HTML, join('') los concatena en uno solo
+        grid.innerHTML = productos.map(p =&gt; `
+            &lt;div class="product-card"&gt;
+                &lt;div class="product-image-container"&gt;
+                    &lt;img src="${p.imagen_url || ''}" alt="${escHtml(p.nombre)}"
+                         loading="lazy" onerror="this.src='img/placeholder.jpg'"&gt;
+                &lt;/div&gt;
+                &lt;div class="product-info"&gt;
+                    &lt;h3 class="product-name"&gt;${escHtml(p.nombre)}&lt;/h3&gt;
+                    &lt;p class="product-desc"&gt;${escHtml(p.descripcion || '')}&lt;/p&gt;
+                    &lt;div class="product-footer"&gt;
+                        &lt;span class="product-price"&gt;Bs. ${p.precio.toFixed(2)}&lt;/span&gt;
+                        &lt;button class="btn-add-cart"
+                            data-id="${p.id}"
+                            data-nombre="${escHtml(p.nombre)}"
+                            data-precio="${p.precio}"&gt;
+                            + Agregar
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        `).join('');
+
+        // Event delegation para los botones de agregar
+        // (si ya tiene listener del render anterior, no pasa nada: se agrega otro,
+        // en producción se debería gestionar mejor con removeEventListener)
+        grid.addEventListener('click', (e) =&gt; {
+            if (e.target.classList.contains('btn-add-cart')) {
+                Cart.addItem({
+                    id: e.target.dataset.id,
+                    nombre: e.target.dataset.nombre,
+                    precio: parseFloat(e.target.dataset.precio)
+                });
+            }
+        });
+    }
+};</code></pre>
+
+    <h3>Conceptos clave en menu.js</h3>
+
+    <h4>Promise.all([]) – Carga en paralelo</h4>
+    <p><code>Promise.all()</code> recibe un array de Promises y espera a que <strong>todas</strong> terminen. Si las lanzáramos secuencialmente (<code>await cargarCategorias(); await cargarProductos();</code>), esperaríamos que una termine para empezar la otra. Con <code>Promise.all</code>, ambas van al mismo tiempo y esperamos al que tarde más. Esto puede reducir el tiempo de carga a la mitad.</p>
+
+    <h4>Estado local del módulo</h4>
+    <p>Las propiedades <code>productos</code>, <code>categorias</code>, <code>filtroActual</code> y <code>busqueda</code> son el "estado" del módulo: datos que necesita recordar mientras el usuario interactúa con la página. Cuando el usuario cambia un filtro, solo actualizamos <code>filtroActual</code> y re-renderizamos, sin volver a pedir datos al servidor.</p>
+
+    <h4>Búsqueda con <code>.toLowerCase()</code></h4>
+    <p>Al comparar el texto buscado con el nombre del producto, convertimos ambos a minúsculas. Así, buscar "café" también encontrará "Café", "CAFÉ" o "cafÉ". Siempre normaliza el texto antes de compararlo.</p>
+
+    <h4>El atributo <code>onerror</code> en imágenes</h4>
+    <p><code>onerror="this.src='img/placeholder.jpg'"</code> es un fallback: si la imagen del producto no carga (URL rota, archivo eliminado), se muestra automáticamente una imagen de reemplazo. Es una práctica profesional para evitar iconos de imagen rota en la interfaz.</p>
+
+    <hr class="separador">
+
+    <!-- EJERCICIO FINAL -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final – Implementación Completa del Carrito</h4>
+        <p>Implementa la funcionalidad de renderizado del carrito combinando todo lo que aprendiste en las guías 06, 07 y 08:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                <strong>Implementa el módulo Cart:</strong>
+                <p>Crea un archivo <code>mi-cart.js</code> con el módulo <code>Cart</code> completo, incluyendo los métodos: <code>getItems()</code>, <code>saveItems()</code>, <code>addItem()</code>, <code>removeItem()</code>, <code>updateQuantity()</code>, <code>getTotal()</code> y <code>getCount()</code>. Puedes guiarte en el código de esta guía, pero escríbelo tú mismo sin copiar directamente.</p>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                <strong>Crea la función de renderizado del carrito:</strong>
+                <p>Escribe la función <code>renderizarCarrito()</code> que lea los items del carrito con <code>Cart.getItems()</code> y los muestre en el DOM. Debe incluir:</p>
+                <ul>
+                    <li>El nombre y precio de cada producto.</li>
+                    <li>Controles para aumentar/disminuir la cantidad.</li>
+                    <li>Un botón para eliminar el producto del carrito.</li>
+                    <li>El subtotal de cada línea (<code>precio × cantidad</code>).</li>
+                    <li>El total general del pedido.</li>
+                </ul>
+                <pre><code>// La función debe generar algo como:
+// &lt;div class="cart-item"&gt;
+//   &lt;span&gt;Café Latte&lt;/span&gt;
+//   &lt;button data-id="x" class="btn-decrease"&gt;-&lt;/button&gt;
+//   &lt;span&gt;2&lt;/span&gt;
+//   &lt;button data-id="x" class="btn-increase"&gt;+&lt;/button&gt;
+//   &lt;span&gt;Bs. 36.00&lt;/span&gt;
+//   &lt;button data-id="x" class="btn-remove"&gt;Eliminar&lt;/button&gt;
+// &lt;/div&gt;</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                <strong>Agrega la interactividad con Event Delegation:</strong>
+                <p>En el contenedor del carrito, agrega un solo <code>addEventListener('click')</code> que maneje los tres tipos de botones: aumentar cantidad, disminuir cantidad y eliminar. Llama a los métodos correspondientes del módulo <code>Cart</code> y vuelve a llamar <code>renderizarCarrito()</code> para actualizar la vista.</p>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">
+                <strong>Muestra el total en tiempo real:</strong>
+                <p>Cada vez que se modifique el carrito, actualiza el elemento que muestra el total usando <code>Cart.getTotal()</code>. El total debe mostrarse formateado: <code>"Bs. 73.50"</code>. Usa la función <code>formatearPrecio()</code> que creaste en el ejercicio de la Guía 06.</p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <!-- RESUMEN -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 08</h2>
+        <ul>
+            <li><code>localStorage</code> guarda datos como strings que persisten entre sesiones. Usa <code>JSON.stringify()</code> para guardar objetos y <code>JSON.parse()</code> para leerlos. Siempre protege el parse con <code>try/catch</code>.</li>
+            <li>El módulo <code>Cart</code> sigue el patrón "obtener → modificar → guardar" para mantener el estado del carrito consistente entre el objeto en memoria y el localStorage.</li>
+            <li>Una Promise representa un valor futuro. Puede estar pendiente, resuelta o rechazada. Se consume con <code>.then()</code>/<code>.catch()</code> o con <code>async/await</code>.</li>
+            <li><code>fetch()</code> hace peticiones HTTP y devuelve una Promise. Siempre verifica <code>response.ok</code> antes de procesar la respuesta.</li>
+            <li><code>async/await</code> hace el código asíncrono más legible al eliminar el encadenamiento de <code>.then()</code>. Usa <code>try/catch/finally</code> para manejo de errores.</li>
+            <li>El módulo <code>Api</code> centraliza todas las peticiones HTTP, agrega automáticamente el header <code>Authorization: Bearer token</code> y lanza errores descriptivos cuando el servidor responde con códigos de error.</li>
+            <li>El orden de carga de los archivos <code>&lt;script&gt;</code> en el HTML es crítico: las dependencias siempre deben ir primero. <code>config.js</code> es el primero; <code>app.js</code> es el último.</li>
+            <li><code>Promise.all([])</code> ejecuta múltiples Promises en paralelo y espera a que todas terminen, reduciendo el tiempo de carga total.</li>
+            <li>El estado local de un módulo (<code>productos</code>, <code>filtroActual</code>) evita peticiones repetidas al servidor: los datos se cargan una vez y se filtran en memoria.</li>
+            <li>Siempre usa <code>escHtml()</code> al insertar datos del servidor en el DOM para prevenir ataques XSS.</li>
+        </ul>
+    </div>
+
+</body>
+</html>

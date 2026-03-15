@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 15 – Despliegue: Publicando Aroma en Internet</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+        .arquitectura { background: #1e1e1e; color: #d4d4d4; padding: 24px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 16px 0; text-align: center; line-height: 2; }
+        .checklist { list-style: none; margin-left: 0; }
+        .checklist li { padding: 6px 0; border-bottom: 1px solid #e8ddd4; }
+        .checklist li::before { content: "[ ] "; font-family: monospace; color: #6F4E37; font-weight: bold; }
+        .resumen-curso { background: linear-gradient(135deg, #2c1810, #4A3426); color: white; padding: 28px 32px; border-radius: 14px; margin-top: 40px; }
+        .resumen-curso h2 { color: #F5DEB3; border-left-color: #C8956C; margin-top: 0; }
+        .proximos-pasos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+        .proximo-card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 14px 16px; }
+        .proximo-card h4 { color: #F5DEB3; margin: 0 0 6px 0; font-size: 1em; }
+        .proximo-card p { color: #e8d5c0; font-size: 0.9em; margin: 0; }
+        @media (max-width: 600px) { .proximos-pasos { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 15 – Despliegue: Publicando Aroma en Internet</h1>
+        <p class="subtitulo">Módulo 6: Despliegue | De localhost a producción real</p>
+        <div class="meta">
+            <span class="badge">Nivel: Avanzado</span>
+            <span class="badge">Tiempo estimado: 4 horas</span>
+            <span class="badge">Prerequisito: Guías 11-14</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Entender la diferencia entre desarrollo y producción</li>
+            <li>Subir el código a GitHub con buenas prácticas</li>
+            <li>Desplegar el backend en Render (plataforma gratuita)</li>
+            <li>Desplegar el frontend en Netlify (plataforma gratuita)</li>
+            <li>Configurar las variables de entorno en producción</li>
+            <li>Verificar que todo funciona desde internet</li>
+            <li>Conocer el flujo CI/CD básico para actualizar el proyecto</li>
+        </ul>
+    </div>
+
+    <h2>1. ¿Qué es el despliegue (deployment)?</h2>
+
+    <div class="analogia">
+        <strong>Analogía del restaurante:</strong> Hasta ahora, la Cafetería Aroma solo "existía" en tu cocina de casa (localhost). El despliegue es como abrir el local real: conectar la electricidad, poner el letrero en la puerta, y habilitar las mesas para que cualquier persona pueda venir a comer, desde cualquier ciudad del mundo.
+    </div>
+
+    <h3>Desarrollo vs Producción</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Aspecto</th>
+                <th>Desarrollo (localhost)</th>
+                <th>Producción (internet)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Acceso</td>
+                <td>Solo tu computadora</td>
+                <td>Cualquier persona en el mundo</td>
+            </tr>
+            <tr>
+                <td>URL</td>
+                <td>http://localhost:3000</td>
+                <td>https://aroma-backend.onrender.com</td>
+            </tr>
+            <tr>
+                <td>Errores visibles</td>
+                <td>Sí, con detalles (para depurar)</td>
+                <td>No, mensajes genéricos (seguridad)</td>
+            </tr>
+            <tr>
+                <td>Nodemon</td>
+                <td>Sí (reinicia al guardar)</td>
+                <td>No, se usa <code>node</code> directamente</td>
+            </tr>
+            <tr>
+                <td>.env</td>
+                <td>Archivo local en el proyecto</td>
+                <td>Variables configuradas en el servidor</td>
+            </tr>
+            <tr>
+                <td>HTTPS</td>
+                <td>No necesario</td>
+                <td>Obligatorio (navegadores lo exigen)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>La arquitectura de Aroma en producción</h3>
+
+    <div class="arquitectura">
+[Usuarios en internet]
+        |
+        v
+[Netlify — Frontend]    ←→    [Supabase — Auth + BD]
+        |                              |
+        v                              |
+[Render — Backend Node.js] ←----------+
+   (API REST)
+    </div>
+
+    <p>Cada capa tiene una responsabilidad clara y su propia plataforma de hosting:</p>
+    <ul>
+        <li><strong>Netlify:</strong> Sirve los archivos estáticos del frontend (HTML, CSS, JS). Gratuito, muy rápido.</li>
+        <li><strong>Render:</strong> Ejecuta el servidor Node.js/Express. Plan gratuito disponible.</li>
+        <li><strong>Supabase:</strong> Aloja la base de datos PostgreSQL y el sistema de autenticación. Ya lo teníamos configurado.</li>
+    </ul>
+
+    <hr class="separador">
+
+    <h2>2. Git y GitHub — Preparar el código</h2>
+
+    <p>Antes de desplegar, el código debe estar en GitHub. Git es el sistema de control de versiones que guarda el historial de cambios; GitHub es la plataforma web donde se aloja ese repositorio.</p>
+
+    <div class="importante">
+        <strong>Verificar el .gitignore ANTES de subir a GitHub:</strong> El archivo <code>.gitignore</code> le dice a Git qué archivos ignorar. Las credenciales, los node_modules y los archivos de caché nunca deben subirse.
+    </div>
+
+    <pre><code># .gitignore (en la raíz del proyecto)
+# Variables de entorno con credenciales
+.env
+.env.local
+.env.production
+
+# Dependencias de Node (se instalan con npm install)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de VS Code
+.vscode/settings.json</code></pre>
+
+    <pre><code># Comandos para subir el código a GitHub:
+
+# 1. Si el repositorio no existe todavía, inicializarlo
+git init
+
+# 2. Verificar qué archivos se van a incluir (¡no debe aparecer .env!)
+git status
+
+# 3. Revisar que .gitignore está funcionando
+git check-ignore -v .env
+# Debe mostrar: .gitignore:1:.env	.env
+
+# 4. Agregar todos los archivos al staging
+git add .
+
+# 5. Crear el primer commit
+git commit -m "feat: Cafetería Aroma - sistema fullstack completo"
+
+# 6. Ir a github.com → New Repository → nombre: cafeteria-aroma
+#    (NO inicializar con README ni .gitignore, ya los tenemos)
+
+# 7. Conectar con GitHub y subir
+git remote add origin https://github.com/tu-usuario/cafeteria-aroma.git
+git branch -M main
+git push -u origin main</code></pre>
+
+    <div class="tip">
+        <strong>Tip:</strong> Después de crear el repositorio en GitHub, la propia plataforma te muestra exactamente estos comandos en pantalla. Solo tienes que copiarlos y ejecutarlos en tu terminal.
+    </div>
+
+    <hr class="separador">
+
+    <h2>3. Desplegar el Backend en Render</h2>
+
+    <p>Render es una plataforma de hosting que puede ejecutar servidores Node.js de forma gratuita. La conexión con GitHub es directa: cada vez que subas cambios, Render redespliega automáticamente.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Ir a <strong>render.com</strong> y registrarse con la cuenta de GitHub (más fácil así).</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">En el dashboard, clic en <strong>"New +"</strong> → <strong>"Web Service"</strong>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">Seleccionar <strong>"Build and deploy from a Git repository"</strong> → conectar GitHub y buscar el repositorio <code>cafeteria-aroma</code>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">Configurar el servicio:
+            <pre><code>Name:              aroma-backend
+Root Directory:    backend
+Environment:       Node
+Build Command:     npm install
+Start Command:     npm start</code></pre>
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">Ir a la sección <strong>"Environment"</strong> y agregar las variables:
+            <pre><code>SUPABASE_URL            = https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+FRONTEND_URL            = *</code></pre>
+            (Ponemos <code>*</code> en FRONTEND_URL temporalmente; la actualizaremos cuando tengamos la URL de Netlify.)
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">6</div>
+        <div class="paso-contenido">Clic en <strong>"Create Web Service"</strong>. Render comenzará a construir el servidor (3-5 minutos).</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">7</div>
+        <div class="paso-contenido">Cuando el estado sea <strong>"Live"</strong>, probar el health check en el navegador: <code>https://aroma-backend.onrender.com/health</code>. Debe responder <code>{ "status": "OK" }</code>.</div>
+    </div>
+
+    <div class="warning">
+        <strong>Plan gratuito de Render — Cold Start:</strong> En el plan gratuito, Render "duerme" el servidor después de 15 minutos sin peticiones. La primera petición después de que durmió puede tardar 30-60 segundos en responder (mientras el servidor "despierta"). Esto es normal en desarrollo/demo. Para proyectos reales en producción, se usa el plan de pago.
+    </div>
+
+    <hr class="separador">
+
+    <h2>4. Desplegar el Frontend en Netlify</h2>
+
+    <p>Netlify es la plataforma ideal para sitios web estáticos. Detecta automáticamente que no necesitamos un proceso de build y sirve los archivos directamente.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Ir a <strong>netlify.com</strong> y registrarse con GitHub.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">En el dashboard, clic en <strong>"Add new site"</strong> → <strong>"Import an existing project"</strong>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">Seleccionar <strong>GitHub</strong> y buscar <code>cafeteria-aroma</code>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">Configurar el despliegue:
+            <pre><code>Branch to deploy:    main
+Base directory:      frontend
+Publish directory:   frontend
+Build command:       (dejar vacío — no usamos build)</code></pre>
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">Clic en <strong>"Deploy site"</strong>. En aproximadamente 1 minuto obtendrás una URL como: <code>https://amazing-curie-a1b2c3.netlify.app</code></div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">6</div>
+        <div class="paso-contenido"><strong>Opcional:</strong> En Site settings → General → "Change site name" puedes personalizar el subdominio: <code>aroma-cafeteria.netlify.app</code></div>
+    </div>
+
+    <hr class="separador">
+
+    <h2>5. Actualizar las URLs de producción</h2>
+
+    <p>Ahora que tenemos las URLs reales de Render y Netlify, debemos actualizar las configuraciones.</p>
+
+    <h3>Paso A — Actualizar frontend/js/config.js</h3>
+
+    <pre><code>// frontend/js/config.js
+// Este archivo SÍ se sube a GitHub (no tiene secretos, solo URLs públicas)
+const CONFIG = {
+    // Tu proyecto de Supabase (igual que en desarrollo)
+    SUPABASE_URL: 'https://tu-proyecto.supabase.co',
+
+    // La clave pública de Supabase (ANON KEY — es segura para el frontend)
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+
+    // URL del backend en producción (reemplazar con tu URL real de Render)
+    API_BASE_URL: 'https://aroma-backend.onrender.com'
+};</code></pre>
+
+    <div class="importante">
+        <strong>Importante:</strong> El archivo <code>config.js</code> usa la <code>ANON_KEY</code> de Supabase, que es pública por diseño. La <code>SERVICE_ROLE_KEY</code> (la secreta) solo está en las variables de entorno de Render, nunca en el frontend ni en GitHub.
+    </div>
+
+    <h3>Paso B — Actualizar FRONTEND_URL en Render</h3>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Ir a Render → tu servicio <code>aroma-backend</code> → pestaña <strong>"Environment"</strong>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">Cambiar el valor de <code>FRONTEND_URL</code> de <code>*</code> a la URL real de Netlify: <code>https://aroma-cafeteria.netlify.app</code></div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">Clic en <strong>"Save Changes"</strong>. Render reiniciará el servidor automáticamente.</div>
+    </div>
+
+    <h3>Paso C — Configurar Supabase Authentication</h3>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Ir a tu proyecto en <strong>supabase.com</strong> → <strong>Authentication</strong> → <strong>URL Configuration</strong>.</div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">En <strong>"Redirect URLs"</strong>, agregar: <code>https://aroma-cafeteria.netlify.app/**</code></div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">También actualizar el <strong>Site URL</strong> a la URL de Netlify.</div>
+    </div>
+
+    <h3>Paso D — Subir los cambios</h3>
+
+    <pre><code># Agregar los cambios a Git y subir
+git add frontend/js/config.js
+git commit -m "config: actualizar URLs de producción"
+git push origin main
+
+# Netlify y Render detectarán el push automáticamente y redesplegarán</code></pre>
+
+    <hr class="separador">
+
+    <h2>6. El archivo netlify.toml — Configuración de rutas</h2>
+
+    <p>Cuando el usuario accede directamente a una URL como <code>https://aroma-cafeteria.netlify.app/menu</code>, Netlify buscaría un archivo <code>/menu/index.html</code> que no existe. El resultado sería un error 404. Para evitar esto en nuestra Single Page Application (SPA), necesitamos el archivo <code>netlify.toml</code>:</p>
+
+    <pre><code># frontend/netlify.toml
+# Este archivo configura el comportamiento de Netlify
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Opcional: agregar cabeceras de seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"</code></pre>
+
+    <div class="tip">
+        <strong>¿Por qué status 200 y no 301?</strong> Con <code>status = 200</code>, Netlify devuelve el contenido de <code>index.html</code> pero mantiene la URL original en el navegador. Con un redirect 301, el navegador cambiaría la URL a <code>/index.html</code>, lo que no es lo que queremos. Siempre <code>200</code> para SPAs.
+    </div>
+
+    <hr class="separador">
+
+    <h2>7. Verificar el despliegue completo</h2>
+
+    <p>Una vez que todo está desplegado, usa este checklist para verificar que funciona correctamente desde internet:</p>
+
+    <ul class="checklist">
+        <li>El backend responde en <code>https://aroma-backend.onrender.com/health</code></li>
+        <li>El frontend carga en la URL de Netlify</li>
+        <li>Los productos se muestran en el menú (datos de la API)</li>
+        <li>El registro de nuevo usuario funciona</li>
+        <li>El login funciona</li>
+        <li>Se pueden agregar productos al carrito</li>
+        <li>El checkout crea el pedido correctamente</li>
+        <li>El cajero puede ver los pedidos desde su panel</li>
+        <li>El cambio de estados del pedido funciona</li>
+        <li>El admin puede ver el dashboard con estadísticas</li>
+        <li>La creación y edición de productos funciona</li>
+        <li>No hay errores CORS en la consola del navegador</li>
+    </ul>
+
+    <hr class="separador">
+
+    <h2>8. Errores comunes en producción</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Error</th>
+                <th>Causa probable</th>
+                <th>Solución</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Mixed Content</td>
+                <td>El frontend usa HTTPS pero llama a un backend HTTP</td>
+                <td>Render proporciona HTTPS automáticamente. Asegurarse de usar la URL <code>https://</code> en config.js</td>
+            </tr>
+            <tr>
+                <td>CORS en producción</td>
+                <td><code>FRONTEND_URL</code> en Render tiene el valor antiguo o incorrecto</td>
+                <td>Actualizar la variable en Render con la URL exacta de Netlify</td>
+            </tr>
+            <tr>
+                <td>500 Internal Server Error</td>
+                <td>Variables de entorno no configuradas en Render</td>
+                <td>Verificar en Render → Environment que <code>SUPABASE_URL</code> y <code>SUPABASE_SERVICE_ROLE_KEY</code> están correctas</td>
+            </tr>
+            <tr>
+                <td>Login no redirige</td>
+                <td>URL de redirección no configurada en Supabase</td>
+                <td>Agregar la URL de Netlify en Supabase → Authentication → Redirect URLs</td>
+            </tr>
+            <tr>
+                <td>Página 404 al recargar</td>
+                <td>Falta el archivo <code>netlify.toml</code></td>
+                <td>Crear el archivo con la regla de redirect a index.html</td>
+            </tr>
+            <tr>
+                <td>Primera petición tarda 60s</td>
+                <td>Cold start del plan gratuito de Render</td>
+                <td>Normal en el plan gratuito. Se puede agregar un "ping" periódico o usar el plan de pago</td>
+            </tr>
+            <tr>
+                <td>Productos no cargan</td>
+                <td>La URL de la API en config.js es incorrecta</td>
+                <td>Verificar que <code>API_BASE_URL</code> en config.js tiene la URL exacta de Render (sin barra al final)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr class="separador">
+
+    <h2>9. CI/CD básico — El flujo de trabajo en producción</h2>
+
+    <p><strong>CI/CD</strong> (Continuous Integration / Continuous Deployment) es la práctica de automatizar las pruebas y el despliegue. En su forma más básica, con Render y Netlify conectados a GitHub, ya tienes CI/CD: cada vez que subes código, se despliega automáticamente.</p>
+
+    <pre><code># El flujo de trabajo diario para actualizar el proyecto:
+
+# 1. Hacer cambios en el código (agregar una feature, corregir un bug)
+# ...editar archivos...
+
+# 2. Revisar qué cambió
+git status
+git diff
+
+# 3. Agregar los cambios
+git add .
+
+# 4. Crear un commit descriptivo
+git commit -m "feat: agregar filtro de búsqueda en el menú"
+
+# 5. Subir a GitHub
+git push origin main
+
+# ¡Listo! Render y Netlify detectan el push y redesplegan automáticamente
+# El proceso tarda ~2-3 minutos
+# Puedes ver el progreso en el dashboard de cada plataforma</code></pre>
+
+    <h3>Buenas prácticas de commit</h3>
+    <p>Los mensajes de commit deben ser descriptivos y seguir una convención. La más usada es <strong>Conventional Commits</strong>:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Prefijo</th>
+                <th>Uso</th>
+                <th>Ejemplo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>feat:</code></td>
+                <td>Nueva funcionalidad</td>
+                <td><code>feat: agregar filtro de categorías en el menú</code></td>
+            </tr>
+            <tr>
+                <td><code>fix:</code></td>
+                <td>Corrección de bug</td>
+                <td><code>fix: corregir cálculo de total cuando hay descuento</code></td>
+            </tr>
+            <tr>
+                <td><code>style:</code></td>
+                <td>Cambios de CSS/estilo</td>
+                <td><code>style: mejorar diseño del carrito en mobile</code></td>
+            </tr>
+            <tr>
+                <td><code>refactor:</code></td>
+                <td>Reestructuración sin cambiar funcionalidad</td>
+                <td><code>refactor: extraer lógica del carrito a módulo propio</code></td>
+            </tr>
+            <tr>
+                <td><code>docs:</code></td>
+                <td>Documentación</td>
+                <td><code>docs: actualizar README con instrucciones de instalación</code></td>
+            </tr>
+            <tr>
+                <td><code>config:</code></td>
+                <td>Cambios de configuración</td>
+                <td><code>config: actualizar URLs de producción</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr class="separador">
+
+    <div class="ejercicio">
+        <h4>Ejercicio Final — Checklist completo de despliegue</h4>
+        <p>Sigue estos pasos en orden para publicar la Cafetería Aroma en internet:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido"><strong>Preparar el código:</strong> Verificar que <code>.gitignore</code> excluye <code>.env</code> y <code>node_modules</code>. Crear el archivo <code>backend/.env.example</code> con las claves vacías.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido"><strong>Subir a GitHub:</strong> Crear el repositorio en github.com, conectar y hacer el primer <code>git push</code>. Verificar que <code>.env</code> no aparece en los archivos del repositorio.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido"><strong>Desplegar backend en Render:</strong> Conectar el repositorio, configurar Root Directory = <code>backend</code>, Start Command = <code>npm start</code>. Agregar las variables de entorno.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido"><strong>Probar el backend:</strong> Abrir la URL de Render + <code>/health</code> en el navegador. Esperar a que el servidor "despierte" (puede tardar 60 segundos la primera vez).</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido"><strong>Desplegar frontend en Netlify:</strong> Conectar el repositorio, configurar Base directory = <code>frontend</code>. Agregar el archivo <code>netlify.toml</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido"><strong>Actualizar config.js:</strong> Poner la URL real de Render en <code>API_BASE_URL</code>. Hacer commit y push.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">7</div>
+            <div class="paso-contenido"><strong>Actualizar FRONTEND_URL en Render:</strong> Cambiar el valor a la URL real de Netlify para que CORS funcione.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">8</div>
+            <div class="paso-contenido"><strong>Configurar Supabase Auth:</strong> Agregar la URL de Netlify en Redirect URLs dentro de Supabase.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">9</div>
+            <div class="paso-contenido"><strong>Prueba de humo (smoke test):</strong> Abrir la URL de Netlify desde el celular o una red diferente. Hacer el flujo completo: ver menú → login → agregar al carrito → confirmar pedido.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">10</div>
+            <div class="paso-contenido"><strong>Compartir:</strong> Enviar la URL a un amigo o compañero y pedirle que pruebe la aplicación. Los ojos frescos detectan cosas que tú ya no ves.</div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <div class="resumen">
+        <h2>Resumen de la Guía 15</h2>
+        <ul>
+            <li>El <strong>despliegue</strong> hace que la aplicación sea accesible desde internet para cualquier persona.</li>
+            <li>El código debe estar en <strong>GitHub</strong> antes de desplegarlo; el <code>.env</code> nunca se sube.</li>
+            <li><strong>Render</strong> hospeda el backend Node.js y lee las variables de entorno desde su panel.</li>
+            <li><strong>Netlify</strong> hospeda el frontend estático y requiere <code>netlify.toml</code> para las rutas de SPA.</li>
+            <li>Después del despliegue hay que actualizar <strong>tres lugares</strong>: config.js, FRONTEND_URL en Render, y Redirect URLs en Supabase.</li>
+            <li>El <strong>cold start</strong> del plan gratuito de Render es normal: la primera petición tarda más.</li>
+            <li>Con <strong>CI/CD básico</strong>, cada <code>git push</code> redespliega automáticamente Render y Netlify.</li>
+        </ul>
+    </div>
+
+    <hr class="separador">
+
+    <div class="resumen-curso">
+        <h2>Resumen Final del Curso — Las 15 Guías</h2>
+        <p style="color:#e8d5c0;margin-bottom:20px">Felicitaciones por llegar hasta aquí. Construiste un sistema web completo desde cero. Esto es lo que aprendiste:</p>
+
+        <table style="background:transparent;margin:0">
+            <thead>
+                <tr style="background:rgba(255,255,255,0.1)">
+                    <th style="background:transparent;color:#F5DEB3">Guías</th>
+                    <th style="background:transparent;color:#F5DEB3">Módulo</th>
+                    <th style="background:transparent;color:#F5DEB3">Lo que aprendiste</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background:transparent">
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">00-02</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">HTML</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">Estructura semántica, formularios, accesibilidad</td>
+                </tr>
+                <tr style="background:rgba(255,255,255,0.05)">
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">03-05</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">CSS</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">Estilos, Flexbox, Grid, diseño responsive</td>
+                </tr>
+                <tr style="background:transparent">
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">06-08</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">JavaScript</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">DOM, eventos, módulos, fetch, localStorage</td>
+                </tr>
+                <tr style="background:rgba(255,255,255,0.05)">
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">09-10</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">Base de Datos</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">PostgreSQL, Supabase, SQL, RLS, autenticación</td>
+                </tr>
+                <tr style="background:transparent">
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">11-12</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">Backend</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">Node.js, Express, JWT, middlewares, REST API</td>
+                </tr>
+                <tr style="background:rgba(255,255,255,0.05)">
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">13-14</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">Integración</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">CORS, fetch con auth, paneles de gestión, roles</td>
+                </tr>
+                <tr style="background:transparent">
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">15</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">Despliegue</td>
+                    <td style="color:#e8d5c0;border-color:rgba(255,255,255,0.1)">Git, GitHub, Render, Netlify, CI/CD</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="color:#F5DEB3;margin-top:28px;margin-bottom:16px">Tecnologías que dominaste</h3>
+        <p style="color:#e8d5c0">HTML5 · CSS3 · JavaScript ES6+ · Node.js · Express.js · PostgreSQL · Supabase · JWT · REST APIs · Git · GitHub · Render · Netlify</p>
+
+        <h3 style="color:#F5DEB3;margin-top:24px;margin-bottom:16px">Proximos pasos para seguir aprendiendo</h3>
+        <div class="proximos-pasos">
+            <div class="proximo-card">
+                <h4>React o Vue</h4>
+                <p>Frameworks de frontend para aplicaciones más complejas y mantenibles con componentes reutilizables.</p>
+            </div>
+            <div class="proximo-card">
+                <h4>TypeScript</h4>
+                <p>JavaScript con tipos estáticos. Detecta errores antes de ejecutar el código y mejora el autocompletado.</p>
+            </div>
+            <div class="proximo-card">
+                <h4>Docker</h4>
+                <p>Contenerización de aplicaciones: el servidor corre exactamente igual en tu máquina y en producción.</p>
+            </div>
+            <div class="proximo-card">
+                <h4>Testing</h4>
+                <p>Jest para pruebas unitarias, Playwright para pruebas end-to-end. Garantizan que el código funciona.</p>
+            </div>
+            <div class="proximo-card">
+                <h4>WebSockets / Realtime</h4>
+                <p>Para actualizar el panel del cajero en tiempo real sin necesidad de hacer refresh manual.</p>
+            </div>
+            <div class="proximo-card">
+                <h4>CI/CD avanzado</h4>
+                <p>GitHub Actions para ejecutar pruebas automáticamente antes de cada despliegue.</p>
+            </div>
+        </div>
+
+        <p style="color:#C8956C;margin-top:24px;font-size:1.05em;text-align:center">
+            Construiste un sistema web de nivel profesional. El siguiente proyecto sera mas rapido, mas limpio y mas solido porque ya tienes estos fundamentos.
+        </p>
+    </div>
+
+</body>
+</html>

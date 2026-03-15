@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 06 – JavaScript Básico | Cafetería Aroma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 06 – JavaScript Básico: Programando el Cerebro de Aroma</h1>
+        <p class="subtitulo">Módulo 3: JavaScript | Del HTML estático a la web interactiva</p>
+        <div class="meta">
+            <span class="badge">Nivel: Principiante</span>
+            <span class="badge">Tiempo estimado: 6 horas</span>
+            <span class="badge">Prerequisito: Guías 01-05</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+            <li>Comprender qué es JavaScript y para qué sirve en un proyecto web real.</li>
+            <li>Declarar y usar variables con <code>let</code> y <code>const</code>.</li>
+            <li>Conocer los tipos de datos fundamentales: string, number, boolean, array y object.</li>
+            <li>Aplicar operadores aritméticos, de comparación y lógicos.</li>
+            <li>Trabajar con strings, arrays y objetos usando sus métodos más importantes.</li>
+            <li>Escribir condicionales, bucles y funciones.</li>
+            <li>Entender cómo se usa JavaScript en el proyecto Cafetería Aroma.</li>
+        </ul>
+    </div>
+
+    <!-- SECCIÓN 1 -->
+    <h2>1. ¿Qué es JavaScript?</h2>
+
+    <div class="analogia">
+        <strong>Analogía de la cafetería:</strong> Si el HTML es el esqueleto (la estructura del local: mesas, mostrador, paredes) y el CSS es la decoración y el estilo (colores, iluminación, uniformes), entonces JavaScript son los músculos y el cerebro. JavaScript hace que los empleados se muevan, que la caja registradora calcule el total, que el menú digital responda cuando tocas un plato. Sin JavaScript, la web es un cartel estático; con JavaScript, es una aplicación interactiva.
+    </div>
+
+    <h3>¿Qué puede hacer JavaScript en Aroma?</h3>
+    <ul>
+        <li><strong>Mostrar u ocultar elementos:</strong> el panel de admin solo aparece si el usuario es administrador.</li>
+        <li><strong>Hacer cálculos:</strong> calcular el total del carrito sumando precios y cantidades.</li>
+        <li><strong>Guardar datos temporalmente:</strong> mantener el carrito en <code>localStorage</code> aunque se recargue la página.</li>
+        <li><strong>Comunicarse con el servidor:</strong> pedir la lista de productos al backend cuando se abre el menú.</li>
+        <li><strong>Responder a acciones del usuario:</strong> mostrar una notificación al agregar un producto, cambiar de pestaña al hacer clic en la navbar.</li>
+        <li><strong>Validar formularios:</strong> verificar que el email tiene el formato correcto antes de enviarlo.</li>
+    </ul>
+
+    <h3>¿Dónde se ejecuta?</h3>
+    <p>JavaScript puede correr en dos lugares distintos:</p>
+    <ul>
+        <li><strong>En el navegador del usuario (client-side):</strong> es lo que estudiamos en esta guía. El código lo descarga y ejecuta el propio navegador (Chrome, Firefox, Edge).</li>
+        <li><strong>En el servidor (server-side):</strong> usando Node.js, JavaScript también puede correr en el servidor para procesar peticiones, acceder a bases de datos, etc. El backend de Aroma usa Node.js + Express.</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Buena práctica:</strong> En Aroma cargamos los archivos JavaScript al final del <code>&lt;body&gt;</code> (o con el atributo <code>defer</code>) para que el HTML se muestre rápido y JS se cargue después sin bloquear la página.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 2 -->
+    <h2>2. Variables – Las cajas de almacenamiento</h2>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> Una variable es como una caja con una etiqueta. La etiqueta es el nombre, y adentro puedes guardar cualquier cosa: un número, un texto, una lista de productos. Cuando necesitas lo que guardaste, buscas la caja por su nombre.
+    </div>
+
+    <p>En JavaScript moderno (ES6+) hay tres formas de declarar variables. En Aroma usamos principalmente <code>const</code> y <code>let</code>:</p>
+
+    <pre><code>// Tres formas de declarar variables
+var nombreAntiguo = "Juan";        // Antigua, evitar
+let nombreModificable = "María";   // Puede cambiar
+const nombreFijo = "Carlos";       // No puede cambiar (constante)
+
+// En Aroma usamos principalmente const y let
+const API_URL = "https://mi-backend.com"; // Nunca cambia → const
+let carrito = [];                          // Puede cambiar → let</code></pre>
+
+    <div class="importante">
+        <strong>Regla de oro:</strong> Usa siempre <code>const</code> por defecto. Solo cambia a <code>let</code> si sabes que el valor va a cambiar. Nunca uses <code>var</code> en código nuevo.
+    </div>
+
+    <h3>Reglas para nombrar variables</h3>
+    <ul>
+        <li>Usa <strong>camelCase</strong>: <code>nombreProducto</code>, <code>totalCarrito</code>, <code>estaActivo</code>.</li>
+        <li>No pueden <strong>iniciar con un número</strong>: <code>1producto</code> es inválido; <code>producto1</code> sí.</li>
+        <li>No uses <strong>palabras reservadas</strong> de JavaScript: <code>let</code>, <code>const</code>, <code>function</code>, <code>return</code>, etc.</li>
+        <li>Sé descriptivo: <code>p</code> es malo; <code>precio</code> es bueno; <code>precioConDescuento</code> es excelente.</li>
+        <li>Las constantes globales de configuración se escriben en <strong>MAYÚSCULAS con guiones bajos</strong>: <code>API_URL</code>, <code>MAX_ITEMS</code>.</li>
+    </ul>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 3 -->
+    <h2>3. Tipos de Datos</h2>
+
+    <p>JavaScript es un lenguaje de tipado dinámico: una misma variable puede guardar distintos tipos de datos. Es importante conocerlos todos para no cometer errores al operar con ellos.</p>
+
+    <pre><code>// String (texto)
+const nombre = "Café Latte";
+const descripcion = 'Espresso con leche espumada';
+const plantilla = `El producto ${nombre} cuesta Bs. 18`; // Template literal
+
+// Number (número)
+const precio = 18.50;
+const cantidad = 3;
+const total = precio * cantidad; // 55.50
+
+// Boolean (verdadero/falso)
+const estaActivo = true;
+const estaEnCarrito = false;
+
+// null (vacío intencionalmente)
+let usuarioActual = null; // No hay usuario logueado aún
+
+// undefined (no definido)
+let telefono; // undefined, no se le asignó valor
+
+// Array (lista)
+const categorias = ["Cafés", "Jugos", "Pasteles", "Sándwiches"];
+const precios = [12, 18, 25, 20];
+
+// Object (objeto con propiedades)
+const producto = {
+    id: "abc-123",
+    nombre: "Café Latte",
+    precio: 18.50,
+    categoria: "Cafés",
+    activo: true
+};</code></pre>
+
+    <table>
+        <thead>
+            <tr><th>Tipo</th><th>Ejemplo</th><th>Uso en Aroma</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>string</code></td><td><code>"Café Latte"</code></td><td>Nombres, descripciones, mensajes</td></tr>
+            <tr><td><code>number</code></td><td><code>18.50</code></td><td>Precios, cantidades, IDs numéricos</td></tr>
+            <tr><td><code>boolean</code></td><td><code>true / false</code></td><td>Estado activo, usuario logueado</td></tr>
+            <tr><td><code>null</code></td><td><code>null</code></td><td>Usuario no logueado, sin selección</td></tr>
+            <tr><td><code>undefined</code></td><td><code>undefined</code></td><td>Campo opcional no completado</td></tr>
+            <tr><td><code>array</code></td><td><code>[...]</code></td><td>Lista de productos, carrito, categorías</td></tr>
+            <tr><td><code>object</code></td><td><code>{...}</code></td><td>Un producto, un pedido, el usuario actual</td></tr>
+        </tbody>
+    </table>
+
+    <div class="tip">
+        <strong>Tip:</strong> Para saber qué tipo tiene un valor en cualquier momento, usa <code>typeof valor</code>. Por ejemplo: <code>typeof "hola"</code> devuelve <code>"string"</code>. Muy útil para depurar.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 4 -->
+    <h2>4. Operadores</h2>
+
+    <pre><code>// Aritméticos
+const suma = 10 + 5;          // 15
+const resta = 10 - 3;         // 7
+const multiplicacion = 4 * 5; // 20
+const division = 15 / 3;      // 5
+const modulo = 17 % 5;        // 2 (residuo de la división)
+const potencia = 2 ** 8;      // 256
+
+// Asignación compuesta
+let total = 0;
+total += 18.50;  // total = total + 18.50  → 18.50
+total -= 5;      // total = total - 5      → 13.50
+total *= 2;      // total = total * 2      → 27
+
+// Comparación
+5 === 5      // true  (igual valor Y tipo - usar SIEMPRE este)
+5 == "5"     // true  (igual valor, ignora tipo - EVITAR)
+5 !== 3      // true  (diferente valor o tipo)
+10 > 5       // true  (mayor que)
+10 >= 10     // true  (mayor o igual)
+3 < 8        // true  (menor que)
+
+// Lógicos
+true && true   // true  (AND - ambos deben ser true)
+true || false  // true  (OR - al menos uno true)
+!true          // false (NOT - invierte el valor)
+
+// En Aroma: ejemplos reales
+const puedeOrdenar = usuarioLogueado && carritoNoVacio;
+const mostrarLogin = !usuarioLogueado;</code></pre>
+
+    <div class="importante">
+        <strong>Usa siempre === en lugar de ==:</strong> el operador <code>==</code> hace conversiones de tipo automáticas que pueden generar bugs difíciles de encontrar. Por ejemplo, <code>0 == false</code> es <code>true</code>, lo cual casi nunca es lo que quieres. Con <code>===</code> (igualdad estricta) no hay sorpresas.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 5 -->
+    <h2>5. Strings – Trabajando con Texto</h2>
+
+    <p>Los strings son el tipo de dato que más vas a usar para construir la interfaz de Aroma: nombres de productos, descripciones, mensajes al usuario, HTML dinámico.</p>
+
+    <pre><code>const nombre = "Café Latte";
+
+// Propiedades y métodos de strings
+nombre.length             // 10 (cantidad de caracteres)
+nombre.toUpperCase()      // "CAFÉ LATTE"
+nombre.toLowerCase()      // "café latte"
+nombre.includes("Latte")  // true
+nombre.startsWith("Café") // true
+nombre.trim()             // Elimina espacios al inicio y al fin
+nombre.replace("Latte", "Americano") // "Café Americano"
+
+// Template literals (muy usados en Aroma)
+const precio = 18.50;
+const html = `
+    &lt;div class="producto"&gt;
+        &lt;h3&gt;${nombre}&lt;/h3&gt;
+        &lt;span&gt;Bs. ${precio.toFixed(2)}&lt;/span&gt;
+    &lt;/div&gt;
+`;
+
+// toFixed(2) redondea a 2 decimales → "18.50"
+console.log(precio.toFixed(2));  // "18.50"
+console.log((18.5).toFixed(2));  // "18.50"
+console.log((18).toFixed(2));    // "18.00"
+
+// Concatenación (alternativa a template literals)
+const mensaje = "El producto " + nombre + " cuesta Bs. " + precio;</code></pre>
+
+    <div class="tip">
+        <strong>Prefiere los template literals:</strong> el backtick (<code>`</code>) permite incrustar variables directamente con <code>${variable}</code> y escribir strings en múltiples líneas. Es mucho más legible que concatenar con <code>+</code>.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 6 -->
+    <h2>6. Arrays – Listas de Datos</h2>
+
+    <p>Los arrays son fundamentales en Aroma: la lista de productos, el carrito, las categorías, los pedidos... todo se maneja con arrays.</p>
+
+    <pre><code>// Crear arrays
+const frutas = ["manzana", "banana", "naranja"];
+const numeros = [1, 2, 3, 4, 5];
+const mixto = ["texto", 42, true, null]; // Puede mezclar tipos
+
+// Acceder por índice (empieza en 0, no en 1)
+frutas[0]     // "manzana"
+frutas[1]     // "banana"
+frutas[2]     // "naranja"
+frutas.length // 3
+
+// push - agregar al final
+const carrito = [];
+carrito.push({ nombre: "Café Latte", precio: 18 });
+carrito.push({ nombre: "Jugo de Naranja", precio: 12 });
+// carrito ahora tiene 2 elementos
+
+// pop - quitar el último elemento y devolverlo
+const ultimo = carrito.pop();
+
+// find - encontrar el PRIMER elemento que cumple la condición
+const producto = carrito.find(item =&gt; item.nombre === "Café Latte");
+
+// filter - crear nuevo array con los que cumplen la condición
+const cafes = productos.filter(p =&gt; p.categoria === "Cafés");
+const activos = productos.filter(p =&gt; p.activo === true);
+
+// map - crear nuevo array transformando cada elemento
+const nombres = productos.map(p =&gt; p.nombre);
+const htmlItems = productos.map(p =&gt; `&lt;li&gt;${p.nombre}: Bs.${p.precio}&lt;/li&gt;`);
+
+// forEach - recorrer sin devolver nada nuevo
+productos.forEach(producto =&gt; {
+    console.log(producto.nombre);
+});
+
+// reduce - acumular un valor (ej: suma total)
+const total = carrito.reduce((acum, item) =&gt; acum + item.precio, 0);
+// Empieza con acum = 0, suma cada item.precio
+
+// includes - verificar si un valor está en el array
+const tieneLeche = ingredientes.includes("leche");
+
+// splice - eliminar o insertar por índice
+carrito.splice(1, 1); // Eliminar 1 elemento en la posición 1
+
+// findIndex - encontrar el índice de un elemento
+const indice = carrito.findIndex(item =&gt; item.id === "abc-123");</code></pre>
+
+    <div class="analogia">
+        <strong>Analogía del menú de pizarrón:</strong> Un array es como la pizarra de productos disponibles en la cafetería. Cada posición (índice) tiene un producto. Puedes agregar al final (<code>push</code>), quitar el último (<code>pop</code>), buscar uno específico (<code>find</code>), o crear una nueva pizarra solo con los cafés (<code>filter</code>).
+    </div>
+
+    <div class="tip">
+        <strong>Métodos que NO modifican el array original:</strong> <code>filter</code>, <code>map</code>, <code>find</code>, <code>findIndex</code>, <code>reduce</code> devuelven un nuevo valor sin tocar el original. En cambio, <code>push</code>, <code>pop</code> y <code>splice</code> SÍ modifican el array original.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 7 -->
+    <h2>7. Objetos – Agrupando Propiedades Relacionadas</h2>
+
+    <p>Un objeto agrupa datos relacionados bajo un mismo nombre. En Aroma, cada producto, cada pedido y cada usuario es un objeto.</p>
+
+    <pre><code>// Crear objeto
+const producto = {
+    id: "abc-123",
+    nombre: "Café Latte",
+    precio: 18.50,
+    categoria: "Cafés",
+    activo: true
+};
+
+// Acceder a propiedades
+producto.nombre      // "Café Latte" (notación punto - más común)
+producto["precio"]   // 18.50 (notación corchete - útil con variables)
+
+// Modificar propiedades
+producto.precio = 20;
+producto.activo = false;
+
+// Agregar nueva propiedad
+producto.imagen = "cafe-latte.jpg";
+
+// Eliminar propiedad
+delete producto.imagen;
+
+// Verificar si existe una propiedad
+"nombre" in producto              // true
+producto.hasOwnProperty("activo") // true
+
+// Destructuring (muy usado en Aroma - extrae propiedades en variables)
+const { nombre, precio, categoria } = producto;
+// Es exactamente igual a escribir:
+// const nombre = producto.nombre;
+// const precio = producto.precio;
+// const categoria = producto.categoria;
+
+// Spread operator - copiar y modificar
+const productoActualizado = { ...producto, precio: 22 };
+// Copia TODAS las propiedades de producto, pero precio vale 22
+
+// Object.keys(), values(), entries()
+Object.keys(producto)    // ["id", "nombre", "precio", "categoria", "activo"]
+Object.values(producto)  // ["abc-123", "Café Latte", 18.50, "Cafés", true]
+Object.entries(producto) // [["id","abc-123"], ["nombre","Café Latte"], ...]</code></pre>
+
+    <div class="warning">
+        <strong>Ojo con la notación corchete:</strong> es útil cuando el nombre de la propiedad está en una variable. Por ejemplo: <code>const clave = "precio"; producto[clave]</code>. Esto devuelve <code>18.50</code>. Con notación punto no se puede hacer esto.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 8 -->
+    <h2>8. Condicionales – Tomando Decisiones</h2>
+
+    <pre><code>// if / else if / else
+const rol = "cashier";
+
+if (rol === "admin") {
+    console.log("Puede hacer todo");
+} else if (rol === "cashier") {
+    console.log("Puede gestionar pedidos");
+} else {
+    console.log("Solo puede ver el menú");
+}
+
+// Operador ternario (if/else en una línea)
+const mensaje = usuarioLogueado ? "Bienvenido" : "Por favor inicia sesión";
+const clase = estaActivo ? "btn-activo" : "btn-inactivo";
+
+// Nullish coalescing (??) - usar valor por defecto si es null o undefined
+const nombre = usuario?.nombre ?? "Invitado";
+// Si usuario.nombre es null o undefined → usa "Invitado"
+// Si tiene un valor real (incluso 0 o false) → lo usa
+
+// Optional chaining (?.) - acceder sin error si algo es null
+const rolUsuario = usuario?.perfil?.rol;
+// Si usuario es null/undefined → devuelve undefined (no lanza error)
+// Si usuario existe pero perfil no → devuelve undefined (no lanza error)
+
+// switch - para múltiples casos del mismo valor
+switch (metodoPago) {
+    case "qr":
+        mostrarQR();
+        break;
+    case "efectivo":
+        mostrarPagoEfectivo();
+        break;
+    default:
+        mostrarError("Método no válido");
+}</code></pre>
+
+    <div class="tip">
+        <strong>Cuándo usar el ternario:</strong> úsalo solo cuando la condición es simple y el resultado es corto. Si el bloque <code>if</code> tiene más de 2-3 líneas, escribe el <code>if/else</code> completo para que sea más legible.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 9 -->
+    <h2>9. Bucles (Loops) – Repitiendo Acciones</h2>
+
+    <p>Los bucles permiten ejecutar código varias veces sin repetirlo manualmente. Son esenciales para recorrer listas de productos, items del carrito, etc.</p>
+
+    <pre><code>// for clásico - cuando sabes cuántas veces repetir
+for (let i = 0; i &lt; 5; i++) {
+    console.log(`Iteración ${i}`); // 0, 1, 2, 3, 4
+}
+
+// for...of - recorrer arrays (el más usado en Aroma)
+const productos = ["Café", "Jugo", "Pastel"];
+for (const producto of productos) {
+    console.log(producto);
+    // Imprime: Café, luego Jugo, luego Pastel
+}
+
+// for...in - recorrer las propiedades (claves) de un objeto
+const config = { url: "...", key: "...", timeout: 5000 };
+for (const clave in config) {
+    console.log(`${clave}: ${config[clave]}`);
+    // url: ...
+    // key: ...
+    // timeout: 5000
+}
+
+// while - cuando no sabes cuántas veces repetir
+let intentos = 0;
+while (intentos &lt; 3) {
+    // intentar conexión con el servidor
+    intentos++;
+}</code></pre>
+
+    <div class="tip">
+        <strong>En Aroma usamos casi siempre los métodos de array</strong> (<code>forEach</code>, <code>map</code>, <code>filter</code>) en lugar de bucles <code>for</code> clásicos. Son más expresivos y fáciles de leer. Pero el <code>for...of</code> sigue siendo muy útil cuando necesitas usar <code>await</code> dentro del bucle.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 10 -->
+    <h2>10. Funciones – Bloques de Código Reutilizables</h2>
+
+    <p>Las funciones son la unidad fundamental de organización del código. En lugar de repetir la misma lógica en varios lugares, la encapsulas en una función con un nombre descriptivo.</p>
+
+    <pre><code>// Declaración de función (hoisting - se puede llamar antes de definirla)
+function calcularTotal(items) {
+    let total = 0;
+    for (const item of items) {
+        total += item.precio * item.cantidad;
+    }
+    return total;
+}
+
+// Llamar a la función
+const miTotal = calcularTotal(carrito); // Devuelve un número
+
+// Expresión de función (NO tiene hoisting)
+const calcularDescuento = function(total, porcentaje) {
+    return total * (porcentaje / 100);
+};
+
+// Arrow function (ES6 - la más usada en Aroma)
+const formatearPrecio = (precio) =&gt; `Bs. ${precio.toFixed(2)}`;
+const sumar = (a, b) =&gt; a + b;
+const saludar = nombre =&gt; `Hola, ${nombre}`; // Un parámetro: sin paréntesis
+
+// Función con parámetros por defecto
+function crearPedido(cliente, metodo = "efectivo", notas = "") {
+    return { cliente, metodo, notas };
+    // shorthand: { cliente: cliente } → { cliente }
+}
+crearPedido("Ana");                   // metodo="efectivo", notas=""
+crearPedido("Ana", "qr", "Sin azúcar"); // todos los parámetros
+
+// Función que devuelve un objeto
+function crearItemCarrito(producto, cantidad) {
+    return {
+        id: producto.id,
+        nombre: producto.nombre,
+        precio: producto.precio,
+        cantidad: cantidad,
+        subtotal: producto.precio * cantidad
+    };
+}</code></pre>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> Una función es como una receta de cocina. Le das los ingredientes (parámetros), sigue los pasos, y te devuelve el resultado (<code>return</code>). Puedes usar la misma receta para hacer café para 1 persona o para 10, solo cambian los ingredientes.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 11 -->
+    <h2>11. El Objeto Global del Navegador</h2>
+
+    <pre><code>// console - tu mejor amigo para depurar
+console.log("Mensaje informativo");
+console.error("Hubo un error");    // Texto rojo en la consola
+console.warn("Advertencia");       // Texto amarillo
+console.table([{nombre: "Café", precio: 18}]); // Muestra una tabla
+
+// alert, confirm, prompt (SOLO para pruebas rápidas, no en producción)
+alert("Hola!");
+const confirmar = confirm("¿Estás seguro?"); // true o false
+const nombre = prompt("¿Tu nombre?");        // string o null
+
+// JSON - convertir entre objeto JavaScript y texto (string)
+const objeto = { nombre: "Café", precio: 18 };
+
+const texto = JSON.stringify(objeto);
+// '{"nombre":"Café","precio":18}'  ← es un string
+
+const deVuelta = JSON.parse(texto);
+// { nombre: "Café", precio: 18 }  ← es un objeto JavaScript
+
+// JSON es el formato estándar para enviar y recibir datos del servidor</code></pre>
+
+    <div class="warning">
+        <strong>JSON.parse puede lanzar error:</strong> si el texto no es JSON válido, <code>JSON.parse()</code> lanza una excepción. Cuando leas datos de <code>localStorage</code> o del servidor, envuelve el parse en un <code>try/catch</code> para evitar que el programa explote.
+    </div>
+
+    <hr class="separador">
+
+    <!-- APLICANDO EN AROMA -->
+    <h2>Aplicando en Aroma: El Módulo <code>config.js</code></h2>
+
+    <div class="proyecto-aroma">
+        <h4>Archivo real del proyecto: <code>frontend/js/config.js</code></h4>
+        <p>Este es el primer archivo JavaScript que se carga en Aroma. Define las constantes de configuración que todos los demás módulos necesitan.</p>
+    </div>
+
+    <pre><code>// frontend/js/config.js
+const CONFIG = {
+    SUPABASE_URL: 'https://xxxxx.supabase.co',
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    API_BASE_URL: 'http://localhost:3000'
+};</code></pre>
+
+    <p>Analicemos cada decisión de este pequeño pero importante archivo:</p>
+
+    <ul>
+        <li><strong>¿Por qué <code>const CONFIG</code> y no <code>let</code>?</strong> Porque el objeto de configuración nunca se reasigna a un valor diferente. <code>const</code> previene que accidentalmente escribas <code>CONFIG = otraCosa</code>. Nota: las propiedades internas sí podrían cambiar, pero en este caso no queremos eso.</li>
+        <li><strong>¿Por qué <code>CONFIG</code> en mayúsculas?</strong> Es una convención universal: las variables que son constantes de configuración global se escriben en <code>SNAKE_CASE_MAYUSCULAS</code>. Así, cualquier desarrollador que lea el código sabe inmediatamente que ese valor no debería cambiar durante la ejecución.</li>
+        <li><strong><code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code>:</strong> son las credenciales para conectarse a la base de datos Supabase (el servicio de backend de Aroma). La <code>anon_key</code> es pública (está diseñada para usarse en el cliente), por eso no es un secreto ponerla en el frontend.</li>
+        <li><strong><code>API_BASE_URL</code>:</strong> la dirección del servidor Express de Aroma. En desarrollo es <code>localhost:3000</code>; en producción sería la URL real del servidor.</li>
+    </ul>
+
+    <div class="tip">
+        <strong>¿Por qué un objeto y no variables separadas?</strong> Agrupar la configuración en un objeto <code>CONFIG</code> tiene varias ventajas: evita contaminar el espacio global con muchas variables sueltas, deja claro que esos valores van juntos, y se puede pasar el objeto completo a funciones que lo necesiten.
+    </div>
+
+    <hr class="separador">
+
+    <!-- EJERCICIO FINAL -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final – Funciones para el Carrito de Aroma</h4>
+        <p>Escribe las siguientes funciones de JavaScript. Puedes hacerlo en la consola del navegador (F12) o en un archivo <code>.js</code> aparte:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                <strong>Calcular el total del carrito:</strong>
+                <p>Crea la función <code>calcularTotal(items)</code> que reciba un array de objetos con las propiedades <code>precio</code> y <code>cantidad</code>, y devuelva la suma de <code>precio * cantidad</code> para cada item.</p>
+                <pre><code>// Datos de prueba
+const itemsCarrito = [
+    { nombre: "Café Latte", precio: 18, cantidad: 2 },
+    { nombre: "Jugo de Naranja", precio: 12, cantidad: 1 },
+    { nombre: "Pastel", precio: 25, cantidad: 1 }
+];
+// calcularTotal(itemsCarrito) debe devolver 73</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                <strong>Buscar un producto por ID:</strong>
+                <p>Crea la función <code>buscarPorId(productos, id)</code> que reciba el array de productos y un ID, y devuelva el objeto del producto o <code>null</code> si no existe.</p>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                <strong>Agregar al carrito sin duplicados:</strong>
+                <p>Crea la función <code>agregarAlCarrito(carrito, producto, cantidad)</code> que: si el producto ya está en el carrito, incremente su cantidad; si no está, lo agregue como nuevo item.</p>
+                <pre><code>// El resultado esperado:
+// Llamar agregarAlCarrito([], cafeLatte, 1) → [{ ...cafeLatte, cantidad: 1 }]
+// Llamar agregarAlCarrito(carrito, cafeLatte, 2) → cantidad pasa a 3</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">
+                <strong>Formatear precio:</strong>
+                <p>Crea la arrow function <code>formatearPrecio</code> que reciba un número y devuelva el string <code>"Bs. 18.50"</code> (siempre con 2 decimales).</p>
+                <pre><code>formatearPrecio(18.5)  // "Bs. 18.50"
+formatearPrecio(25)    // "Bs. 25.00"
+formatearPrecio(8.9)   // "Bs. 8.90"</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <!-- RESUMEN -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 06</h2>
+        <ul>
+            <li>JavaScript es el lenguaje que da comportamiento a la web. Se ejecuta en el navegador (y también en el servidor con Node.js).</li>
+            <li>Usa <code>const</code> por defecto; solo usa <code>let</code> cuando el valor necesita cambiar. Nunca uses <code>var</code>.</li>
+            <li>Los 7 tipos de datos fundamentales: <code>string</code>, <code>number</code>, <code>boolean</code>, <code>null</code>, <code>undefined</code>, <code>array</code> y <code>object</code>.</li>
+            <li>Usa siempre <code>===</code> (igualdad estricta) en lugar de <code>==</code> para comparar.</li>
+            <li>Los template literals con backticks (<code>`</code>) son la forma moderna y legible de construir strings con variables.</li>
+            <li>Los métodos de array más importantes en Aroma: <code>push</code>, <code>filter</code>, <code>map</code>, <code>find</code>, <code>findIndex</code>, <code>reduce</code>, <code>forEach</code>.</li>
+            <li>El destructuring y el spread operator (<code>...</code>) simplifican el trabajo con objetos y arrays.</li>
+            <li>Las arrow functions son la forma más concisa y moderna de escribir funciones.</li>
+            <li><code>JSON.stringify()</code> convierte objetos a texto; <code>JSON.parse()</code> hace lo inverso.</li>
+            <li>El archivo <code>config.js</code> de Aroma centraliza las constantes de configuración usando un objeto <code>const CONFIG = {...}</code>.</li>
+        </ul>
+    </div>
+
+</body>
+</html>

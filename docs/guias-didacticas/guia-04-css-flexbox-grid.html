@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 04 – CSS Flexbox y Grid | Cafetería Aroma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guia 04 – CSS Flexbox y Grid: Organizando el Layout de Aroma</h1>
+        <p class="subtitulo">Modulo 2: CSS | Aprendiendo a organizar elementos en la pagina</p>
+        <div class="meta">
+            <span class="badge">Nivel: Principiante-Intermedio</span>
+            <span class="badge">Tiempo estimado: 5 horas</span>
+            <span class="badge">Prerequisito: Guia 03</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guia</h3>
+        <ul>
+            <li>Entender por que existian problemas de layout antes de Flexbox y Grid</li>
+            <li>Dominar las propiedades principales de <strong>CSS Flexbox</strong> para layouts de una dimension</li>
+            <li>Dominar las propiedades principales de <strong>CSS Grid</strong> para layouts de dos dimensiones</li>
+            <li>Saber cuando usar Flexbox y cuando usar Grid en el proyecto Aroma</li>
+            <li>Aplicar estos conocimientos en los componentes reales de Cafeteria Aroma</li>
+        </ul>
+    </div>
+
+    <!-- =========================================================== -->
+    <h2>1. El problema historico del layout en CSS</h2>
+
+    <p>Antes de que existieran Flexbox y Grid, organizar elementos en una pagina web era una pesadilla. Los desarrolladores tenian que usar tecnicas complicadas y poco intuitivas para lograr layouts sencillos.</p>
+
+    <h3>Lo que se usaba antes (y por que era malo)</h3>
+
+    <p><strong>Floats y clear:</strong> La propiedad <code>float</code> fue creada originalmente para que el texto rodeara imagenes, como en un periodico. Pero los desarrolladores la usaron para crear columnas. El problema era que los elementos flotados se "salian" del flujo normal y habia que usar trucos como <code>clearfix</code> para que el contenedor los reconociera.</p>
+
+    <pre><code>/* Esto era el "clearfix hack" - nadie queria escribir esto */
+.contenedor::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.columna-izquierda {
+    float: left;
+    width: 50%;
+}
+
+.columna-derecha {
+    float: right;
+    width: 50%;
+}</code></pre>
+
+    <p><strong>Tablas HTML para layouts:</strong> Mucha gente usaba etiquetas <code>&lt;table&gt;</code>, <code>&lt;tr&gt;</code> y <code>&lt;td&gt;</code> para crear layouts. Esto era semanticamente incorrecto (las tablas son para datos, no para diseño), dificulta el SEO y es imposible de mantener.</p>
+
+    <p><strong>Centrar verticalmente era casi imposible:</strong> Centrar algo vertical y horizontalmente era uno de los problemas mas famosos de CSS. Habia decenas de soluciones, todas con limitaciones. Hoy, con Flexbox, se hace en 2 lineas.</p>
+
+    <div class="tip">
+        <strong>Buenas noticias:</strong> Hoy tenemos dos herramientas modernas y poderosas: <strong>Flexbox</strong> (para layouts de una dimension) y <strong>Grid</strong> (para layouts de dos dimensiones). Nunca mas necesitaras floats para hacer columnas.
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>2. Flexbox: Layouts de una dimension</h2>
+
+    <div class="analogia">
+        <strong>Analogia:</strong> Flexbox es como una fila de personas haciendo cola. Puedes decirles que se alineen al centro, que se separen uniformemente, que llenen todo el espacio disponible, o que formen una columna. Todos estan en una linea, ya sea horizontal o vertical.
+    </div>
+
+    <p>Flexbox (Flexible Box Layout) resuelve el problema de distribuir espacio y alinear elementos en <strong>una sola dimension</strong> a la vez: ya sea una fila o una columna.</p>
+
+    <h3>Como activar Flexbox</h3>
+
+    <p>Para usar Flexbox solo necesitas escribir <code>display: flex</code> en el elemento <strong>padre</strong> (llamado "flex container"). Los hijos directos se convierten automaticamente en "flex items".</p>
+
+    <pre><code>.contenedor {
+    display: flex;  /* Activa Flexbox en este elemento */
+    /* Los hijos directos de .contenedor son ahora flex items */
+}</code></pre>
+
+    <pre><code>/* HTML de ejemplo */
+&lt;div class="contenedor"&gt;      &lt;!-- flex container --&gt;
+    &lt;div class="item"&gt;A&lt;/div&gt;  &lt;!-- flex item --&gt;
+    &lt;div class="item"&gt;B&lt;/div&gt;  &lt;!-- flex item --&gt;
+    &lt;div class="item"&gt;C&lt;/div&gt;  &lt;!-- flex item --&gt;
+&lt;/div&gt;</code></pre>
+
+    <h3>flex-direction: la direccion del eje principal</h3>
+
+    <p>Por defecto, Flexbox acomoda los elementos en fila (de izquierda a derecha). Puedes cambiar esto con <code>flex-direction</code>.</p>
+
+    <pre><code>.contenedor {
+    display: flex;
+    flex-direction: row;            /* Por defecto: izquierda a derecha */
+    flex-direction: row-reverse;    /* Derecha a izquierda */
+    flex-direction: column;         /* Arriba a abajo */
+    flex-direction: column-reverse; /* Abajo a arriba */
+}</code></pre>
+
+    <pre><code>/* Visualizacion de flex-direction: */
+
+row (por defecto):
+┌─────────────────────────────────┐
+│  [A]  [B]  [C]                  │
+└─────────────────────────────────┘
+
+row-reverse:
+┌─────────────────────────────────┐
+│                  [C]  [B]  [A]  │
+└─────────────────────────────────┘
+
+column:
+┌────────┐
+│  [A]   │
+│  [B]   │
+│  [C]   │
+└────────┘
+
+column-reverse:
+┌────────┐
+│  [C]   │
+│  [B]   │
+│  [A]   │
+└────────┘</code></pre>
+
+    <h3>justify-content: alinear en el eje principal</h3>
+
+    <p><code>justify-content</code> controla como se distribuyen los elementos a lo largo del eje principal (horizontal cuando <code>flex-direction: row</code>).</p>
+
+    <pre><code>/* Visualizacion de justify-content (con flex-direction: row): */
+
+flex-start:
+┌─────────────────────────────────────┐
+│ [A][B][C]                           │
+└─────────────────────────────────────┘
+
+flex-end:
+┌─────────────────────────────────────┐
+│                           [A][B][C] │
+└─────────────────────────────────────┘
+
+center:
+┌─────────────────────────────────────┐
+│              [A][B][C]              │
+└─────────────────────────────────────┘
+
+space-between:
+┌─────────────────────────────────────┐
+│ [A]              [B]              [C]│
+└─────────────────────────────────────┘
+
+space-around:
+┌─────────────────────────────────────┐
+│  ..[A]..      ..[B]..      ..[C]..  │
+└─────────────────────────────────────┘
+
+space-evenly:
+┌─────────────────────────────────────┐
+│   ...[A].....[B].....[C]...         │
+└─────────────────────────────────────┘</code></pre>
+
+    <pre><code>.contenedor {
+    display: flex;
+    justify-content: flex-start;    /* Por defecto */
+    justify-content: flex-end;      /* Al final */
+    justify-content: center;        /* Centrado */
+    justify-content: space-between; /* Espacio entre elementos */
+    justify-content: space-around;  /* Espacio alrededor de cada elemento */
+    justify-content: space-evenly;  /* Espacio igual entre todos */
+}</code></pre>
+
+    <h3>align-items: alinear en el eje secundario</h3>
+
+    <p><code>align-items</code> controla la alineacion en el eje perpendicular al principal (vertical cuando <code>flex-direction: row</code>).</p>
+
+    <pre><code>.contenedor {
+    display: flex;
+    height: 200px;             /* Necesitamos altura para ver el efecto */
+    align-items: stretch;      /* Por defecto: estira los hijos al 100% */
+    align-items: flex-start;   /* Los pega arriba */
+    align-items: center;       /* Los centra verticalmente */
+    align-items: flex-end;     /* Los pega abajo */
+    align-items: baseline;     /* Alinea por la linea base del texto */
+}</code></pre>
+
+    <h3>El truco mas util de Flexbox: centrar perfectamente</h3>
+
+    <p>Centrar un elemento tanto horizontal como verticalmente es ahora trivial con Flexbox. Esto era increiblemente dificil antes.</p>
+
+    <pre><code>/* El truco mas util de Flexbox - centra perfectamente */
+.contenedor {
+    display: flex;
+    justify-content: center;  /* Centrar horizontalmente */
+    align-items: center;      /* Centrar verticalmente */
+    min-height: 100vh;        /* Ocupa toda la pantalla */
+}
+
+/* Resultado:
+┌─────────────────────────────────────┐
+│                                     │
+│                                     │
+│           [Elemento]                │
+│                                     │
+│                                     │
+└─────────────────────────────────────┘
+*/</code></pre>
+
+    <div class="tip">
+        <strong>Dato:</strong> Antes de Flexbox, la busqueda "how to center a div" era una de las mas populares en Stack Overflow. Con <code>display: flex; justify-content: center; align-items: center;</code> el problema desaparecio.
+    </div>
+
+    <h3>gap: espacio entre elementos</h3>
+
+    <p>La propiedad <code>gap</code> agrega espacio entre los flex items sin afectar los bordes del contenedor. Es mucho mas limpio que usar <code>margin</code> en cada hijo.</p>
+
+    <pre><code>.contenedor {
+    display: flex;
+    gap: 16px;          /* Espacio de 16px entre todos los elementos */
+    gap: 12px 24px;     /* gap-vertical gap-horizontal */
+}
+
+/* SIN gap (usando margin - tedioso):
+.item + .item { margin-left: 16px; }
+/* El ultimo item no tiene espacio a la derecha ✓
+/* Pero el primero tampoco... a veces se complica */
+
+/* CON gap (limpio y simple):
+.contenedor { gap: 16px; }
+/* Gap NO agrega espacio en los bordes del contenedor ✓ */</code></pre>
+
+    <h3>flex-wrap: que pasa cuando no caben</h3>
+
+    <p>Por defecto, Flexbox intenta meter todos los elementos en una sola linea. Si no caben, los encoge. Con <code>flex-wrap: wrap</code> los elementos se "bajan" a la siguiente linea.</p>
+
+    <pre><code>.contenedor {
+    display: flex;
+    flex-wrap: nowrap;   /* Por defecto: no ajustar (pueden encogerse) */
+    flex-wrap: wrap;     /* Se bajan a la siguiente linea si no caben */
+}
+
+/* Con flex-wrap: wrap y elementos de 200px cada uno:
+
+Pantalla ancha:
+┌─────────────────────────────────────────────┐
+│ [Item 1] [Item 2] [Item 3] [Item 4] [Item 5]│
+└─────────────────────────────────────────────┘
+
+Pantalla angosta:
+┌──────────────────────┐
+│ [Item 1] [Item 2]    │
+│ [Item 3] [Item 4]    │
+│ [Item 5]             │
+└──────────────────────┘
+*/</code></pre>
+
+    <h3>flex: la propiedad de los hijos</h3>
+
+    <p>La propiedad <code>flex</code> se aplica en los <strong>hijos</strong> del flex container para controlar cuanto espacio ocupa cada uno.</p>
+
+    <pre><code>/* En los HIJOS del flex container */
+.item {
+    flex: 1;  /* Ocupa una parte del espacio disponible */
+}
+
+.item-grande {
+    flex: 2;  /* Ocupa el DOBLE que un flex: 1 */
+}
+
+/* Ejemplo visual con 3 items:
+┌────────────────────────────────────────┐
+│  flex:1  │  flex:1  │  flex:1          │
+│ (1/3)    │ (1/3)    │ (1/3)            │
+└────────────────────────────────────────┘
+
+┌────────────────────────────────────────┐
+│  flex:1  │    flex:2    │  flex:1      │
+│ (1/4)    │   (2/4)      │ (1/4)        │
+└────────────────────────────────────────┘
+*/
+
+/* flex es un shorthand de: */
+.item {
+    flex-grow: 1;    /* Cuanto puede crecer */
+    flex-shrink: 1;  /* Cuanto puede encogerse */
+    flex-basis: 0%;  /* Tamanio base */
+}
+
+/* Para la mayoria de casos, flex: 1 es suficiente */</code></pre>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>3. Flexbox en Cafeteria Aroma</h2>
+
+    <div class="proyecto-aroma">
+        <h4>Conexion con el proyecto real</h4>
+        <p>Flexbox se usa extensamente en Cafeteria Aroma. Veamos los lugares mas importantes donde aparece en el codigo real del proyecto.</p>
+    </div>
+
+    <h3>La Navbar de Aroma</h3>
+
+    <p>La barra de navegacion es el ejemplo clasico de Flexbox: el logo a la izquierda y los links a la derecha, todos alineados verticalmente al centro.</p>
+
+    <pre><code>/* Navbar principal */
+.navbar {
+    display: flex;
+    align-items: center;            /* Todos al centro vertical */
+    justify-content: space-between; /* Logo a la izq, links a la der */
+    padding: 12px 24px;
+    background: #4A3426;
+}
+
+/* Resultado visual:
+┌──────────────────────────────────────────────────────────┐
+│  [Aroma]          [Inicio][Menu][Carrito][Contacto] [Juan]│
+└──────────────────────────────────────────────────────────┘
+*/</code></pre>
+
+    <h3>Los links del nav</h3>
+
+    <pre><code>/* Los links de navegacion en linea */
+.nav-links {
+    display: flex;
+    list-style: none;     /* Quita los puntos de lista */
+    gap: 8px;             /* Espacio entre cada link */
+    align-items: center;  /* Alineados al centro vertical */
+    margin: 0;
+    padding: 0;
+}</code></pre>
+
+    <h3>La cuadricula de productos del menu</h3>
+
+    <p>Las tarjetas de producto usan <code>flex-wrap: wrap</code> para ajustarse automaticamente al tamanio de la pantalla.</p>
+
+    <pre><code>/* Contenedor de tarjetas de productos */
+.product-grid {
+    display: flex;
+    flex-wrap: wrap;  /* Se ajustan a la siguiente linea si no caben */
+    gap: 20px;
+}
+
+.product-card {
+    flex: 1;
+    min-width: 240px;  /* Minimo 240px de ancho */
+    max-width: 320px;  /* Maximo 320px de ancho */
+    /* Con min y max-width, las tarjetas son flexibles pero con limites */
+}</code></pre>
+
+    <h3>La estructura interna de cada tarjeta</h3>
+
+    <p>Dentro de cada tarjeta tambien se usa Flexbox para organizar imagen, informacion, precio y boton.</p>
+
+    <pre><code>/* La tarjeta es una columna */
+.product-card {
+    display: flex;
+    flex-direction: column;  /* Imagen arriba, info abajo */
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* La seccion de informacion ocupa todo el espacio disponible */
+.product-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;               /* Ocupa todo el espacio disponible */
+    padding: 16px;
+}
+
+/* El footer de la tarjeta: precio + boton */
+.product-footer {
+    display: flex;
+    justify-content: space-between;  /* Precio izq, boton der */
+    align-items: center;             /* Centrado vertical */
+    margin-top: auto;                /* Empuja al fondo de la tarjeta */
+    padding-top: 12px;
+}
+
+/* Resultado visual de la tarjeta:
+┌──────────────────┐
+│  [Imagen cafe]   │  <- product-image
+├──────────────────┤
+│ Cafe Americano   │  <- product-info
+│ Descripcion...   │    (flex: 1, ocupa todo)
+│                  │
+│ Bs.12 [Agregar]  │  <- product-footer (margin-top: auto)
+└──────────────────┘
+*/</code></pre>
+
+    <div class="tip">
+        <strong>Truco de Flexbox:</strong> Usar <code>margin-top: auto</code> en un flex item lo empuja hasta el fondo del contenedor. Es perfecto para tarjetas donde quieres que el precio y boton siempre esten al fondo, sin importar cuanto texto tenga la descripcion.
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>4. CSS Grid: Layouts de dos dimensiones</h2>
+
+    <div class="analogia">
+        <strong>Analogia:</strong> Si Flexbox es una fila de personas en una cola (una dimension), Grid es un tablero de ajedrez (dos dimensiones). Defines filas Y columnas al mismo tiempo, y puedes colocar elementos en cualquier celda, o hacer que ocupen varias celdas a la vez.
+    </div>
+
+    <p>CSS Grid es el sistema de layout mas poderoso de CSS. Permite crear layouts complejos de dos dimensiones con un codigo sorprendentemente limpio.</p>
+
+    <h3>Como activar Grid</h3>
+
+    <pre><code>.grid-contenedor {
+    display: grid;                          /* Activa Grid */
+    grid-template-columns: 200px 200px 200px; /* 3 columnas de 200px */
+    grid-template-rows: 100px 100px;          /* 2 filas de 100px */
+    gap: 16px;                              /* Espacio entre celdas */
+}
+
+/* Resultado visual:
+┌──────────┬──────────┬──────────┐
+│ 200px    │ 200px    │ 200px    │ 100px
+├──────────┼──────────┼──────────┤
+│          │          │          │ 100px
+└──────────┴──────────┴──────────┘
+*/</code></pre>
+
+    <h3>La unidad fr (fraccion disponible)</h3>
+
+    <p>La unidad <code>fr</code> (fraccion) es especial de Grid. Representa una fraccion del espacio disponible en el contenedor. Es como repartir una pizza.</p>
+
+    <pre><code>.grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    /* El espacio disponible se divide en 4 partes (1+2+1):
+       - Columna 1: 1/4 del espacio (25%)
+       - Columna 2: 2/4 del espacio (50%) <- la del medio es el doble
+       - Columna 3: 1/4 del espacio (25%)
+    */
+}
+
+/* Resultado visual:
+┌────────┬────────────────┬────────┐
+│  1fr   │      2fr       │  1fr   │
+│  (25%) │     (50%)      │  (25%) │
+└────────┴────────────────┴────────┘
+*/</code></pre>
+
+    <h3>repeat(): para no repetir codigo</h3>
+
+    <p>La funcion <code>repeat()</code> evita escribir lo mismo varias veces.</p>
+
+    <pre><code>.grid {
+    display: grid;
+
+    /* Estas dos lineas hacen lo mismo: */
+    grid-template-columns: 1fr 1fr 1fr 1fr;     /* 4 columnas iguales */
+    grid-template-columns: repeat(4, 1fr);       /* Mas limpio */
+
+    /* Tambien con px: */
+    grid-template-columns: 200px 200px 200px;   /* Repetitivo */
+    grid-template-columns: repeat(3, 200px);    /* Limpio */
+}</code></pre>
+
+    <h3>auto-fit y minmax: el patron mas util de Grid</h3>
+
+    <p>Esta combinacion es magica. Permite que la grilla se ajuste automaticamente a cualquier tamanio de pantalla, sin necesitar media queries.</p>
+
+    <pre><code>.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+/*
+Desglosando:
+- repeat(...)         -> repetir columnas
+- auto-fit            -> crea tantas columnas como quepan en el espacio
+- minmax(250px, 1fr)  -> cada columna tiene minimo 250px y maximo 1fr
+
+Comportamiento segun ancho de pantalla:
+- 300px  de ancho: 1 columna  (solo cabe 1 de minimo 250px)
+- 600px  de ancho: 2 columnas (caben 2 de 250px cada una)
+- 900px  de ancho: 3 columnas (caben 3 de 250px cada una)
+- 1200px de ancho: 4 columnas (caben 4 de 250px cada una)
+
+Resultado en desktop (1200px):
+┌──────────┬──────────┬──────────┬──────────┐
+│ Card 1   │ Card 2   │ Card 3   │ Card 4   │
+├──────────┼──────────┼──────────┼──────────┤
+│ Card 5   │ Card 6   │ Card 7   │ Card 8   │
+└──────────┴──────────┴──────────┴──────────┘
+
+Resultado en movil (350px):
+┌──────────────────────┐
+│       Card 1         │
+├──────────────────────┤
+│       Card 2         │
+├──────────────────────┤
+│       Card 3         │
+└──────────────────────┘
+*/</code></pre>
+
+    <div class="importante">
+        <strong>Patron clave:</strong> <code>repeat(auto-fit, minmax(X, 1fr))</code> es uno de los patrones mas importantes de CSS moderno. Con una sola linea de CSS creas una grilla completamente responsive. Aprendelo de memoria.
+    </div>
+
+    <h3>Colocar elementos en posiciones especificas</h3>
+
+    <p>Con Grid puedes controlar exactamente en que columna y fila va cada elemento, o hacer que ocupe multiples celdas.</p>
+
+    <pre><code>/* Grid de 3 columnas */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* Un elemento que ocupa 2 columnas */
+.item-destacado {
+    grid-column: 1 / 3;  /* Desde linea de columna 1 hasta linea 3 */
+    grid-row: 1 / 2;     /* Primera fila */
+}
+
+/* Un elemento que ocupa TODAS las columnas */
+.item-full-width {
+    grid-column: 1 / -1; /* Desde la primera hasta la ULTIMA linea */
+    /* -1 siempre es la ultima linea, sin importar cuantas columnas haya */
+}
+
+/* Visualizacion:
+┌──────────────────────┬──────────┐
+│ item-destacado       │ item 2   │
+│ (ocupa col 1 y 2)    │          │
+├──────────┬───────────┴──────────┤
+│ item 3   │ item 4               │
+├──────────┴──────────────────────┤
+│         item-full-width         │
+│ (ocupa las 3 columnas)          │
+└─────────────────────────────────┘
+*/</code></pre>
+
+    <h3>Grid en el panel Admin de Aroma</h3>
+
+    <pre><code>/* Estadisticas del panel de administracion */
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    /* Se ajusta automaticamente: en movil 1 col, en desktop 4 cols */
+}
+
+/* Layout principal del panel admin: sidebar + contenido */
+.admin-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;  /* Sidebar fijo + contenido flexible */
+    grid-template-rows: auto 1fr;      /* Header + area principal */
+    min-height: 100vh;                 /* Ocupa toda la pantalla */
+}
+
+/* Resultado:
+┌──────────────────────────────────────────────┐
+│               Header (auto)                  │ <- row 1
+├───────────────┬──────────────────────────────┤
+│ Sidebar       │ Contenido principal          │ <- row 2 (1fr)
+│ (250px fijo)  │ (1fr, ocupa todo el resto)   │
+│               │                              │
+│               │                              │
+└───────────────┴──────────────────────────────┘
+*/</code></pre>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>5. Flexbox vs Grid: ¿Cuando usar cada uno?</h2>
+
+    <p>Esta es la pregunta que todos los principiantes hacen. La respuesta corta: <strong>Flexbox para una dimension, Grid para dos dimensiones</strong>. Pero hay mas matices.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Situacion</th>
+                <th>Usar</th>
+                <th>Por que</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Navbar con logo y links</td>
+                <td><code>Flexbox</code></td>
+                <td>Es una linea horizontal, una sola dimension</td>
+            </tr>
+            <tr>
+                <td>Formulario con campos</td>
+                <td><code>Flexbox column</code></td>
+                <td>Cada campo es una fila, una sola dimension</td>
+            </tr>
+            <tr>
+                <td>Galeria de productos</td>
+                <td><code>Grid</code></td>
+                <td>Necesita filas Y columnas, dos dimensiones</td>
+            </tr>
+            <tr>
+                <td>Contenido interno de una tarjeta</td>
+                <td><code>Flexbox</code></td>
+                <td>El contenido es lineal (columna)</td>
+            </tr>
+            <tr>
+                <td>Dashboard con estadisticas</td>
+                <td><code>Grid</code></td>
+                <td>Layout 2D complejo</td>
+            </tr>
+            <tr>
+                <td>Centrar un elemento</td>
+                <td><code>Flexbox</code></td>
+                <td><code>justify-content: center; align-items: center</code></td>
+            </tr>
+            <tr>
+                <td>Lista de botones en linea</td>
+                <td><code>Flexbox</code></td>
+                <td>Estan en una sola linea</td>
+            </tr>
+            <tr>
+                <td>Layout de pagina completo</td>
+                <td><code>Grid</code></td>
+                <td>Header, sidebar, contenido, footer en 2D</td>
+            </tr>
+            <tr>
+                <td>Barra de busqueda con icono</td>
+                <td><code>Flexbox</code></td>
+                <td>Input y boton en una sola linea</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="tip">
+        <strong>Regla practica:</strong> Si el contenido fluye en <em>una sola linea</em> (ya sea horizontal o vertical), usa Flexbox. Si necesitas controlar filas Y columnas simultaneamente, usa Grid. Y recuerda: puedes combinarlos, un elemento puede ser un Grid container cuyos hijos son Flex containers.
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>6. CSS Grid para el layout principal de Aroma</h2>
+
+    <p>El proyecto Cafeteria Aroma usa Grid para organizar los layouts mas complejos: el panel de cajero, el panel de administracion y la pagina del menu.</p>
+
+    <pre><code>/* Layout del panel de cajero */
+.cashier-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;  /* Lista de pedidos + panel lateral */
+    gap: 24px;
+    padding: 24px;
+}
+
+/* Visualizacion:
+┌───────────────────────────────┬─────────────────┐
+│ Lista de items del pedido     │ Panel lateral   │
+│                               │ (380px fijo)    │
+│ (1fr - todo el espacio        │ - Subtotal      │
+│  disponible)                  │ - Descuentos    │
+│                               │ - Total         │
+│                               │ - [Cobrar]      │
+└───────────────────────────────┴─────────────────┘
+*/
+
+/* Resumen diario del cajero - tarjetas de estadisticas */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    /* Ajuste automatico: en movil 2 cols, en desktop 4 cols */
+}
+
+/* Tarjeta de estadistica individual */
+.stat-card {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    text-align: center;
+    border-left: 4px solid #C8956C;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}</code></pre>
+
+    <div class="proyecto-aroma">
+        <h4>Layout del menu publico</h4>
+        <p>La pagina del menu usa <code>auto-fit</code> para adaptarse a cualquier tamanio de pantalla. El mismo CSS funciona en movil (1 columna), tablet (2 columnas) y desktop (4 columnas).</p>
+        <pre><code>.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    padding: 24px 0;
+}</code></pre>
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>7. Ejercicio Practico: Grid de Productos de Cafe</h2>
+
+    <div class="ejercicio">
+        <h4>Ejercicio 7.1 – Crear una grilla de productos</h4>
+        <p>Crea un archivo <code>ejercicio-grid.html</code> con la siguiente estructura HTML y el CSS indicado.</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">Crea el HTML de las tarjetas de productos:</div>
+        </div>
+
+        <pre><code>&lt;div class="productos-grid"&gt;
+
+    &lt;!-- Tarjeta 1 --&gt;
+    &lt;div class="producto-card"&gt;
+        &lt;div class="producto-imagen" style="background: #8B6349; height: 150px;"&gt;&lt;/div&gt;
+        &lt;div class="producto-info"&gt;
+            &lt;h3&gt;Cafe Americano&lt;/h3&gt;
+            &lt;p&gt;Espresso con agua caliente&lt;/p&gt;
+            &lt;div class="producto-footer"&gt;
+                &lt;span class="precio"&gt;Bs. 12.00&lt;/span&gt;
+                &lt;button class="btn-agregar"&gt;+ Agregar&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Tarjeta 2 --&gt;
+    &lt;div class="producto-card"&gt;
+        &lt;div class="producto-imagen" style="background: #5C3317; height: 150px;"&gt;&lt;/div&gt;
+        &lt;div class="producto-info"&gt;
+            &lt;h3&gt;Cappuccino&lt;/h3&gt;
+            &lt;p&gt;Espresso con leche espumada y cocoa&lt;/p&gt;
+            &lt;div class="producto-footer"&gt;
+                &lt;span class="precio"&gt;Bs. 18.00&lt;/span&gt;
+                &lt;button class="btn-agregar"&gt;+ Agregar&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Repite la estructura para Latte, Mocha, Cortado, Espresso --&gt;
+
+&lt;/div&gt;</code></pre>
+
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">Agrega este CSS para la grilla y las tarjetas:</div>
+        </div>
+
+        <pre><code>/* La grilla principal */
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Cada tarjeta */
+.producto-card {
+    display: flex;
+    flex-direction: column;  /* Imagen arriba, info abajo */
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.producto-card:hover {
+    transform: translateY(-4px);  /* Sube al hacer hover */
+}
+
+/* La informacion del producto */
+.producto-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;       /* Ocupa todo el espacio disponible */
+    padding: 16px;
+}
+
+.producto-info h3 {
+    color: #4A3426;
+    margin-bottom: 6px;
+}
+
+.producto-info p {
+    color: #888;
+    font-size: 0.9em;
+    flex: 1;  /* Empuja el footer hacia abajo */
+}
+
+/* Footer con precio y boton */
+.producto-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0e6d8;
+}
+
+.precio {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #6F4E37;
+}
+
+.btn-agregar {
+    background: #6F4E37;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.2s;
+}
+
+.btn-agregar:hover {
+    background: #4A3426;
+}</code></pre>
+
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">Abre el archivo en el navegador y cambia el tamanio de la ventana. Observa como las columnas se ajustan automaticamente.</div>
+        </div>
+    </div>
+
+    <div class="ejercicio">
+        <h4>Ejercicio 7.2 – Layout del panel de cajero</h4>
+        <p>Ahora crea el layout completo de dos columnas del panel de cajero usando Grid.</p>
+
+        <pre><code>&lt;!-- HTML del panel de cajero --&gt;
+&lt;div class="cashier-layout"&gt;
+
+    &lt;!-- Columna izquierda: lista de pedidos --&gt;
+    &lt;div class="pedidos-lista"&gt;
+        &lt;h2&gt;Pedido actual&lt;/h2&gt;
+        &lt;div class="pedido-item"&gt;
+            &lt;span&gt;Cafe Americano x2&lt;/span&gt;
+            &lt;span&gt;Bs. 24.00&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="pedido-item"&gt;
+            &lt;span&gt;Cappuccino x1&lt;/span&gt;
+            &lt;span&gt;Bs. 18.00&lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Columna derecha: detalles del total --&gt;
+    &lt;div class="pedido-detalle"&gt;
+        &lt;h3&gt;Resumen&lt;/h3&gt;
+        &lt;div class="linea-total"&gt;
+            &lt;span&gt;Subtotal&lt;/span&gt;
+            &lt;span&gt;Bs. 42.00&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="linea-total"&gt;
+            &lt;span&gt;Descuento (0%)&lt;/span&gt;
+            &lt;span&gt;Bs. 0.00&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="linea-total total-final"&gt;
+            &lt;span&gt;TOTAL&lt;/span&gt;
+            &lt;span&gt;Bs. 42.00&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;button class="btn-cobrar"&gt;Cobrar&lt;/button&gt;
+    &lt;/div&gt;
+
+&lt;/div&gt;</code></pre>
+
+        <pre><code>/* CSS del layout del cajero */
+.cashier-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px; /* Lista flexible + panel fijo */
+    gap: 24px;
+    padding: 24px;
+    min-height: calc(100vh - 60px); /* Toda la altura menos el navbar */
+}
+
+.pedidos-lista {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+}
+
+.pedido-detalle {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    align-self: start; /* No se estira, queda en la parte superior */
+}
+
+.pedido-item, .linea-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0e6d8;
+}
+
+.total-final {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #4A3426;
+}
+
+.btn-cobrar {
+    width: 100%;
+    padding: 14px;
+    background: #6F4E37;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background 0.2s;
+}
+
+.btn-cobrar:hover {
+    background: #4A3426;
+}</code></pre>
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <div class="resumen">
+        <h2>Resumen de la Guia 04</h2>
+        <ul>
+            <li><strong>Flexbox</strong> organiza elementos en una dimension: fila (<code>row</code>) o columna (<code>column</code>)</li>
+            <li><strong>justify-content</strong> controla la alineacion en el eje principal (horizontal en row)</li>
+            <li><strong>align-items</strong> controla la alineacion en el eje secundario (vertical en row)</li>
+            <li>Para centrar algo: <code>display: flex; justify-content: center; align-items: center;</code></li>
+            <li><strong>gap</strong> agrega espacio entre elementos sin afectar los bordes del contenedor</li>
+            <li><strong>flex-wrap: wrap</strong> permite que los elementos bajen a la siguiente linea</li>
+            <li><strong>flex: 1</strong> en los hijos hace que ocupen el espacio disponible en partes iguales</li>
+            <li><strong>CSS Grid</strong> organiza elementos en dos dimensiones: filas y columnas</li>
+            <li>La unidad <strong>fr</strong> representa una fraccion del espacio disponible</li>
+            <li><strong>repeat(auto-fit, minmax(X, 1fr))</strong> crea una grilla responsive sin media queries</li>
+            <li>Usa <strong>Flexbox para una dimension</strong>, <strong>Grid para dos dimensiones</strong></li>
+            <li>En Aroma: navbar y tarjetas internas usan Flexbox, galeria de productos y layouts de pagina usan Grid</li>
+        </ul>
+    </div>
+
+</body>
+</html>

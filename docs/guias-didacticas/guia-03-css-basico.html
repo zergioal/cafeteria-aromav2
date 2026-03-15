@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 03 – CSS Básico: Dale Estilo a Cafetería Aroma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .objetivos ul { margin-bottom: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .warning strong { color: #e65100; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.95em; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+
+        /* Paleta de colores visual */
+        .paleta { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+        .color-chip { border-radius: 8px; padding: 14px 18px; color: white; font-family: 'Courier New', monospace; font-size: 0.88em; min-width: 180px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+        .color-chip.claro { color: #4A3426; }
+        .color-chip span { display: block; font-weight: bold; font-size: 1em; }
+        .color-chip small { opacity: 0.85; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header-guia">
+        <h1>Guía 03 – CSS Básico: Dale Estilo a Cafetería Aroma</h1>
+        <p class="subtitulo">Módulo 2: CSS | Transformando HTML plano en una página hermosa</p>
+        <div class="meta">
+            <span class="badge">Nivel: Principiante</span>
+            <span class="badge">Tiempo estimado: 5 horas</span>
+            <span class="badge">Prerequisito: Guías 01-02</span>
+        </div>
+    </div>
+
+    <!-- OBJETIVOS -->
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Entender qué es CSS y cómo funciona la "cascada".</li>
+            <li>Aprender a conectar un archivo CSS con un documento HTML.</li>
+            <li>Dominar los selectores CSS más importantes: etiqueta, clase, ID, pseudoclases.</li>
+            <li>Comprender el Box Model (modelo de caja) a fondo.</li>
+            <li>Manejar colores, tipografía, fondos, bordes y sombras.</li>
+            <li>Entender <code>display</code> y los tipos de posicionamiento.</li>
+            <li>Conocer y usar las variables CSS del proyecto Aroma.</li>
+            <li>Analizar el CSS real de la navbar de Cafetería Aroma.</li>
+        </ul>
+    </div>
+
+    <!-- SECCIÓN 1 -->
+    <h2>1. ¿Qué es CSS?</h2>
+
+    <p>CSS significa <strong>Cascading Style Sheets</strong> (Hojas de Estilo en Cascada). Es el lenguaje que controla la <em>presentación visual</em> de una página web: colores, tamaños, fuentes, espaciados, bordes, posición de cada elemento y mucho más.</p>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> Si HTML es el esqueleto de una persona (la estructura, los huesos), entonces CSS es la ropa, el maquillaje y el peinado. El esqueleto define qué partes existen y en qué orden, pero CSS define cómo se ve cada parte. Sin CSS, una página web se ve como un documento de texto plano. Con CSS, se convierte en una interfaz atractiva y profesional.
+    </div>
+
+    <h3>¿Qué significa "Cascada"?</h3>
+    <p>La palabra "cascada" describe cómo se resuelven los conflictos cuando varias reglas CSS intentan aplicar estilos diferentes al mismo elemento. El navegador sigue un orden de prioridad:</p>
+
+    <ol>
+        <li><strong>Especificidad:</strong> Un selector de ID (<code>#id</code>) gana sobre una clase (<code>.clase</code>), que gana sobre una etiqueta (<code>p</code>).</li>
+        <li><strong>Orden:</strong> Si dos reglas tienen igual especificidad, gana la que aparece última en el archivo.</li>
+        <li><strong>Herencia:</strong> Algunos estilos (como el color de texto o la fuente) se heredan automáticamente de los elementos padres a los hijos.</li>
+    </ol>
+
+    <pre><code>/* Esta regla tiene baja especificidad (solo etiqueta) */
+p {
+    color: black;
+}
+
+/* Esta regla tiene mayor especificidad (clase) y gana */
+.mensaje-especial {
+    color: #6F4E37;  /* El párrafo con esta clase será café, no negro */
+}
+
+/* Esta regla tiene la mayor especificidad (ID) y gana siempre */
+#titulo-principal {
+    color: #4A3426;
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 2 -->
+    <h2>2. Cómo conectar CSS con HTML</h2>
+
+    <p>Existen tres formas de agregar CSS a un documento HTML. Cada una tiene sus casos de uso, pero hay una clara ganadora para proyectos reales:</p>
+
+    <h3>Forma 1 – CSS externo (RECOMENDADO)</h3>
+    <p>Se crea un archivo <code>.css</code> separado y se enlaza desde el HTML con la etiqueta <code>&lt;link&gt;</code> dentro del <code>&lt;head&gt;</code>:</p>
+
+    <pre><code>&lt;!-- En el archivo index.html, dentro del &lt;head&gt; --&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Cafetería Aroma&lt;/title&gt;
+    &lt;link rel="stylesheet" href="css/styles.css"&gt;
+&lt;/head&gt;</code></pre>
+
+    <h3>Forma 2 – CSS interno (solo para pruebas rápidas)</h3>
+    <p>Se escribe CSS directamente dentro de una etiqueta <code>&lt;style&gt;</code> en el <code>&lt;head&gt;</code>:</p>
+
+    <pre><code>&lt;head&gt;
+    &lt;style&gt;
+        body { background-color: #FBF6F0; }
+        h1 { color: #6F4E37; }
+    &lt;/style&gt;
+&lt;/head&gt;</code></pre>
+
+    <h3>Forma 3 – CSS inline (evitar en lo posible)</h3>
+    <p>Se escribe el CSS directamente en el atributo <code>style</code> de un elemento HTML:</p>
+
+    <pre><code>&lt;p style="color: red; font-size: 20px;"&gt;Texto con estilo inline&lt;/p&gt;</code></pre>
+
+    <h3>¿Por qué usamos CSS externo en Aroma?</h3>
+
+    <div class="proyecto-aroma">
+        <h4>Separación de responsabilidades en Aroma</h4>
+        <ul>
+            <li><strong>HTML</strong> (<code>index.html</code>) — Estructura y contenido</li>
+            <li><strong>CSS</strong> (<code>css/styles.css</code>) — Presentación y estilo visual</li>
+            <li><strong>JavaScript</strong> (<code>js/app.js</code> y otros) — Comportamiento e interactividad</li>
+        </ul>
+        <p style="margin-bottom:0">Al separar el CSS en su propio archivo: el mismo archivo <code>styles.css</code> puede ser usado por múltiples páginas HTML, los cambios de diseño no tocan el HTML ni el JavaScript, y el código es más fácil de leer, mantener y trabajar en equipo.</p>
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 3 -->
+    <h2>3. Selectores CSS – ¿A quién le aplico el estilo?</h2>
+
+    <p>Un selector CSS indica <strong>a qué elementos HTML</strong> se les aplicarán las reglas de estilo. Es la parte que va antes de las llaves <code>{ }</code>. Dominar los selectores es fundamental para escribir CSS eficiente.</p>
+
+    <h3>Selector de etiqueta</h3>
+    <p>Afecta a <strong>todos</strong> los elementos de ese tipo en toda la página:</p>
+    <pre><code>/* Afecta TODOS los párrafos de la página */
+p {
+    color: #333;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+/* Afecta TODOS los títulos h1 */
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+}</code></pre>
+
+    <h3>Selector de clase (.clase)</h3>
+    <p>Afecta solo a los elementos que tienen ese valor en su atributo <code>class</code>. Es el más usado en proyectos reales:</p>
+    <pre><code>/* Solo los elementos con class="btn-primary" */
+.btn-primary {
+    background-color: #6F4E37;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Solo las tarjetas de producto */
+.product-card {
+    border: 1px solid #e0d5c8;
+    border-radius: 12px;
+    padding: 16px;
+    background: white;
+}</code></pre>
+
+    <div class="tip">
+        <strong>Tip:</strong> Un elemento puede tener múltiples clases separadas por espacios: <code>&lt;button class="btn btn-primary btn-large"&gt;</code>. Recibirá los estilos de las tres clases combinados.
+    </div>
+
+    <h3>Selector de ID (#id)</h3>
+    <p>Afecta solo al elemento con ese id específico. Recuerda que cada id debe ser único en la página:</p>
+    <pre><code>/* Solo el elemento con id="navbar" */
+#navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: #4A3426;
+    z-index: 100;
+}
+
+/* Solo el div con id="cartItems" */
+#cartItems {
+    max-height: 400px;
+    overflow-y: auto;
+}</code></pre>
+
+    <h3>Selector descendiente</h3>
+    <p>Afecta a un elemento solo cuando está <em>dentro</em> de otro elemento. El espacio entre selectores significa "dentro de":</p>
+    <pre><code>/* Todo &lt;p&gt; que esté DENTRO de un elemento con class="card" */
+.card p {
+    font-size: 14px;
+    color: #6B5240;
+}
+
+/* Todo &lt;a&gt; dentro de la navbar */
+.navbar a {
+    color: white;
+    text-decoration: none;
+}
+
+/* Solo los &lt;li&gt; dentro del menú de navegación */
+.nav-menu li {
+    list-style: none;
+    display: inline-block;
+}</code></pre>
+
+    <h3>Selector múltiple (,)</h3>
+    <p>Aplica las mismas reglas a varios selectores a la vez, separados por coma:</p>
+    <pre><code>/* Aplica a h1, h2 y h3 al mismo tiempo */
+h1, h2, h3 {
+    font-family: 'Georgia', serif;
+    color: #4A3426;
+}
+
+/* Aplica a botones primarios y secundarios */
+.btn-primary, .btn-secondary {
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.2s ease;
+}</code></pre>
+
+    <h3>Pseudoclases (:hover, :first-child, :focus...)</h3>
+    <p>Las pseudoclases aplican estilos según el <em>estado</em> de un elemento o su posición en el DOM:</p>
+    <pre><code>/* Cuando el mouse está encima del botón */
+.btn-primary:hover {
+    background-color: #4A3426;
+    transform: scale(1.02);
+}
+
+/* Cuando un input está enfocado (el usuario está escribiendo en él) */
+input:focus {
+    outline: 2px solid #C8956C;
+    border-color: #6F4E37;
+}
+
+/* El primer elemento hijo dentro de su padre */
+li:first-child {
+    color: #6F4E37;
+    font-weight: bold;
+}
+
+/* El último elemento hijo */
+li:last-child {
+    border-bottom: none;
+}
+
+/* Filas pares de una tabla */
+tr:nth-child(even) {
+    background-color: #faf5f0;
+}
+
+/* Un link que ya fue visitado */
+a:visited {
+    color: #8B6349;
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 4 -->
+    <h2>4. El Box Model – El concepto más importante de CSS</h2>
+
+    <p>El <strong>Box Model</strong> (modelo de caja) describe cómo el navegador calcula el espacio que ocupa cada elemento HTML. <strong>Todo elemento es una caja rectangular</strong>, y esa caja tiene cuatro capas:</p>
+
+    <pre><code>┌─────────────────────────────────────────┐
+│                 MARGIN                   │  ← Espacio FUERA del elemento
+│   ┌─────────────────────────────────┐   │     (transparente, no tiene color)
+│   │             BORDER              │   │  ← Borde visible del elemento
+│   │   ┌─────────────────────────┐   │   │
+│   │   │         PADDING         │   │   │  ← Espacio DENTRO del elemento
+│   │   │   ┌─────────────────┐   │   │   │     (tiene el color de fondo)
+│   │   │   │    CONTENT      │   │   │   │  ← El contenido real: texto,
+│   │   │   │  (texto/imagen) │   │   │   │     imagen, elementos hijos
+│   │   │   └─────────────────┘   │   │   │
+│   │   └─────────────────────────┘   │   │
+│   └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘</code></pre>
+
+    <div class="analogia">
+        <strong>Analogía – Una caja de regalo:</strong> Imagina que empacas un regalo. El <strong>contenido</strong> es el regalo en sí (un libro, por ejemplo). El <strong>padding</strong> es el papel de relleno que pones adentro para que no se mueva. El <strong>border</strong> es la caja de cartón que lo contiene. El <strong>margin</strong> es el espacio entre esa caja y las otras cajas apiladas en el estante del almacén. Si cambias el tamaño del padding o el border, la caja se hace más grande, pero el regalo sigue igual.
+    </div>
+
+    <h3>Propiedades del Box Model en CSS</h3>
+
+    <pre><code>.product-card {
+    /* CONTENT: definido por width y height */
+    width: 280px;
+    height: auto;      /* auto = se ajusta al contenido */
+
+    /* PADDING: espacio interior (entre el contenido y el borde) */
+    padding: 16px;                    /* los 4 lados iguales */
+    padding: 10px 20px;               /* arriba/abajo  |  izquierda/derecha */
+    padding: 10px 20px 15px 5px;      /* arriba | derecha | abajo | izquierda */
+    padding-top: 10px;                /* solo arriba */
+    padding-bottom: 16px;             /* solo abajo */
+
+    /* BORDER: el borde visible */
+    border: 1px solid #e0d5c8;        /* grosor | estilo | color */
+    border-top: 3px solid #6F4E37;    /* solo borde superior */
+    border-radius: 12px;              /* esquinas redondeadas */
+
+    /* MARGIN: espacio exterior (entre el elemento y sus vecinos) */
+    margin: 16px;                     /* los 4 lados iguales */
+    margin-bottom: 24px;              /* solo margen inferior */
+    margin: 0 auto;                   /* arriba/abajo: 0 | centrar horizontalmente */
+}</code></pre>
+
+    <h3>box-sizing: border-box — El ajuste que cambia todo</h3>
+    <p>Por defecto, cuando defines <code>width: 280px</code>, eso es solo el contenido. Si agregas <code>padding: 16px</code>, el elemento pasa a medir <code>280 + 16 + 16 = 312px</code>. Esto confunde a todos los principiantes.</p>
+
+    <p>Por eso, en Aroma (y en casi todos los proyectos modernos) usamos <code>box-sizing: border-box</code>:</p>
+
+    <pre><code>/* Este reset se aplica a TODOS los elementos (selector *) */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ahora si digo width: 280px, el elemento SIEMPRE mide 280px.
+   El padding y el border se incluyen DENTRO de ese ancho.
+   El contenido se reduce para dar espacio al padding, pero la
+   caja total sigue siendo 280px. Predecible y manejable. */
+
+.product-card {
+    width: 280px;   /* Mide exactamente 280px, aunque tenga padding */
+    padding: 16px;  /* El contenido queda en 280 - 16 - 16 = 248px de ancho */
+}</code></pre>
+
+    <div class="importante">
+        <strong>Importante:</strong> El <code>* { box-sizing: border-box; margin: 0; padding: 0; }</code> que ves al inicio del <code>styles.css</code> de Aroma es un <strong>CSS Reset</strong>. Elimina los márgenes y paddings que los navegadores aplican por defecto a los elementos (que varían entre Chrome, Firefox y Safari) para tener un punto de partida consistente.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 5 -->
+    <h2>5. Colores en CSS</h2>
+
+    <p>CSS ofrece múltiples sistemas para definir colores. Todos son válidos, pero en la práctica se usan principalmente los valores hexadecimales y RGBA:</p>
+
+    <h3>Formas de definir colores</h3>
+
+    <pre><code>/* 1. Nombres de color (solo 140 colores disponibles) */
+color: red;
+color: white;
+color: cornflowerblue;
+
+/* 2. Hexadecimal: #RRGGBB (el más común en diseño web) */
+/* Cada par de dígitos va de 00 (nada) a FF (máximo) */
+color: #6F4E37;    /* R=6F(111), G=4E(78), B=37(55) → marrón café */
+color: #FFFFFF;    /* Blanco */
+color: #000000;    /* Negro */
+color: #C8956C;    /* Caramelo (acento de Aroma) */
+
+/* 3. RGB: rgb(rojo, verde, azul) - valores 0 a 255 */
+color: rgb(111, 78, 55);     /* Equivale a #6F4E37 */
+color: rgb(255, 255, 255);   /* Blanco */
+
+/* 4. RGBA: igual que RGB pero con transparencia (alpha 0=transparente, 1=sólido) */
+color: rgba(111, 78, 55, 0.8);   /* Café con 80% opacidad */
+color: rgba(0, 0, 0, 0.1);       /* Negro con 10% opacidad (sombras suaves) */
+
+/* 5. HSL: Hue (tono 0-360), Saturation (saturación %), Lightness (luminosidad %) */
+color: hsl(20, 33%, 33%);        /* También es #6F4E37 */</code></pre>
+
+    <div class="tip">
+        <strong>Tip – Leer colores hex:</strong> En <code>#6F4E37</code>, los primeros dos dígitos (<code>6F</code>) son la cantidad de rojo, los del medio (<code>4E</code>) son verde y los últimos (<code>37</code>) son azul. Un número alto en rojo y bajo en azul/verde tiende a dar tonos cálidos (naranjas, cafés, rojos). Alto en azul da tonos fríos.
+    </div>
+
+    <h3>Paleta de colores de Cafetería Aroma</h3>
+
+    <div class="paleta">
+        <div class="color-chip" style="background:#6F4E37;">
+            <span>#6F4E37</span>
+            <small>Marrón principal (café)</small>
+        </div>
+        <div class="color-chip" style="background:#4A3426;">
+            <span>#4A3426</span>
+            <small>Marrón oscuro (café oscuro)</small>
+        </div>
+        <div class="color-chip" style="background:#8B6349;">
+            <span>#8B6349</span>
+            <small>Marrón claro</small>
+        </div>
+        <div class="color-chip" style="background:#C8956C;">
+            <span>#C8956C</span>
+            <small>Acento caramelo</small>
+        </div>
+        <div class="color-chip claro" style="background:#F5DEB3; border: 1px solid #C8956C;">
+            <span>#F5DEB3</span>
+            <small>Trigo claro</small>
+        </div>
+        <div class="color-chip claro" style="background:#FBF6F0; border: 1px solid #C8956C;">
+            <span>#FBF6F0</span>
+            <small>Crema de fondo</small>
+        </div>
+    </div>
+
+    <p>Esta paleta está inspirada en los colores reales del café y la madera. Los tonos oscuros se usan para texto y elementos importantes, el caramelo para acentos y llamadas a la acción, y los tonos claros para fondos y áreas de contenido.</p>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 6 -->
+    <h2>6. Tipografía</h2>
+
+    <p>La tipografía es uno de los pilares del diseño web. CSS ofrece control completo sobre cómo se ve el texto:</p>
+
+    <pre><code>.texto-completo {
+    /* Familia de fuentes: si la primera no está disponible, usa la siguiente */
+    font-family: 'Segoe UI', Arial, sans-serif;
+    /* 'Segoe UI' (Windows) → Arial (universal) → sans-serif (genérica del sistema) */
+
+    /* Tamaño de fuente */
+    font-size: 16px;         /* Píxeles: tamaño fijo */
+    font-size: 1rem;         /* Relativo al root: 1rem = 16px por defecto */
+    font-size: 1.2em;        /* Relativo al padre: 1.2 veces el tamaño del padre */
+    font-size: 90%;          /* Porcentaje del tamaño del padre */
+
+    /* Peso (grosor) */
+    font-weight: 400;        /* Normal (equivale a "normal") */
+    font-weight: 600;        /* Semi-negrita */
+    font-weight: 700;        /* Negrita (equivale a "bold") */
+
+    /* Estilo */
+    font-style: normal;      /* Normal */
+    font-style: italic;      /* Cursiva */
+
+    /* Altura de línea (sin unidad = relativo al tamaño de fuente) */
+    line-height: 1.6;        /* 1.6 × el font-size = espacio entre líneas */
+    line-height: 24px;       /* Fijo en píxeles */
+
+    /* Alineación del texto */
+    text-align: left;        /* Por defecto */
+    text-align: center;      /* Centrado */
+    text-align: right;       /* A la derecha */
+    text-align: justify;     /* Justificado */
+
+    /* Decoración */
+    text-decoration: none;         /* Sin subrayado (para quitar el de los links) */
+    text-decoration: underline;    /* Subrayado */
+    text-decoration: line-through; /* Tachado (para precios con descuento) */
+
+    /* Transformación */
+    text-transform: uppercase;     /* TODO EN MAYÚSCULAS */
+    text-transform: capitalize;    /* Primera Letra En Mayúscula */
+    text-transform: lowercase;     /* todo en minúsculas */
+
+    /* Espaciado entre letras */
+    letter-spacing: 0.5px;   /* Muy útil para logos y títulos */
+    letter-spacing: 2px;     /* Más aireado */
+
+    /* Espaciado entre palabras */
+    word-spacing: 4px;
+}</code></pre>
+
+    <h3>rem vs em vs px: ¿cuándo usar cada uno?</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Unidad</th>
+                <th>Relativa a</th>
+                <th>Cuándo usarla</th>
+                <th>En Aroma</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>px</code></td>
+                <td>Nada (absoluta)</td>
+                <td>Bordes, sombras, gaps pequeños</td>
+                <td>Bordes (<code>1px</code>), border-radius pequeños</td>
+            </tr>
+            <tr>
+                <td><code>rem</code></td>
+                <td>Tamaño del elemento <code>&lt;html&gt;</code> (root)</td>
+                <td>Tipografía, espaciados principales</td>
+                <td>Tamaños de fuente, padding de secciones</td>
+            </tr>
+            <tr>
+                <td><code>em</code></td>
+                <td>Tamaño del elemento padre</td>
+                <td>Espaciados relativos al texto del componente</td>
+                <td>Padding interno de botones</td>
+            </tr>
+            <tr>
+                <td><code>%</code></td>
+                <td>Tamaño del elemento padre</td>
+                <td>Anchos de columnas, layouts responsivos</td>
+                <td>Anchos de cards en grillas</td>
+            </tr>
+            <tr>
+                <td><code>vw / vh</code></td>
+                <td>Ancho/alto del viewport</td>
+                <td>Secciones hero, alturas de pantalla completa</td>
+                <td>Hero de la página de inicio</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 7 -->
+    <h2>7. Fondos</h2>
+
+    <p>Las propiedades de <code>background</code> controlan el fondo de cualquier elemento. Pueden ser colores sólidos, imágenes, gradientes o combinaciones:</p>
+
+    <pre><code>.seccion-hero {
+    /* Color de fondo sólido */
+    background-color: #FBF6F0;
+
+    /* Imagen de fondo */
+    background-image: url('img/cafe-background.jpg');
+
+    /* Cómo escala la imagen para cubrir el área */
+    background-size: cover;    /* Cubre todo el elemento (puede recortar) */
+    background-size: contain;  /* La imagen completa cabe (puede dejar espacio) */
+    background-size: 100% 400px; /* Ancho 100%, alto fijo */
+
+    /* Posición de la imagen */
+    background-position: center;          /* Centrada */
+    background-position: top left;        /* Arriba a la izquierda */
+    background-position: center 30%;      /* Centro horizontal, 30% vertical */
+
+    /* Si la imagen se repite */
+    background-repeat: no-repeat;    /* No repetir */
+    background-repeat: repeat;       /* Repetir en ambas direcciones (por defecto) */
+    background-repeat: repeat-x;     /* Solo horizontal */
+}
+
+/* Gradiente lineal (usado en el header y navbar de Aroma) */
+.navbar {
+    background: linear-gradient(135deg, #4A3426 0%, #6F4E37 100%);
+    /* Dirección: 135 grados (diagonal) */
+    /* Color de inicio: #4A3426 en la posición 0% */
+    /* Color de fin: #6F4E37 en la posición 100% */
+}
+
+/* Gradiente radial (desde el centro hacia afuera) */
+.badge-destacado {
+    background: radial-gradient(circle, #C8956C, #6F4E37);
+}
+
+/* Imagen CON un color de reserva (si la imagen no carga) */
+.hero-section {
+    background-color: #4A3426;        /* Color de respaldo */
+    background-image: url('hero.jpg');
+    background-size: cover;
+    background-position: center;
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 8 -->
+    <h2>8. Bordes y Sombras</h2>
+
+    <p>Los bordes y sombras son esenciales para crear profundidad visual y separar elementos en el diseño de Aroma:</p>
+
+    <pre><code>.card {
+    /* ===== BORDES ===== */
+
+    /* Sintaxis abreviada: grosor | estilo | color */
+    border: 1px solid #C8956C;
+
+    /* Solo un lado */
+    border-top: 3px solid #6F4E37;
+    border-bottom: 1px dashed #e0d5c8;
+    border-left: 4px solid #C8956C;     /* Acento lateral (usado en esta guía) */
+
+    /* Estilos de borde disponibles */
+    border-style: solid;    /* Línea sólida */
+    border-style: dashed;   /* Línea discontinua */
+    border-style: dotted;   /* Puntos */
+    border-style: double;   /* Doble línea */
+
+    /* Bordes redondeados */
+    border-radius: 8px;             /* Todos los vértices iguales */
+    border-radius: 12px 12px 0 0;   /* Solo las dos esquinas superiores */
+    border-radius: 50%;             /* Círculo perfecto (si width = height) */
+    border-radius: 20px;            /* Muy redondeado (pill shape) */
+
+    /* ===== SOMBRAS ===== */
+
+    /* Sombra de caja: offset-x | offset-y | blur | spread | color */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* Sin desplazamiento horizontal */
+    /* 2px hacia abajo */
+    /* 8px de difuminado */
+    /* Sin expansión */
+    /* Negro al 10% de opacidad */
+
+    /* Sombra más pronunciada */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+    /* Sombra interior (inset) */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    /* Múltiples sombras separadas por coma */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 4px 12px rgba(111,78,55,0.15);
+}
+
+/* Sombra de texto */
+.titulo-hero {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    /* offset-x | offset-y | blur | color */
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 9 -->
+    <h2>9. Display y Posicionamiento básico</h2>
+
+    <p>La propiedad <code>display</code> controla cómo un elemento <em>participa</em> en el flujo del documento. Es una de las propiedades más importantes de CSS:</p>
+
+    <pre><code>/* display: block
+   El elemento ocupa toda la línea disponible (aunque su contenido sea pequeño).
+   Los siguientes elementos se van al siguiente renglón.
+   Acepta width, height, margin y padding completos.
+   Ejemplos nativos: div, p, h1-h6, section, ul */
+.elemento { display: block; }
+
+/* display: inline
+   El elemento solo ocupa el espacio de su contenido.
+   Puede estar junto a otros elementos en la misma línea.
+   NO acepta width ni height. El margin/padding vertical no empuja otros elementos.
+   Ejemplos nativos: span, a, strong, em */
+.elemento { display: inline; }
+
+/* display: inline-block
+   Lo mejor de ambos mundos: está en línea con otros elementos
+   pero SÍ acepta width, height y padding/margin completos. */
+.elemento { display: inline-block; }
+
+/* display: none
+   El elemento desaparece completamente y NO ocupa espacio.
+   Es como si no existiera en el HTML (diferente a visibility: hidden). */
+.elemento { display: none; }
+
+/* visibility: hidden
+   El elemento es invisible pero SÍ ocupa su espacio en el layout.
+   Útil cuando no quieres que otros elementos se muevan. */
+.elemento { visibility: hidden; }</code></pre>
+
+    <h3>Posicionamiento</h3>
+    <p>La propiedad <code>position</code> controla cómo se ubica un elemento en relación a su posición normal, su contenedor o la ventana del navegador:</p>
+
+    <pre><code>/* position: static (valor por defecto)
+   El elemento sigue el flujo normal del documento.
+   Las propiedades top/right/bottom/left no tienen efecto. */
+.estatico { position: static; }
+
+/* position: relative
+   El elemento se desplaza RELATIVO a su posición normal.
+   El espacio original sigue siendo reservado (no colapsa). */
+.relativo {
+    position: relative;
+    top: 10px;    /* Se mueve 10px hacia abajo de donde estaría normalmente */
+    left: 20px;   /* Se mueve 20px a la derecha */
+}
+
+/* position: absolute
+   El elemento se saca del flujo normal.
+   Se posiciona relativo al ancestro más cercano con position != static.
+   Muy útil para badges, tooltips, overlays. */
+.absoluto {
+    position: absolute;
+    top: 0;
+    right: 0;     /* Esquina superior derecha de su contenedor posicionado */
+}
+
+/* position: fixed
+   El elemento se fija en la ventana del navegador.
+   No se mueve aunque el usuario haga scroll.
+   Usado en Aroma para la navbar. */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;   /* Queda encima de otros elementos */
+}
+
+/* position: sticky
+   Mezcla de relative y fixed.
+   Se comporta como relative hasta que llega a cierto punto durante el scroll,
+   luego se "pega" en ese lugar. */
+.navbar-sticky {
+    position: sticky;
+    top: 0;         /* Se pegará cuando llegue al top del viewport */
+    z-index: 100;
+}</code></pre>
+
+    <h3>z-index: el orden de apilamiento</h3>
+    <p>Cuando los elementos se superponen, <code>z-index</code> controla cuál queda "encima". Solo funciona en elementos con <code>position</code> distinto de <code>static</code>:</p>
+
+    <pre><code>.fondo { z-index: 1; }        /* Más al fondo */
+.contenido { z-index: 10; }   /* Encima del fondo */
+.navbar { z-index: 100; }     /* Siempre encima de todo */
+.modal { z-index: 1000; }     /* El modal de dialogo encima de todo */</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 10 -->
+    <h2>10. Overflow y Scroll</h2>
+
+    <p>La propiedad <code>overflow</code> controla qué pasa cuando el contenido de un elemento es más grande que el espacio definido por su <code>width</code> y <code>height</code>:</p>
+
+    <pre><code>.contenedor {
+    width: 300px;
+    height: 200px;  /* Tamaño fijo más pequeño que el contenido */
+
+    overflow: visible;  /* Por defecto: el contenido sobresale del contenedor */
+    overflow: hidden;   /* Oculta todo lo que sobresale (como si lo recortara) */
+    overflow: auto;     /* Muestra scroll SOLO si el contenido no cabe */
+    overflow: scroll;   /* SIEMPRE muestra las barras de scroll */
+
+    /* Solo horizontal o solo vertical */
+    overflow-x: auto;   /* Scroll horizontal si es necesario */
+    overflow-y: hidden; /* Ocultar contenido que sobresale verticalmente */
+}
+
+/* Ejemplo práctico en Aroma: lista de items del carrito */
+#cartItems {
+    max-height: 400px;    /* Altura máxima */
+    overflow-y: auto;     /* Scroll vertical si hay muchos items */
+}
+
+/* Texto largo que no se corta */
+.product-name {
+    white-space: nowrap;     /* No permite saltos de línea */
+    overflow: hidden;        /* Oculta el texto que no cabe */
+    text-overflow: ellipsis; /* Muestra "..." al final del texto recortado */
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 11 -->
+    <h2>11. CSS del Proyecto Aroma – Variables y Estilos Base</h2>
+
+    <p>Una de las características más poderosas y modernas del CSS son las <strong>Custom Properties</strong>, conocidas como <strong>variables CSS</strong>. El proyecto Aroma las usa extensamente en su archivo <code>css/styles.css</code>.</p>
+
+    <h3>¿Qué son las variables CSS?</h3>
+    <p>Las variables CSS permiten definir un valor una sola vez y reutilizarlo en muchos lugares del archivo. Se declaran con dos guiones al inicio (<code>--nombre</code>) y se usan con la función <code>var()</code>:</p>
+
+    <pre><code>/* Las variables se declaran dentro de :root para estar disponibles globalmente.
+   :root es el elemento &lt;html&gt;, el más alto del árbol del documento. */
+:root {
+    /* ===== COLORES PRIMARIOS ===== */
+    --color-primary: #6F4E37;
+    --color-primary-dark: #4A3426;
+    --color-primary-light: #8B6349;
+
+    /* ===== ACENTOS ===== */
+    --color-accent: #C8956C;
+    --color-accent-light: #F5DEB3;
+
+    /* ===== FONDOS ===== */
+    --color-bg: #FBF6F0;
+    --color-bg-white: #FFFFFF;
+
+    /* ===== TEXTO ===== */
+    --color-text: #2C1A0E;
+    --color-text-light: #6B5240;
+    --color-text-muted: #9E8070;
+
+    /* ===== ESTADOS ===== */
+    --color-success: #2A7A4A;
+    --color-warning: #856404;
+    --color-danger: #C0392B;
+
+    /* ===== ESPACIADOS ===== */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* ===== TIPOGRAFÍA ===== */
+    --font-family: 'Segoe UI', system-ui, sans-serif;
+    --font-size-sm: 0.875rem;    /* 14px */
+    --font-size-base: 1rem;      /* 16px */
+    --font-size-lg: 1.125rem;    /* 18px */
+    --font-size-xl: 1.5rem;      /* 24px */
+
+    /* ===== BORDES ===== */
+    --border-radius: 8px;
+    --border-radius-lg: 16px;
+
+    /* ===== SOMBRAS ===== */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+
+    /* ===== TRANSICIONES ===== */
+    --transition: 0.2s ease;
+}</code></pre>
+
+    <h3>¿Por qué son tan útiles las variables CSS?</h3>
+
+    <ul>
+        <li><strong>Consistencia:</strong> Si defines el color primario en un solo lugar (<code>--color-primary: #6F4E37</code>), ese mismo color se usará en todos lados. No hay riesgo de que en un lugar uses <code>#6F4E37</code> y en otro accidentalmente <code>#6f4e37</code> o <code>#6E4E37</code>.</li>
+        <li><strong>Mantenimiento fácil:</strong> Si el cliente de la cafetería decide cambiar su color café por azul marino, solo cambias <code>--color-primary: #1565C0</code> en <code>:root</code> y se actualiza en toda la página automáticamente.</li>
+        <li><strong>Legibilidad:</strong> El código <code>color: var(--color-primary)</code> es mucho más descriptivo que <code>color: #6F4E37</code>. Sabes inmediatamente que es el color principal del proyecto.</li>
+        <li><strong>Temas:</strong> Puedes crear un tema oscuro simplemente redefiniendo las variables en una clase diferente, sin duplicar código.</li>
+    </ul>
+
+    <pre><code>/* Usando las variables en el CSS */
+.btn-primary {
+    background-color: var(--color-primary);    /* #6F4E37 */
+    color: var(--color-bg-white);              /* #FFFFFF */
+    padding: var(--spacing-sm) var(--spacing-md); /* 8px 16px */
+    border-radius: var(--border-radius);       /* 8px */
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-dark); /* #4A3426 */
+    box-shadow: var(--shadow-md);
+}</code></pre>
+
+    <h3>Los estilos base (Reset) de Aroma</h3>
+    <p>Después de definir las variables, el <code>styles.css</code> aplica un reset básico y los estilos globales:</p>
+
+    <pre><code>/* Reset: elimina estilos por defecto inconsistentes entre navegadores */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilos del elemento raíz del documento */
+body {
+    font-family: var(--font-family);
+    background-color: var(--color-bg);    /* Fondo crema de Aroma */
+    color: var(--color-text);             /* Color de texto principal */
+    line-height: 1.6;
+    min-height: 100vh;                    /* Al menos la altura de la pantalla */
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 12 -->
+    <h2>12. Estilizando la Navbar de Aroma</h2>
+
+    <p>La barra de navegación es uno de los elementos más importantes de Aroma: siempre está visible, muestra el nombre del negocio y permite cambiar de sección. Analicemos su CSS en detalle:</p>
+
+    <pre><code>.navbar {
+    background: var(--color-primary-dark);          /* Fondo marrón oscuro */
+    padding: var(--spacing-sm) var(--spacing-lg);   /* 8px arriba/abajo, 24px lados */
+    display: flex;                                   /* Layout flexible */
+    align-items: center;                             /* Centra verticalmente los hijos */
+    justify-content: space-between;                  /* Logo a la izquierda, links a la derecha */
+    position: sticky;                                /* Se pega al top al hacer scroll */
+    top: 0;
+    z-index: 100;                                    /* Encima de todo el contenido */
+    box-shadow: var(--shadow-md);                    /* Sombra sutil para profundidad */
+}
+
+.brand-name {
+    color: var(--color-accent-light);    /* Trigo claro para el nombre */
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;                 /* Un poco más de espacio entre letras */
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.85);    /* Blanco casi opaco */
+    text-decoration: none;               /* Sin subrayado */
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius);
+    transition: var(--transition);       /* Transición suave (0.2s ease) */
+}
+
+/* Al pasar el mouse O cuando es la pestaña activa */
+.nav-link:hover,
+.nav-link.active {
+    background: var(--color-accent);     /* Fondo caramelo */
+    color: white;
+}</code></pre>
+
+    <h3>Propiedades clave explicadas</h3>
+
+    <ul>
+        <li><code>position: sticky</code> — La navbar se comporta como <code>relative</code> al principio, pero cuando el usuario hace scroll y llega al <code>top: 0</code>, se "pega" y permanece visible. Es más moderno y simple que <code>position: fixed</code> para navbars.</li>
+        <li><code>z-index: 100</code> — Asegura que la navbar quede visualmente encima del contenido que pasa por debajo al hacer scroll.</li>
+        <li><code>transition: var(--transition)</code> — Aplica <code>0.2s ease</code> a todos los cambios de propiedad. Cuando el usuario pasa el mouse por un link, el cambio de color no es brusco sino suave y profesional.</li>
+        <li><code>display: flex</code> — Activa Flexbox, que alinea automáticamente el logo y los links. <code>justify-content: space-between</code> empuja el logo al inicio y los links al final de la navbar.</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Tip – Flexbox:</strong> <code>display: flex</code> es una de las herramientas de layout más poderosas de CSS moderno. Nos dedica una guía completa (Guía 04). Por ahora, recuerda que activa un sistema donde los hijos directos se organizan en fila o columna de forma muy controlable.
+    </div>
+
+    <pre><code>/* Transición específica solo en ciertas propiedades */
+.btn-primary {
+    transition: background-color 0.2s ease,
+                box-shadow 0.2s ease,
+                transform 0.15s ease;
+}
+
+/* Cuando el usuario presiona (mousedown) */
+.btn-primary:active {
+    transform: scale(0.98);    /* Efecto de "clic" sutil */
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- EJERCICIO FINAL -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final – Crear mi-cafeteria.css y aplicar estilos</h4>
+        <p>Crea un archivo <code>mi-cafeteria.css</code> y conéctalo con el HTML de la pestaña de contacto que creaste en la Guía 02. Agrega estilos para los siguientes elementos:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                <strong>Variables y reset:</strong> Define al inicio del archivo las variables CSS de la paleta Aroma (<code>--color-primary</code>, <code>--color-accent</code>, <code>--color-bg</code>, etc.) dentro de <code>:root</code>. Agrega también el reset <code>* { box-sizing: border-box; margin: 0; padding: 0; }</code>.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                <strong>Estilos del body y tipografía global:</strong> Aplica la fuente <code>'Segoe UI', sans-serif</code>, el color de texto principal, el color de fondo crema y un <code>line-height: 1.6</code> al body.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                <strong>Una navbar simple:</strong> Crea estilos para una clase <code>.navbar</code> con fondo <code>var(--color-primary-dark)</code>, padding adecuado, y posición sticky. Estiliza también una clase <code>.brand-name</code> con color caramelo y font-size grande.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">
+                <strong>Tarjeta de información:</strong> Crea una clase <code>.info-card</code> que aplique: background blanco, padding de 24px, border-radius de 12px, border de 1px solid con el color acento, y una sombra suave con <code>box-shadow</code>.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido">
+                <strong>Estilo para el formulario:</strong> Estiliza los inputs y textarea del formulario de contacto: ancho 100%, padding de 10px 14px, border de 1px solid gris claro, border-radius de 6px. En el estado <code>:focus</code>, cambia el borde a color primario y agrega un outline del color acento.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido">
+                <strong>Hover effects:</strong> Crea una clase <code>.btn-primary</code> para el botón de envío con fondo <code>var(--color-primary)</code>, color blanco, padding, border-radius y <code>transition: 0.2s ease</code>. En el <code>:hover</code>, oscurece el fondo con <code>var(--color-primary-dark)</code> y sube ligeramente con <code>transform: translateY(-2px)</code>.
+            </div>
+        </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 03</h2>
+        <ul>
+            <li>CSS (Cascading Style Sheets) controla la presentación visual de los elementos HTML: colores, tamaños, fuentes, espaciados, posición.</li>
+            <li>La "cascada" resuelve conflictos: gana el selector más específico o el último en aparecer.</li>
+            <li>La forma correcta de incluir CSS en un proyecto real es con un archivo externo y la etiqueta <code>&lt;link&gt;</code>.</li>
+            <li>Los selectores principales son: etiqueta (<code>p</code>), clase (<code>.btn</code>), ID (<code>#navbar</code>), descendiente (<code>.card p</code>), múltiple (<code>h1, h2</code>) y pseudoclases (<code>:hover</code>, <code>:focus</code>).</li>
+            <li>El Box Model define que cada elemento es una caja con capas: content, padding, border y margin. <code>box-sizing: border-box</code> hace que el padding no aumente el tamaño declarado.</li>
+            <li>Los colores se definen en hexadecimal (<code>#6F4E37</code>), RGB, RGBA o con nombres. RGBA es ideal para sombras y fondos semitransparentes.</li>
+            <li>Las variables CSS (<code>--color-primary: #6F4E37</code>) en <code>:root</code> permiten reutilizar valores y facilitan el mantenimiento del proyecto.</li>
+            <li><code>position: sticky</code> es la forma moderna de hacer navbars que se quedan fijas al hacer scroll.</li>
+            <li><code>transition</code> da suavidad a los cambios de estilo (hover, focus), mejorando mucho la experiencia del usuario.</li>
+        </ul>
+        <p style="margin-top:16px; color: #F5DEB3;">En la próxima guía aprenderemos Flexbox y CSS Grid, los sistemas de layout modernos usados en el diseño responsivo de Aroma.</p>
+    </div>
+
+</body>
+</html>

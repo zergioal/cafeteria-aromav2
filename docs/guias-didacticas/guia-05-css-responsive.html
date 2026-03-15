@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 05 – CSS Responsive | Cafetería Aroma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guia 05 – CSS Responsive: Diseno para Todos los Dispositivos</h1>
+        <p class="subtitulo">Modulo 2: CSS | Haciendo que Aroma se vea bien en movil, tablet y PC</p>
+        <div class="meta">
+            <span class="badge">Nivel: Intermedio</span>
+            <span class="badge">Tiempo estimado: 4 horas</span>
+            <span class="badge">Prerequisito: Guias 03-04</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guia</h3>
+        <ul>
+            <li>Entender que es el diseno responsive y por que es esencial hoy</li>
+            <li>Usar el <strong>viewport meta tag</strong> correctamente</li>
+            <li>Entender la diferencia entre <strong>Mobile-First</strong> y Desktop-First</li>
+            <li>Escribir <strong>media queries</strong> para adaptar el diseno a distintas pantallas</li>
+            <li>Conocer las <strong>unidades CSS responsive</strong> (<code>rem</code>, <code>vw</code>, <code>vh</code>, <code>%</code>)</li>
+            <li>Crear <strong>imagenes responsivas</strong> que no se deformen</li>
+            <li>Aplicar <strong>transiciones y animaciones</strong> CSS para mejorar la experiencia</li>
+            <li>Probar el diseno responsive con <strong>Chrome DevTools</strong></li>
+        </ul>
+    </div>
+
+    <!-- =========================================================== -->
+    <h2>1. ¿Que es el diseno responsive?</h2>
+
+    <p>Vivimos en un mundo multi-pantalla. La gente accede a sitios web desde dispositivos con tamanios de pantalla radicalmente diferentes. Un sitio que solo funciona bien en una pantalla de escritorio esta perdiendo la mayoria de sus visitantes.</p>
+
+    <h3>Los dispositivos mas comunes y sus anchos</h3>
+
+    <pre><code>/* Anchos tipicos de pantalla en 2025 */
+
+Movil pequeno (iPhone SE):     375px de ancho
+Movil mediano (iPhone 14):     390px de ancho
+Movil grande (iPhone Plus):    430px de ancho
+Tablet (iPad mini):            768px de ancho
+Tablet grande (iPad Air):      820px de ancho
+Laptop pequena:               1024px de ancho
+Laptop estandar:              1280px de ancho
+Monitor Full HD:              1920px de ancho
+Monitor 4K:                   3840px de ancho
+
+/* La diferencia entre el movil mas chico y el monitor mas grande
+   es de 10 veces. Tu diseno debe funcionar en TODO ese rango. */</code></pre>
+
+    <div class="importante">
+        <strong>Dato clave:</strong> En 2025, mas del 60% del trafico web mundial proviene de dispositivos moviles. Si tu sitio web no funciona correctamente en un telefono, estas perdiendo a la mayoria de tus usuarios potenciales. Para un negocio como Cafeteria Aroma, donde los clientes podrian ver el menu desde su telefono mientras estan en la cafeteria, esto es critico.
+    </div>
+
+    <h3>¿Que hace un diseno responsive?</h3>
+
+    <p>Un diseno responsive se <strong>adapta automaticamente</strong> al tamanio del dispositivo que lo muestra. No es una version separada del sitio para moviles, es el mismo sitio que cambia su presentacion segun el espacio disponible.</p>
+
+    <pre><code>/* Visualizacion del mismo sitio en distintos dispositivos */
+
+Movil (375px):                  Tablet (768px):
+┌─────────────────┐             ┌─────────────────────────────┐
+│ [Aroma]     [=] │             │ [Aroma]  [Inicio][Menu][...] │
+├─────────────────┤             ├─────────────────────────────┤
+│ ┌─────────────┐ │             │ ┌─────────┐ ┌─────────┐     │
+│ │  Cafe 1     │ │             │ │  Cafe 1 │ │  Cafe 2 │     │
+│ └─────────────┘ │             │ └─────────┘ └─────────┘     │
+│ ┌─────────────┐ │             │ ┌─────────┐ ┌─────────┐     │
+│ │  Cafe 2     │ │             │ │  Cafe 3 │ │  Cafe 4 │     │
+│ └─────────────┘ │             │ └─────────┘ └─────────┘     │
+└─────────────────┘             └─────────────────────────────┘
+
+Desktop (1280px):
+┌───────────────────────────────────────────────────────────────┐
+│ [Aroma]       [Inicio]  [Menu]  [Carrito]  [Contacto]  [Juan] │
+├───────────────────────────────────────────────────────────────┤
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│ │  Cafe 1  │ │  Cafe 2  │ │  Cafe 3  │ │  Cafe 4  │          │
+│ └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│ │  Cafe 5  │ │  Cafe 6  │ │  Cafe 7  │ │  Cafe 8  │          │
+│ └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+└───────────────────────────────────────────────────────────────┘</code></pre>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>2. El viewport meta tag: la base de todo</h2>
+
+    <p>Antes de escribir cualquier CSS responsive, necesitas entender el <strong>viewport meta tag</strong>. Sin el, todo lo demas falla.</p>
+
+    <h3>¿Que es el viewport?</h3>
+
+    <p>El "viewport" es el area visible de la pagina web en tu dispositivo. En un movil moderno, los navegadores antiguos simulaban tener 980px de ancho para que los sitios no responsive se vieran completos (muy pequenos, pero completos). Esto es un problema para los sitios responsivos.</p>
+
+    <pre><code>&lt;!-- SIEMPRE incluye esto en el &lt;head&gt; de tu HTML --&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code></pre>
+
+    <pre><code>/* Lo que hace cada parte: */
+
+width=device-width
+└── El ancho del viewport = ancho fisico del dispositivo
+    SIN esto: viewport de 980px (el sitio se ve muy pequeno)
+    CON esto: viewport de 375px en un iPhone SE (correcto)
+
+initial-scale=1.0
+└── El zoom inicial es 1 (sin zoom)
+    SIN esto: el navegador puede hacer zoom out automaticamente
+    CON esto: la pagina se muestra al 100% de zoom
+
+/* Comparacion visual: */
+
+SIN meta viewport (incorrecto):          CON meta viewport (correcto):
+┌───────────────────────────┐            ┌──────────────────┐
+│ [Sitio web               ]│            │ [Sitio web]      │
+│ [completo pero muy        ]│            │ [adaptado al     │
+│ [chico y dificil de leer] ]│            │ [movil, legible] │
+└───────────────────────────┘            └──────────────────┘
+   (simula 980px)                           (usa 375px reales)</code></pre>
+
+    <div class="importante">
+        <strong>Regla de oro:</strong> Nunca crees un archivo HTML sin el viewport meta tag. Si lo olvidas, tus media queries funcionaran incorrectamente en moviles y todo el trabajo responsive que hagas sera inutil.
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>3. Mobile-First vs Desktop-First</h2>
+
+    <p>Hay dos formas de enfocar el diseno responsive. La eleccion afecta como escribes tu CSS.</p>
+
+    <h3>Desktop-First (disenar para escritorio primero)</h3>
+
+    <pre><code>/* DESKTOP-FIRST: comienzas con el diseno de escritorio */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas en desktop */
+    gap: 24px;
+}
+
+/* Luego "empequeneces" para pantallas mas chicas con max-width */
+@media (max-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 columnas en tablet */
+    }
+}
+
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas en tablet chica */
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: 1fr; /* 1 columna en movil */
+        gap: 16px;
+    }
+}</code></pre>
+
+    <h3>Mobile-First (disenar para movil primero) - Recomendado</h3>
+
+    <pre><code>/* MOBILE-FIRST: comienzas con el diseno movil */
+.product-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* 1 columna en movil (base) */
+    gap: 16px;
+}
+
+/* Luego "agrandas" para pantallas mas grandes con min-width */
+@media (min-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas en tablet */
+        gap: 20px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 columnas en desktop */
+        gap: 24px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr); /* 4 columnas en pantallas grandes */
+    }
+}</code></pre>
+
+    <h3>¿Por que Mobile-First es mejor?</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Razon</th>
+                <th>Explicacion</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Mayoria de usuarios</td>
+                <td>Mas del 60% del trafico es movil. Disenar para la mayoria primero tiene sentido.</td>
+            </tr>
+            <tr>
+                <td>Fuerza a priorizar</td>
+                <td>Con poco espacio en movil, debes elegir que es realmente importante mostrar.</td>
+            </tr>
+            <tr>
+                <td>Mejor rendimiento</td>
+                <td>Los moviles descargan el CSS base (mas liviano) y solo los breakpoints necesarios.</td>
+            </tr>
+            <tr>
+                <td>Mas facil agregar que quitar</td>
+                <td>Agregar complejidad en pantallas grandes es mas natural que simplificar en pequenas.</td>
+            </tr>
+            <tr>
+                <td>Estandar de la industria</td>
+                <td>Frameworks como Bootstrap y Tailwind usan Mobile-First. Es el enfoque moderno.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="tip">
+        <strong>Cafeteria Aroma usa Mobile-First</strong> en todos sus estilos. Cuando revises el archivo <code>styles.css</code> del proyecto, veras que los estilos base son para movil y las media queries usan <code>min-width</code> para ir agregando complejidad.
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>4. Media Queries: el corazon del responsive</h2>
+
+    <p>Las media queries permiten aplicar CSS condicional segun las caracteristicas del dispositivo, principalmente el ancho de la pantalla.</p>
+
+    <h3>Sintaxis basica</h3>
+
+    <pre><code>@media (condicion) {
+    /* CSS que solo se aplica cuando la condicion es verdadera */
+}
+
+/* Ejemplos de condiciones: */
+@media (min-width: 768px) { ... }   /* Pantalla de 768px o mas */
+@media (max-width: 767px) { ... }   /* Pantalla de 767px o menos */
+@media (min-width: 768px) and (max-width: 1024px) { ... }  /* Entre 768 y 1024 */
+@media (orientation: landscape) { ... }  /* En modo horizontal */
+@media (prefers-color-scheme: dark) { ... }  /* Si el SO usa modo oscuro */</code></pre>
+
+    <h3>Los breakpoints de Cafeteria Aroma</h3>
+
+    <p>Los "breakpoints" son los puntos de quiebre donde el diseno cambia. Aroma usa estos valores:</p>
+
+    <pre><code>/* ===== BREAKPOINTS DE CAFETERIA AROMA ===== */
+
+/* MOVIL: 0px - 767px
+   Estilos base (sin media query)
+   1 columna, menu hamburguesa, tipografia compacta */
+
+/* TABLET: 768px en adelante */
+@media (min-width: 768px) {
+    /* 2 columnas de productos, navbar horizontal */
+}
+
+/* DESKTOP: 1024px en adelante */
+@media (min-width: 1024px) {
+    /* 3 columnas, layouts de dos paneles (cajero, admin) */
+}
+
+/* WIDE: 1280px en adelante */
+@media (min-width: 1280px) {
+    /* 4 columnas de productos, contenedor mas ancho */
+}</code></pre>
+
+    <h3>Ejemplo completo: la grilla de productos adaptable</h3>
+
+    <pre><code>/* MOVIL (estilos base, sin media query) */
+.producto-grid {
+    display: grid;
+    grid-template-columns: 1fr;   /* 1 columna */
+    gap: 16px;
+    padding: 16px;
+}
+
+/* TABLET: 2 columnas */
+@media (min-width: 768px) {
+    .producto-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 20px;
+    }
+}
+
+/* DESKTOP: 3 columnas */
+@media (min-width: 1024px) {
+    .producto-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        padding: 24px;
+    }
+}
+
+/* WIDE: 4 columnas */
+@media (min-width: 1280px) {
+    .producto-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Visualizacion segun breakpoint:
+
+0-767px:        768-1023px:      1024-1279px:     1280px+:
+┌──────────┐    ┌────┐ ┌────┐   ┌───┐ ┌───┐ ┌───┐  ┌──┐┌──┐┌──┐┌──┐
+│ Card 1   │    │ C1 │ │ C2 │   │C1 │ │C2 │ │C3 │  │C1││C2││C3││C4│
+├──────────┤    ├────┤ ├────┤   ├───┤ ├───┤ ├───┤  ├──┤├──┤├──┤├──┤
+│ Card 2   │    │ C3 │ │ C4 │   │C4 │ │C5 │ │C6 │  │C5││C6││C7││C8│
+├──────────┤    └────┘ └────┘   └───┘ └───┘ └───┘  └──┘└──┘└──┘└──┘
+│ Card 3   │
+└──────────┘
+*/</code></pre>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>5. Unidades CSS responsive</h2>
+
+    <p>Ademas de las media queries, las unidades que usas en tu CSS afectan enormemente que tan bien se adapta tu diseno.</p>
+
+    <h3>Unidades fijas vs relativas</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Unidad</th>
+                <th>Tipo</th>
+                <th>Relativa a...</th>
+                <th>Uso recomendado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>px</code></td>
+                <td>Fija</td>
+                <td>Pixeles fisicos</td>
+                <td>Bordes, sombras, espaciados pequenos fijos</td>
+            </tr>
+            <tr>
+                <td><code>%</code></td>
+                <td>Relativa</td>
+                <td>El elemento padre</td>
+                <td>Anchos fluidos, padding proporcional</td>
+            </tr>
+            <tr>
+                <td><code>rem</code></td>
+                <td>Relativa</td>
+                <td>Font-size del elemento raiz (&lt;html&gt;)</td>
+                <td>Tipografia escalable, espaciados</td>
+            </tr>
+            <tr>
+                <td><code>em</code></td>
+                <td>Relativa</td>
+                <td>Font-size del elemento padre</td>
+                <td>Padding/margin en componentes</td>
+            </tr>
+            <tr>
+                <td><code>vw</code></td>
+                <td>Relativa</td>
+                <td>1% del ancho del viewport</td>
+                <td>Elementos que ocupan toda la pantalla</td>
+            </tr>
+            <tr>
+                <td><code>vh</code></td>
+                <td>Relativa</td>
+                <td>1% del alto del viewport</td>
+                <td>Secciones hero de pantalla completa</td>
+            </tr>
+            <tr>
+                <td><code>vmin</code></td>
+                <td>Relativa</td>
+                <td>El menor entre vw y vh</td>
+                <td>Elementos cuadrados responsivos</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>rem vs px: el detalle mas importante</h3>
+
+    <pre><code>/* Por defecto, el &lt;html&gt; tiene font-size: 16px */
+/* 1rem = 16px, 2rem = 32px, 0.875rem = 14px */
+
+/* El problema con px para tipografia: */
+h1 { font-size: 32px; } /* Si el usuario aumenta el zoom del navegador, esto NO escala */
+
+/* La solucion con rem: */
+h1 { font-size: 2rem; } /* 2 * 16px = 32px, pero SI escala con el zoom del usuario */
+
+/* Esto importa para accesibilidad: algunos usuarios necesitan
+   texto mas grande y lo configuran en el navegador */
+
+/* Truco: usar 62.5% para que 1rem = 10px y sea mas facil calcular */
+html {
+    font-size: 62.5%; /* 1rem = 10px ahora */
+}
+body {
+    font-size: 1.6rem; /* 16px - restablecer el body */
+}
+h1 { font-size: 3.2rem; } /* 32px - facil de calcular */
+p  { font-size: 1.6rem; } /* 16px */</code></pre>
+
+    <h3>vw y vh en Aroma</h3>
+
+    <pre><code>/* La seccion hero de la pagina principal */
+.hero {
+    min-height: 60vh;       /* Al menos 60% de la altura de la pantalla */
+    padding: 4rem 1.5rem;   /* rem para que escale con el zoom */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* El panel de cajero ocupa toda la pantalla menos el navbar */
+.cashier-layout {
+    min-height: calc(100vh - 64px); /* 100% de pantalla - altura del navbar */
+    /* calc() permite combinar unidades: 100vh menos 64px fijos */
+}
+
+/* El modal de confirmacion cubre toda la pantalla */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;   /* 100% del ancho del viewport */
+    height: 100vh;  /* 100% del alto del viewport */
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}</code></pre>
+
+    <h3>El contenedor fluido de Aroma</h3>
+
+    <pre><code>/* Patron clasico: contenedor con max-width */
+.container {
+    width: 100%;          /* Siempre 100% del padre */
+    max-width: 1200px;    /* Pero no mas de 1200px */
+    margin: 0 auto;       /* Centrado horizontalmente */
+    padding: 0 1rem;      /* Padding lateral en movil */
+}
+
+/* Visualizacion:
+
+En movil (375px):         En tablet (768px):        En desktop (1440px):
+┌─────────────────┐       ┌─────────────────────┐   ┌──────────────────────────────┐
+│ [contenido]     │       │   [contenido]        │   │    ┌────────────────────┐    │
+│ (375px)         │       │   (768px)            │   │    │    [contenido]     │    │
+└─────────────────┘       └─────────────────────┘   │    │    (max: 1200px)   │    │
+                                                     │    └────────────────────┘    │
+                                                     └──────────────────────────────┘
+                                                          Centrado con margin:auto
+*/</code></pre>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>6. Imagenes responsivas</h2>
+
+    <p>Las imagenes que no se ajustan al tamanio del contenedor pueden romper completamente el diseno en movil. Aprende a manejarlas correctamente.</p>
+
+    <h3>El truco basico: nunca sobresalir</h3>
+
+    <pre><code>/* Regla global: las imagenes nunca salen de su contenedor */
+img {
+    max-width: 100%;  /* La imagen no puede ser mas ancha que su contenedor */
+    height: auto;     /* La altura se ajusta proporcionalmente */
+}
+
+/* Por que max-width: 100% y no width: 100%?
+   - width: 100%   -> la imagen SIEMPRE ocupa todo el ancho (mala para iconos)
+   - max-width: 100% -> la imagen nunca SUPERA el ancho, pero puede ser mas chica */</code></pre>
+
+    <h3>Mantener la proporcion de las imagenes de producto</h3>
+
+    <pre><code>/* Truco del padding-top para mantener la relacion de aspecto */
+.product-image-container {
+    width: 100%;
+    padding-top: 60%;       /* 60% del ancho = relacion 5:3 */
+    position: relative;
+    overflow: hidden;
+    background: #f0e6d8;    /* Color mientras carga */
+    border-radius: 10px 10px 0 0;
+}
+
+.product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      /* La imagen llena el contenedor sin distorsion */
+    object-position: center; /* Centra la imagen dentro del contenedor */
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05); /* Zoom suave al hacer hover */
+}
+
+/* ¿Como funciona el truco del padding-top?
+   - padding-top: 60% se calcula como el 60% del ANCHO del elemento
+   - Si el contenedor tiene 300px de ancho: 300 * 0.6 = 180px de alto
+   - Si el contenedor tiene 400px de ancho: 400 * 0.6 = 240px de alto
+   - Siempre mantiene la proporcion 5:3, sin importar el tamanio */</code></pre>
+
+    <div class="tip">
+        <strong>object-fit:</strong> Es como el <code>background-size</code> pero para etiquetas <code>&lt;img&gt;</code>. Con <code>object-fit: cover</code> la imagen siempre llena completamente su contenedor, recortando los bordes si es necesario. Con <code>object-fit: contain</code> la imagen entera se ve, pero pueden aparecer espacios vacios.
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>7. La Navbar responsive de Aroma</h2>
+
+    <p>La navbar de Aroma cambia completamente entre movil y desktop. Es el componente responsive mas complejo del proyecto.</p>
+
+    <h3>El problema del navbar en movil</h3>
+
+    <pre><code>/* En movil, los links no caben en una sola linea.
+   La solucion clasica es el "menu hamburguesa":
+
+Desktop:
+┌──────────────────────────────────────────────────────────┐
+│ [Aroma]   [Inicio]  [Menu]  [Carrito]  [Contacto]  [Juan]│
+└──────────────────────────────────────────────────────────┘
+
+Movil:
+┌─────────────────────────┐
+│ [Aroma]             [=] │  <- el [=] es el boton hamburguesa
+└─────────────────────────┘
+
+Movil (con menu abierto):
+┌─────────────────────────┐
+│ [Aroma]             [X] │
+├─────────────────────────┤
+│ Inicio                  │
+│ Menu                    │
+│ Carrito                 │
+│ Contacto                │
+│ [Juan]                  │
+└─────────────────────────┘
+*/</code></pre>
+
+    <h3>CSS del navbar: estilos movil (base)</h3>
+
+    <pre><code>/* === NAVBAR BASE (movil primero) === */
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: #4A3426;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* Los links estan OCULTOS en movil */
+.nav-links {
+    display: none;
+}
+
+/* El boton hamburguesa se MUESTRA en movil */
+.nav-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px;
+}
+
+.nav-toggle span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Cuando el menu hamburguesa esta abierto (clase .open agregada con JS) */
+.nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 56px;        /* Justo debajo del navbar */
+    left: 0;
+    right: 0;
+    background: #4A3426;
+    padding: 16px 20px;
+    gap: 4px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    z-index: 99;
+}
+
+.nav-links.open li {
+    list-style: none;
+}
+
+.nav-links.open a {
+    display: block;
+    padding: 12px 16px;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.nav-links.open a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}</code></pre>
+
+    <h3>CSS del navbar: estilos tablet y desktop</h3>
+
+    <pre><code>/* === NAVBAR TABLET Y DESKTOP (768px+) === */
+@media (min-width: 768px) {
+
+    /* Mostrar los links en HORIZONTAL */
+    .nav-links {
+        display: flex;          /* Ahora se muestran */
+        flex-direction: row;    /* En linea horizontal */
+        list-style: none;
+        gap: 4px;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        position: static;       /* Ya no es fixed */
+        background: none;       /* Sin fondo propio */
+    }
+
+    .nav-links a {
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.92rem;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+    }
+
+    .nav-links a.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    /* Ocultar el boton hamburguesa en desktop */
+    .nav-toggle {
+        display: none;
+    }
+}</code></pre>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>8. El CSS responsive completo de Aroma</h2>
+
+    <p>Veamos como se organiza la seccion responsive completa del archivo <code>styles.css</code> del proyecto:</p>
+
+    <pre><code>/* ================================================
+   MEDIA QUERIES - CAFETERIA AROMA
+   Enfoque: Mobile-First (min-width)
+   ================================================ */
+
+/* ---- TABLET Y MAYOR (768px+) ---- */
+@media (min-width: 768px) {
+
+    /* Navbar */
+    .nav-links { display: flex; }
+    .nav-toggle { display: none; }
+
+    /* Grilla de productos: 2 columnas */
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Layout del carrito: items + resumen */
+    .cart-container {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 32px;
+        align-items: start;
+    }
+
+    /* Formulario: 2 columnas para campos cortos */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    /* Modal mas amplio */
+    .modal-content {
+        max-width: 480px;
+        margin: 40px auto;
+    }
+}
+
+/* ---- DESKTOP Y MAYOR (1024px+) ---- */
+@media (min-width: 1024px) {
+
+    /* Grilla de productos: 3 columnas */
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* Panel del cajero: pedido + panel de cobro */
+    .cashier-container {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    /* Panel admin: sidebar + contenido */
+    .admin-container {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+        min-height: calc(100vh - 64px);
+    }
+
+    /* Sidebar del admin siempre visible */
+    .admin-sidebar {
+        display: flex; /* Ya no se oculta como en movil */
+        position: sticky;
+        top: 64px;
+        height: calc(100vh - 64px);
+        overflow-y: auto;
+    }
+}
+
+/* ---- PANTALLAS ANCHAS (1280px+) ---- */
+@media (min-width: 1280px) {
+
+    /* Grilla de productos: 4 columnas */
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* Contenedor mas amplio */
+    .container {
+        max-width: 1400px;
+    }
+
+    /* Panel del cajero mas ancho */
+    .cashier-container {
+        grid-template-columns: 1fr 440px;
+    }
+}</code></pre>
+
+    <div class="proyecto-aroma">
+        <h4>Estructura de archivos CSS de Aroma</h4>
+        <p>El CSS del proyecto esta organizado en secciones claras dentro de <code>frontend/css/styles.css</code>:</p>
+        <pre><code>/* 1. Variables CSS (custom properties)
+   2. Reset y estilos base
+   3. Tipografia
+   4. Componentes: botones, inputs, tarjetas, badges
+   5. Layout: navbar, footer, contenedores
+   6. Paginas especificas: menu, carrito, cajero, admin
+   7. Animaciones y transiciones
+   8. Media queries (al final del archivo) */</code></pre>
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>9. Transitions y Animations</h2>
+
+    <p>Las transiciones y animaciones CSS agregan vida a la interfaz de Aroma. Bien usadas mejoran la experiencia del usuario; mal usadas, la empeoran. La clave es la sutileza.</p>
+
+    <h3>Transitions: cambios suaves entre estados</h3>
+
+    <p>Una transicion CSS hace que un cambio de estilo (como el color al hacer hover) ocurra gradualmente en lugar de instantaneamente.</p>
+
+    <pre><code>/* Sintaxis de transition */
+.btn {
+    background: #6F4E37;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+
+    /* transition: propiedad duracion funcion-de-timing retraso */
+    transition: background 0.2s ease;
+
+    /* Para multiples propiedades: */
+    transition: background 0.2s ease,
+                transform  0.2s ease,
+                box-shadow 0.2s ease;
+
+    /* Para todas las propiedades (usar con cuidado, puede ser lento): */
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    background: #4A3426;       /* <- Esta transicion sera suave (0.2s) */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(74, 52, 38, 0.3);
+}</code></pre>
+
+    <pre><code>/* Funciones de timing (como "acelera" y "frena" la animacion) */
+
+ease:        empieza lento, acelera, frena (la mas natural, por defecto)
+linear:      velocidad constante (para rotaciones infinitas)
+ease-in:     empieza lento, termina rapido
+ease-out:    empieza rapido, termina lento (para elementos que aparecen)
+ease-in-out: empieza y termina lento (para elementos que van y vienen)
+cubic-bezier(x1,y1,x2,y2): personalizada (para animaciones avanzadas)
+
+/* Para la mayoria de casos, usa "ease" o "ease-out" */<br></code></pre>
+
+    <h3>Transform: mover, escalar y rotar elementos</h3>
+
+    <pre><code>.elemento {
+    /* Mover */
+    transform: translateX(10px);    /* 10px hacia la derecha */
+    transform: translateY(-5px);    /* 5px hacia arriba */
+    transform: translate(10px, -5px); /* Ambos a la vez */
+
+    /* Escalar */
+    transform: scale(1.05);         /* 5% mas grande */
+    transform: scale(0.95);         /* 5% mas pequeno */
+    transform: scaleX(1.1);         /* Solo horizontal */
+
+    /* Rotar */
+    transform: rotate(45deg);       /* 45 grados en sentido horario */
+    transform: rotate(-90deg);      /* 90 grados en sentido antihorario */
+
+    /* Combinar transformaciones */
+    transform: translateY(-4px) scale(1.02);
+
+    /* IMPORTANTE: cuando combinas, el orden importa.
+       transform: translateY(-4px) scale(1.02)
+       NO es lo mismo que:
+       transform: scale(1.02) translateY(-4px)
+    */
+}
+
+/* Ejemplo en las tarjetas de producto de Aroma */
+.product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(74, 52, 38, 0.15);
+}</code></pre>
+
+    <h3>Keyframe Animations: animaciones complejas</h3>
+
+    <p>A diferencia de las transitions (que solo van de A a B), las keyframe animations pueden tener multiples estados intermedios.</p>
+
+    <pre><code>/* Paso 1: Definir la animacion con @keyframes */
+@keyframes girar {
+    from { transform: rotate(0deg); }    /* Estado inicial */
+    to   { transform: rotate(360deg); }  /* Estado final */
+}
+
+/* Paso 2: Aplicar la animacion a un elemento */
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e8d5c0;      /* Circulo incompleto */
+    border-top-color: #6F4E37;      /* El "arco" de color cafe */
+    border-radius: 50%;
+
+    /* animation: nombre duracion funcion-timing iteraciones */
+    animation: girar 0.8s linear infinite;
+}</code></pre>
+
+    <pre><code>/* Animacion de aparicion de tarjetas en el menu */
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-card {
+    animation: aparecer 0.3s ease-out;
+    /* Las tarjetas "suben" y aparecen al cargarse */
+}
+
+/* Si quieres que cada tarjeta aparezca con un retraso escalonado */
+.product-card:nth-child(1) { animation-delay: 0.0s; }
+.product-card:nth-child(2) { animation-delay: 0.05s; }
+.product-card:nth-child(3) { animation-delay: 0.1s; }
+.product-card:nth-child(4) { animation-delay: 0.15s; }</code></pre>
+
+    <pre><code>/* Animacion de pulso para el badge del carrito */
+@keyframes pulso {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.cart-badge {
+    background: #e91e63;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Solo pulsa cuando tiene items */
+.cart-badge.tiene-items {
+    animation: pulso 0.4s ease-out;
+}</code></pre>
+
+    <div class="warning">
+        <strong>Cuidado con las animaciones:</strong> Demasiadas animaciones distraen al usuario. Usa transiciones suaves y cortas (0.1s - 0.3s) para interacciones. Reserva las animaciones llamativas para momentos importantes (como confirmar un pedido). Evita animar todo.
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>10. Chrome DevTools para diseno responsive</h2>
+
+    <p>Chrome DevTools tiene herramientas excelentes para probar y depurar el diseno responsive sin necesitar un dispositivo fisico.</p>
+
+    <h3>Como abrir DevTools</h3>
+
+    <pre><code>Opcion 1: Presiona F12
+Opcion 2: Click derecho en la pagina -> "Inspeccionar"
+Opcion 3: Ctrl + Shift + I (Windows/Linux) o Cmd + Option + I (Mac)</code></pre>
+
+    <h3>El modo dispositivo (Device Toolbar)</h3>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">Con DevTools abierto, busca el icono de "Toggle device toolbar" (parece un telefono y una tablet). O presiona <code>Ctrl + Shift + M</code>.</div>
+    </div>
+
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">La pagina cambia a modo responsive. Arriba veras un selector de dispositivos. Elige entre: <strong>iPhone SE</strong> (375px), <strong>iPhone 14</strong> (390px), <strong>iPad</strong> (768px), etc.</div>
+    </div>
+
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">Tambien puedes seleccionar "Responsive" y usar el slider para cambiar el ancho manualmente. Observa como las media queries se activan y desactivan al pasar por los breakpoints.</div>
+    </div>
+
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">Puedes rotar el dispositivo (horizontal/vertical) con el icono de rotacion para probar el modo landscape.</div>
+    </div>
+
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">Para simular una conexion lenta (como en movil), usa el selector "Network throttling" y elige "Slow 3G" o "Fast 3G".</div>
+    </div>
+
+    <h3>Inspeccionando el CSS aplicado</h3>
+
+    <pre><code>/* En el panel "Styles" de DevTools puedes ver: */
+
+1. Todos los estilos CSS aplicados al elemento seleccionado
+2. De que archivo y linea vienen esos estilos
+3. Que estilos estan siendo sobreescritos (tachados en gris)
+4. Cuales media queries estan activas actualmente
+
+/* Para ver solo los estilos que vienen de media queries: */
+1. Abre el panel "Sources" -> "media queries bar"
+2. O busca en el panel "Styles" las reglas marcadas con el icono de pantalla */</code></pre>
+
+    <div class="tip">
+        <strong>Flujo de trabajo:</strong> Mientras desarrollas, ten DevTools abierto en modo responsive. Haz cambios en el CSS, guarda, y verifica en 3 tamanios: 375px (movil), 768px (tablet) y 1280px (desktop). Si funciona en esos tres, funcionara en casi cualquier dispositivo.
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <h2>Ejercicio Final: Pagina completamente responsive</h2>
+
+    <div class="ejercicio">
+        <h4>Ejercicio – Hazlo todo responsive</h4>
+        <p>Toma el archivo HTML que creaste en el ejercicio de la Guia 04 (el de la grilla de productos) y hazlo completamente responsive.</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                <strong>Agrega el viewport meta tag</strong> en el <code>&lt;head&gt;</code>:
+                <pre><code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                <strong>Navbar responsive:</strong> Agrega un boton hamburguesa que aparece en movil y se oculta en desktop. Los links deben estar ocultos en movil y visibles en desktop.
+                <pre><code>&lt;nav class="navbar"&gt;
+    &lt;div class="nav-logo"&gt;Cafeteria Aroma&lt;/div&gt;
+    &lt;button class="nav-toggle" onclick="this.closest('nav').querySelector('.nav-links').classList.toggle('open')"&gt;
+        &lt;span&gt;&lt;/span&gt;
+        &lt;span&gt;&lt;/span&gt;
+        &lt;span&gt;&lt;/span&gt;
+    &lt;/button&gt;
+    &lt;ul class="nav-links"&gt;
+        &lt;li&gt;&lt;a href="#"&gt;Inicio&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="#"&gt;Menu&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="#"&gt;Carrito&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                <strong>Grilla de productos Mobile-First:</strong> Empieza con 1 columna y agrega columnas en los breakpoints.
+                <pre><code>/* Base (movil): 1 columna */
+.productos-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+}
+
+/* Tablet: 2 columnas */
+@media (min-width: 768px) {
+    .productos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 20px;
+    }
+}
+
+/* Desktop: 3 columnas */
+@media (min-width: 1024px) {
+    .productos-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido"><strong>Prueba en DevTools:</strong> Abre el archivo en Chrome, activa el Device Toolbar, y prueba en 375px, 768px y 1280px. Verifica que en cada tamanio se vea correctamente.</div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido"><strong>Agrega transiciones:</strong> Agrega <code>transition: transform 0.2s ease, box-shadow 0.2s ease;</code> a las tarjetas y un efecto hover que las suba ligeramente.</div>
+        </div>
+    </div>
+
+    <div class="ejercicio">
+        <h4>Ejercicio Extra – Spinner de carga</h4>
+        <p>Agrega un spinner de carga animado que aparece mientras "cargan" los productos:</p>
+
+        <pre><code>&lt;!-- HTML del spinner --&gt;
+&lt;div class="loading-container" id="spinner"&gt;
+    &lt;div class="loading-spinner"&gt;&lt;/div&gt;
+    &lt;p&gt;Cargando productos...&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class="productos-grid" id="productos" style="display: none;"&gt;
+    &lt;!-- tarjetas de productos aqui --&gt;
+&lt;/div&gt;</code></pre>
+
+        <pre><code>/* CSS del spinner */
+@keyframes girar {
+    to { transform: rotate(360deg); }
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+    color: #6F4E37;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e8d5c0;
+    border-top-color: #6F4E37;
+    border-radius: 50%;
+    animation: girar 0.8s linear infinite;
+}</code></pre>
+
+        <pre><code>/* JavaScript para simular la carga (3 segundos) */
+&lt;script&gt;
+    setTimeout(function() {
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('productos').style.display = 'grid';
+    }, 3000); // 3000ms = 3 segundos
+&lt;/script&gt;</code></pre>
+    </div>
+
+    <hr class="separador">
+
+    <!-- =========================================================== -->
+    <div class="resumen">
+        <h2>Resumen de la Guia 05</h2>
+        <ul>
+            <li>El <strong>diseno responsive</strong> adapta el sitio a cualquier tamanio de pantalla; mas del 60% del trafico es movil</li>
+            <li>El <strong>viewport meta tag</strong> es obligatorio: <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code></li>
+            <li><strong>Mobile-First</strong> (con <code>min-width</code>) es el enfoque recomendado: disenar para movil y agregar complejidad para pantallas grandes</li>
+            <li>Las <strong>media queries</strong> aplican CSS condicional segun el ancho de la pantalla</li>
+            <li>Aroma usa los breakpoints: 768px (tablet), 1024px (desktop), 1280px (wide)</li>
+            <li>Usa <strong>rem</strong> para tipografia (escala con el zoom), <strong>%</strong> para anchos fluidos, <strong>vw/vh</strong> para elementos de pantalla completa</li>
+            <li>Las imagenes deben tener <code>max-width: 100%</code> y usar <code>object-fit: cover</code> para no distorsionarse</li>
+            <li>La navbar de Aroma usa el patron hamburguesa: links ocultos en movil con <code>display: none</code>, visibles en desktop</li>
+            <li>Las <strong>transitions</strong> hacen los cambios de estado suaves y naturales</li>
+            <li>Las <strong>keyframe animations</strong> permiten crear efectos como spinners de carga y aparicion de tarjetas</li>
+            <li><strong>Chrome DevTools</strong> (F12) tiene un modo de dispositivo para probar el responsive sin dispositivos fisicos</li>
+            <li>En el proyecto, las media queries van al final del archivo <code>styles.css</code> y siguen el patron Mobile-First</li>
+        </ul>
+    </div>
+
+</body>
+</html>

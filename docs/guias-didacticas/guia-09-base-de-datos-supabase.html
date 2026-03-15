@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 09 – Base de Datos: PostgreSQL y Supabase para Aroma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 09 – Base de Datos: PostgreSQL y Supabase para Aroma</h1>
+        <p class="subtitulo">Módulo 4: Base de Datos | Almacenando la información de la cafetería</p>
+        <div class="meta">
+            <span class="badge">Nivel: Principiante-Intermedio</span>
+            <span class="badge">Tiempo estimado: 6 horas</span>
+            <span class="badge">Prerequisito: Guías 06-08</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Entender qué es una base de datos y por qué la necesitamos en Aroma.</li>
+            <li>Conocer los conceptos fundamentales: tablas, columnas, filas, claves.</li>
+            <li>Aprender SQL básico: SELECT, INSERT, UPDATE y DELETE.</li>
+            <li>Conocer Supabase y configurar el proyecto en la plataforma.</li>
+            <li>Entender y ejecutar el esquema de base de datos completo de Aroma.</li>
+            <li>Insertar datos de prueba para empezar a trabajar.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2>1. ¿Qué es una base de datos?</h2>
+
+    <div class="analogia">
+        <strong>Analogía: La cafetería sin sistema</strong><br>
+        Imagina que llevas la cafetería Aroma con cuadernos. Un cuaderno para los productos, otro para los clientes, otro para los pedidos. Cada vez que alguien pregunta "¿cuánto vendimos hoy?" tienes que revisar decenas de páginas manualmente. Cuando un precio cambia, debes borrarlo y reescribirlo en cada lugar donde aparece. Se pierden páginas, hay errores, es lento.<br><br>
+        Una <strong>base de datos</strong> es como tener ese sistema de cuadernos convertido en un archivero digital perfectamente organizado: puedes buscar cualquier dato en segundos, actualizar en un solo lugar y obtener reportes automáticamente.
+    </div>
+
+    <p>En términos técnicos, una base de datos es un sistema organizado para <strong>guardar, buscar, actualizar y eliminar información</strong> de manera eficiente y confiable. En una cafetería real necesitamos registrar:</p>
+
+    <ul>
+        <li><strong>Productos:</strong> nombre, precio, descripción, categoría, si está disponible o no.</li>
+        <li><strong>Clientes:</strong> nombre, teléfono, correo electrónico, dirección de entrega.</li>
+        <li><strong>Pedidos:</strong> qué productos pidieron, cuándo, cuánto pagaron, estado del pedido.</li>
+        <li><strong>Usuarios del sistema:</strong> admins, cajeros, y sus permisos.</li>
+    </ul>
+
+    <h3>Tipos de bases de datos</h3>
+
+    <table>
+        <tr>
+            <th>Tipo</th>
+            <th>Nombre técnico</th>
+            <th>Cómo organiza los datos</th>
+            <th>Ejemplos</th>
+        </tr>
+        <tr>
+            <td><strong>Relacionales</strong></td>
+            <td>SQL</td>
+            <td>Tablas con filas y columnas, relacionadas entre sí</td>
+            <td>MySQL, PostgreSQL, SQLite, SQL Server</td>
+        </tr>
+        <tr>
+            <td><strong>No relacionales</strong></td>
+            <td>NoSQL</td>
+            <td>Documentos, colecciones, grafos, clave-valor</td>
+            <td>MongoDB, Firebase, Redis, Cassandra</td>
+        </tr>
+    </table>
+
+    <div class="proyecto-aroma">
+        <h4>En el proyecto Aroma</h4>
+        <p>Usamos <strong>PostgreSQL</strong> (relacional) a través de <strong>Supabase</strong>. Elegimos una base de datos relacional porque los datos de una cafetería tienen relaciones claras: un pedido pertenece a un cliente, un producto pertenece a una categoría. Las bases relacionales están diseñadas exactamente para eso.</p>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>2. Tablas, Columnas y Filas</h2>
+
+    <div class="analogia">
+        <strong>Analogía: Como una hoja de Excel</strong><br>
+        Una tabla de base de datos es exactamente como una hoja de cálculo en Excel. Cada <strong>columna</strong> define un tipo de dato (nombre, precio, fecha). Cada <strong>fila</strong> es un registro específico (un producto concreto). La diferencia es que la base de datos es mucho más poderosa, veloz y segura.
+    </div>
+
+    <p>Así se ve la tabla <code>products</code> de Aroma con datos reales:</p>
+
+    <pre><code>TABLA: products
+┌────────────────────┬─────────────────────┬─────────┬──────────────┬────────┐
+│ id (UUID)          │ nombre              │ precio  │ categoria_id │ activo │
+├────────────────────┼─────────────────────┼─────────┼──────────────┼────────┤
+│ a1b2-c3d4-e5f6...  │ Café Americano      │ 12.00   │ cat-001      │ true   │
+│ b2c3-d4e5-f6a7...  │ Café Latte          │ 18.50   │ cat-001      │ true   │
+│ c3d4-e5f6-a7b8...  │ Jugo de Naranja     │ 15.00   │ cat-002      │ true   │
+│ d4e5-f6a7-b8c9...  │ Pastel de Chocolate │ 25.00   │ cat-003      │ false  │
+└────────────────────┴─────────────────────┴─────────┴──────────────┴────────┘</code></pre>
+
+    <p>Cada elemento tiene su rol:</p>
+    <ul>
+        <li><strong>id:</strong> identifica de forma única a cada producto (ninguno puede tener el mismo id).</li>
+        <li><strong>nombre:</strong> el texto con el nombre del producto.</li>
+        <li><strong>precio:</strong> número decimal con exactamente 2 decimales.</li>
+        <li><strong>categoria_id:</strong> referencia a qué categoría pertenece (Cafés, Jugos, etc.).</li>
+        <li><strong>activo:</strong> si el producto está disponible en el menú o no.</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Tip: ¿Por qué "activo" en vez de eliminar?</strong><br>
+        En sistemas reales casi nunca eliminamos registros definitivamente. Si "eliminamos" un producto que aparece en pedidos antiguos, esos pedidos quedarían rotos. En cambio, marcamos el producto como <code>activo = false</code> y simplemente no lo mostramos en el menú. Los pedidos históricos siguen intactos.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>3. Tipos de datos en PostgreSQL</h2>
+
+    <p>Cada columna de una tabla tiene un <strong>tipo de dato</strong> que define qué clase de información puede guardar. Elegir el tipo correcto es importante para la precisión y el rendimiento.</p>
+
+    <table>
+        <tr>
+            <th>Tipo</th>
+            <th>Para qué sirve</th>
+            <th>Ejemplo en Aroma</th>
+        </tr>
+        <tr>
+            <td><code>UUID</code></td>
+            <td>IDs únicos globales de 128 bits</td>
+            <td><code>id = 'a1b2-c3d4-e5f6...'</code></td>
+        </tr>
+        <tr>
+            <td><code>TEXT</code></td>
+            <td>Texto de longitud variable, sin límite</td>
+            <td><code>nombre = 'Café Latte'</code></td>
+        </tr>
+        <tr>
+            <td><code>VARCHAR(n)</code></td>
+            <td>Texto con máximo n caracteres</td>
+            <td><code>rol VARCHAR(20)</code></td>
+        </tr>
+        <tr>
+            <td><code>NUMERIC(10,2)</code></td>
+            <td>Números decimales con precisión exacta</td>
+            <td><code>precio = 18.50</code></td>
+        </tr>
+        <tr>
+            <td><code>INTEGER</code></td>
+            <td>Números enteros (sin decimales)</td>
+            <td><code>cantidad = 3</code></td>
+        </tr>
+        <tr>
+            <td><code>BOOLEAN</code></td>
+            <td>Solo dos valores: verdadero o falso</td>
+            <td><code>activo = true</code></td>
+        </tr>
+        <tr>
+            <td><code>TIMESTAMPTZ</code></td>
+            <td>Fecha y hora con zona horaria</td>
+            <td><code>created_at = '2024-03-15T10:30:00Z'</code></td>
+        </tr>
+        <tr>
+            <td><code>JSONB</code></td>
+            <td>Objetos JSON almacenados en formato binario</td>
+            <td>Datos extras o configuraciones flexibles</td>
+        </tr>
+    </table>
+
+    <div class="importante">
+        <strong>Importante: ¿Por qué NUMERIC y no FLOAT para precios?</strong><br>
+        Los números de punto flotante (<code>FLOAT</code>) tienen errores de precisión por la forma en que la computadora los almacena en binario. Por ejemplo: <code>0.1 + 0.2 = 0.30000000000000004</code>. Para manejar dinero eso es inaceptable. <code>NUMERIC(10,2)</code> guarda los números con precisión exacta, igual que una calculadora. <strong>Siempre usa NUMERIC para precios y cantidades monetarias.</strong>
+    </div>
+
+    <div class="tip">
+        <strong>Tip: UUID vs entero autoincremental</strong><br>
+        Podríamos usar IDs simples como 1, 2, 3... pero los UUID tienen ventajas: son únicos globalmente (puedes generar uno en el frontend sin consultar la BD), no revelan cuántos registros tienes, y son más seguros (nadie puede adivinar el ID de otro usuario poniendo /users/1, /users/2...).
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>4. Claves Primarias y Claves Foráneas</h2>
+
+    <h3>Clave Primaria (PRIMARY KEY)</h3>
+    <p>Es el identificador único e irrepetible de cada fila en una tabla. Reglas:</p>
+    <ul>
+        <li>Ninguna fila puede tener el mismo valor que otra en la clave primaria.</li>
+        <li>No puede ser NULL (vacío).</li>
+        <li>En Aroma usamos <code>UUID</code> generado automáticamente con <code>gen_random_uuid()</code>.</li>
+    </ul>
+
+    <h3>Clave Foránea (FOREIGN KEY)</h3>
+    <p>Es una columna que apunta a la clave primaria de otra tabla. Esto es lo que crea las <strong>relaciones</strong> entre tablas y da nombre a las bases de datos "relacionales".</p>
+
+    <pre><code>TABLA: categories          TABLA: products
+┌─────┬──────────┐        ┌─────┬─────────────────────┬─────────────┐
+│ id  │ nombre   │◄───┐   │ id  │ nombre              │ category_id │
+├─────┼──────────┤    │   ├─────┼─────────────────────┼─────────────┤
+│ 001 │ Cafés    │    └───│ A1  │ Café Latte          │ 001         │
+│ 002 │ Jugos    │        │ A2  │ Café Mocha          │ 001         │
+│ 003 │ Pasteles │        │ B1  │ Jugo de Naranja     │ 002         │
+└─────┴──────────┘        │ C1  │ Pastel de Chocolate │ 003         │
+                          └─────┴─────────────────────┴─────────────┘</code></pre>
+
+    <p><code>products.category_id</code> apunta a <code>categories.id</code>. Esta es una relación <strong>muchos-a-uno</strong>: muchos productos pueden pertenecer a una misma categoría.</p>
+
+    <div class="tip">
+        <strong>Tip: La integridad referencial</strong><br>
+        Gracias a la clave foránea, la base de datos evita que pongas un <code>category_id</code> que no existe en la tabla <code>categories</code>. Si intentas insertar un producto con <code>category_id = '999'</code> pero esa categoría no existe, la BD rechaza la operación. Esto se llama <strong>integridad referencial</strong> y previene datos corruptos.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>5. SQL Básico — El lenguaje de las bases de datos</h2>
+
+    <p><strong>SQL</strong> (Structured Query Language) es el idioma estándar para comunicarse con bases de datos relacionales. Tiene muy pocas palabras clave fundamentales y una vez que las aprendes puedes trabajar con cualquier base de datos relacional del mundo.</p>
+
+    <p>Las 4 operaciones básicas se llaman <strong>CRUD</strong>: Create (INSERT), Read (SELECT), Update (UPDATE), Delete (DELETE).</p>
+
+    <h3>SELECT — Leer datos</h3>
+    <p>Es la operación más usada. Con SELECT le preguntamos a la base de datos que nos devuelva datos.</p>
+
+    <pre><code>-- El doble guion -- es un comentario en SQL
+
+-- Seleccionar TODOS los campos de TODOS los productos
+SELECT * FROM products;
+
+-- Solo algunos campos (más eficiente que el *)
+SELECT nombre, precio FROM products;
+
+-- Con condición WHERE (filtrar)
+SELECT * FROM products WHERE activo = true;
+SELECT * FROM products WHERE precio &lt; 20;
+SELECT * FROM products WHERE nombre = 'Café Latte';
+
+-- Ordenar resultados
+SELECT * FROM products ORDER BY precio ASC;       -- Ascendente (menor primero)
+SELECT * FROM products ORDER BY created_at DESC;  -- Descendente (más reciente primero)
+
+-- Limitar cantidad de resultados (paginación)
+SELECT * FROM products LIMIT 10;
+SELECT * FROM products LIMIT 10 OFFSET 20;  -- Del registro 21 al 30
+
+-- Contar registros
+SELECT COUNT(*) FROM products;
+SELECT COUNT(*) FROM products WHERE activo = true;
+
+-- JOIN: unir datos de dos tablas
+-- "Dame los productos con el nombre de su categoría"
+SELECT
+    p.nombre        AS producto,
+    p.precio,
+    c.nombre        AS categoria
+FROM products p
+JOIN categories c ON p.category_id = c.id
+WHERE p.activo = true
+ORDER BY c.nombre, p.nombre;</code></pre>
+
+    <div class="tip">
+        <strong>Tip: Evita SELECT *</strong><br>
+        En producción es mejor especificar las columnas que necesitas en lugar de usar <code>*</code>. Así la consulta es más rápida (traes menos datos) y más clara (sabes exactamente qué espera tu código).
+    </div>
+
+    <h3>INSERT — Agregar datos</h3>
+    <p>Usamos INSERT para añadir nuevas filas a una tabla.</p>
+
+    <pre><code>-- Agregar un producto nuevo
+INSERT INTO products (nombre, descripcion, precio, category_id, activo)
+VALUES ('Café Mocha', 'Espresso con chocolate caliente', 20.00, 'uuid-categoria-cafes', true);
+
+-- Agregar múltiples registros de una vez (más eficiente)
+INSERT INTO categories (nombre, icono, orden) VALUES
+    ('Cafés',       '☕', 1),
+    ('Jugos',       '🍊', 2),
+    ('Pasteles',    '🎂', 3),
+    ('Sándwiches',  '🥪', 4);</code></pre>
+
+    <h3>UPDATE — Actualizar datos</h3>
+    <p>Modifica filas existentes. <strong>Siempre usa WHERE</strong> para no actualizar toda la tabla por accidente.</p>
+
+    <pre><code>-- Actualizar el precio de un producto específico
+UPDATE products
+SET precio = 22.00
+WHERE id = 'a1b2-c3d4-e5f6-g7h8';
+
+-- Desactivar todos los productos de una categoría
+UPDATE products
+SET activo = false
+WHERE category_id = 'uuid-categoria-pasteles';
+
+-- Actualizar múltiples columnas a la vez
+UPDATE products
+SET
+    precio      = 20.00,
+    descripcion = 'Espresso con leche vaporizada y arte latte'
+WHERE id = 'a1b2-c3d4-e5f6-g7h8';</code></pre>
+
+    <h3>DELETE — Eliminar datos</h3>
+    <p>Elimina filas de una tabla. Es la operación más peligrosa: <strong>no se puede deshacer</strong>.</p>
+
+    <pre><code>-- Eliminar un producto por su ID (forma segura)
+DELETE FROM products WHERE id = 'a1b2-c3d4-e5f6-g7h8';
+
+-- Eliminar todos los registros inactivos
+DELETE FROM products WHERE activo = false;
+
+-- ⚠️  NUNCA hagas esto sin WHERE:
+-- DELETE FROM products;
+-- ← Eliminaría TODOS los productos sin posibilidad de recuperarlos</code></pre>
+
+    <div class="warning">
+        <strong>Advertencia: Doble verificación antes de DELETE y UPDATE</strong><br>
+        Antes de ejecutar un UPDATE o DELETE en producción, es buena práctica ejecutar primero un SELECT con el mismo WHERE para confirmar exactamente qué filas vas a afectar. Una vez ejecutado el DELETE, no hay "Ctrl+Z".
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>6. ¿Qué es Supabase?</h2>
+
+    <div class="analogia">
+        <strong>Analogía: Supabase es el "todo incluido" de las bases de datos</strong><br>
+        Imagina que para abrir una cafetería necesitas: contratar personal, comprar equipos, obtener permisos sanitarios, instalar cámaras de seguridad, etc. Supabase es como tomar un local en un centro comercial donde ya todo eso está incluido. Tú solo te enfocas en tu negocio.
+    </div>
+
+    <p>Supabase se autodefine como "la alternativa open source a Firebase". Es una plataforma que te proporciona, de manera gratuita para proyectos pequeños:</p>
+
+    <ul>
+        <li><strong>Base de datos PostgreSQL gestionada:</strong> no necesitas instalar ni configurar un servidor de base de datos.</li>
+        <li><strong>API REST automática:</strong> sin escribir nada de backend, puedes leer y escribir datos desde tu frontend.</li>
+        <li><strong>Autenticación de usuarios:</strong> login/registro con email, Google, GitHub, etc. Sin gestionar contraseñas manualmente.</li>
+        <li><strong>Storage de archivos:</strong> guardar imágenes, documentos, etc.</li>
+        <li><strong>Real-time:</strong> recibir actualizaciones instantáneas cuando cambian los datos (ideal para el panel del cajero).</li>
+        <li><strong>Dashboard visual:</strong> interfaz web para administrar tu BD sin escribir código.</li>
+    </ul>
+
+    <div class="proyecto-aroma">
+        <h4>Cómo usa Aroma Supabase</h4>
+        <ul>
+            <li>El <strong>frontend</strong> se conecta a Supabase directamente para leer el menú (productos, categorías).</li>
+            <li>El <strong>sistema de autenticación</strong> (login/registro) usa Supabase Auth completamente.</li>
+            <li>El <strong>backend Node.js</strong> se conecta a Supabase para operaciones complejas como crear pedidos, calcular totales y actualizar estados.</li>
+        </ul>
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>7. Creando el proyecto en Supabase</h2>
+
+    <p>Sigue estos pasos para crear tu cuenta y proyecto. Solo necesitas tener una cuenta en GitHub.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">
+            Ve a <strong>supabase.com</strong> y haz clic en <strong>"Start your project"</strong>. Es completamente gratuito para proyectos como el nuestro.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">
+            Inicia sesión con tu cuenta de <strong>GitHub</strong> (es la forma recomendada). Autoriza a Supabase a acceder a tu cuenta.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">
+            En el dashboard, haz clic en <strong>"New project"</strong>. Esto abre el formulario de creación.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">
+            Configura el proyecto:<br>
+            &bull; <strong>Name:</strong> <code>aroma-cafeteria</code><br>
+            &bull; <strong>Database Password:</strong> genera una contraseña segura (guárdala, la necesitarás para conexiones directas)<br>
+            &bull; <strong>Region:</strong> South America (São Paulo) — la más cercana a Bolivia<br>
+            &bull; Haz clic en <strong>"Create new project"</strong>
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">
+            Espera aproximadamente <strong>2 minutos</strong> mientras Supabase provisiona tu base de datos. Verás una barra de progreso.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">6</div>
+        <div class="paso-contenido">
+            Una vez listo, ve a <strong>"Project Settings"</strong> (icono de engranaje en el menú izquierdo) → <strong>"API"</strong>.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">7</div>
+        <div class="paso-contenido">
+            Copia y guarda en un lugar seguro (como un archivo <code>.env</code> local):<br>
+            &bull; <strong>Project URL:</strong> algo como <code>https://xyzabc.supabase.co</code><br>
+            &bull; <strong>anon public key:</strong> la clave larga que empieza con <code>eyJ...</code>
+        </div>
+    </div>
+
+    <div class="importante">
+        <strong>Importante: Nunca compartas tus claves</strong><br>
+        Nunca publiques tus claves de Supabase en GitHub ni en ningún repositorio público. La <code>anon key</code> puede estar en el frontend (está protegida por RLS), pero la <code>service_role key</code> JAMÁS debe salir del servidor. Más sobre esto en la Guía 10.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>8. El esquema de base de datos de Aroma</h2>
+
+    <p>El archivo <code>database/schema.sql</code> contiene todas las instrucciones para crear las tablas del proyecto. Vamos a analizarlo tabla por tabla.</p>
+
+    <h3>Tabla: profiles (perfiles de usuario)</h3>
+    <p>Almacena información adicional de los usuarios. El usuario base lo crea Supabase Auth; nosotros guardamos aquí los datos extra como nombre completo, teléfono y rol.</p>
+
+    <pre><code>CREATE TABLE profiles (
+    id          UUID PRIMARY KEY,
+    -- El id viene directamente de auth.users de Supabase
+    -- (Supabase Auth lo crea automáticamente al registrarse)
+
+    full_name   TEXT,
+    phone       TEXT,
+
+    role        VARCHAR(20) NOT NULL DEFAULT 'client'
+                CHECK (role IN ('admin', 'cashier', 'client')),
+    -- CHECK valida que solo se acepten esos 3 valores exactos
+    -- Si intentas poner role = 'superadmin', la BD lo rechaza
+
+    active      BOOLEAN NOT NULL DEFAULT true,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+
+    -- FOREIGN KEY implícita: este perfil pertenece a un usuario de auth.users
+    -- REFERENCES auth.users(id) ON DELETE CASCADE
+    -- "Si se elimina el usuario de auth, también se elimina su perfil"
+);</code></pre>
+
+    <h3>Tabla: categories (categorías del menú)</h3>
+
+    <pre><code>CREATE TABLE categories (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- gen_random_uuid() genera un UUID automáticamente al insertar
+
+    nombre      TEXT NOT NULL,       -- NOT NULL = obligatorio, no puede estar vacío
+    descripcion TEXT,                -- Opcional
+    icono       TEXT,                -- Emoji o nombre de ícono
+    orden       INTEGER DEFAULT 0,   -- Para ordenar el menú como queramos
+    activo      BOOLEAN DEFAULT true,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);</code></pre>
+
+    <h3>Tabla: products (productos del menú)</h3>
+
+    <pre><code>CREATE TABLE products (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre      TEXT NOT NULL,
+    descripcion TEXT,
+
+    precio      NUMERIC(10,2) NOT NULL CHECK (precio > 0),
+    -- NUMERIC(10,2): hasta 10 dígitos en total, 2 decimales
+    -- CHECK (precio > 0): no se puede guardar un precio negativo o cero
+
+    costo       NUMERIC(10,2),       -- Costo interno (para calcular margen)
+
+    category_id UUID REFERENCES categories(id),
+    -- REFERENCES categories(id): clave foránea hacia la tabla categories
+
+    imagen_url  TEXT,
+    activo      BOOLEAN DEFAULT true,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ DEFAULT NOW()
+);</code></pre>
+
+    <h3>Tabla: orders (pedidos)</h3>
+
+    <pre><code>CREATE TABLE orders (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- Código legible: ARO-20240315-1234 (generado automáticamente por trigger)
+    code            TEXT UNIQUE,
+
+    -- Estado del pedido (flujo completo)
+    status          VARCHAR(30) NOT NULL DEFAULT 'pending'
+                    CHECK (status IN (
+                        'pending',      -- Recibido, sin confirmar
+                        'confirmed',    -- Confirmado por el cajero
+                        'preparing',    -- En preparación
+                        'ready',        -- Listo para entregar
+                        'delivered',    -- Entregado al cliente
+                        'cancelled'     -- Cancelado
+                    )),
+
+    -- Datos del cliente (en el momento del pedido)
+    user_id             UUID REFERENCES auth.users(id),
+    customer_name       TEXT NOT NULL,
+    customer_phone      TEXT NOT NULL,
+    delivery_address    TEXT NOT NULL,
+
+    -- Pago
+    payment_method  VARCHAR(20) CHECK (payment_method IN ('qr', 'cash', 'card')),
+    total           NUMERIC(10,2) NOT NULL,
+
+    notes           TEXT,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);</code></pre>
+
+    <h3>Tabla: order_items (detalle de los pedidos)</h3>
+
+    <pre><code>CREATE TABLE order_items (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    order_id    UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    -- ON DELETE CASCADE: si se elimina el pedido, se eliminan sus items también
+
+    product_id  UUID REFERENCES products(id),
+    -- Referencia al producto (puede quedar NULL si el producto se elimina)
+
+    -- *** SNAPSHOT DE PRECIO ***
+    -- Guardamos el nombre y precio AL MOMENTO del pedido.
+    -- Si el precio del café cambia mañana, este pedido conserva el precio original.
+    -- Esto es FUNDAMENTAL en sistemas de ventas reales.
+    product_name    TEXT NOT NULL,
+    unit_price      NUMERIC(10,2) NOT NULL,
+
+    quantity        INTEGER NOT NULL CHECK (quantity > 0),
+    subtotal        NUMERIC(10,2) NOT NULL,  -- unit_price * quantity
+
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);</code></pre>
+
+    <div class="importante">
+        <strong>Concepto clave: SNAPSHOT de precios</strong><br>
+        ¿Por qué guardamos <code>product_name</code> y <code>unit_price</code> en <code>order_items</code> si ya están en la tabla <code>products</code>? Porque los precios cambian con el tiempo. Si un Café Latte costaba Bs. 18 en marzo y lo subimos a Bs. 22 en junio, los pedidos de marzo deben seguir mostrando Bs. 18. Al guardar el precio en el momento exacto de la venta, garantizamos la integridad histórica de todos los registros.
+    </div>
+
+    <h3>Trigger para el código de pedido</h3>
+    <p>Un <strong>trigger</strong> es código SQL que se ejecuta automáticamente cuando ocurre un evento en la base de datos (INSERT, UPDATE o DELETE). No lo llamas tú: la BD lo llama sola.</p>
+
+    <pre><code>-- Función que genera el código legible del pedido
+CREATE OR REPLACE FUNCTION generate_order_code()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Genera: ARO-20240315-1234
+    -- ARO = prefijo de Aroma
+    -- 20240315 = fecha en formato YYYYMMDD
+    -- 1234 = número aleatorio de 4 dígitos
+    NEW.code := 'ARO-'
+        || TO_CHAR(NOW(), 'YYYYMMDD')
+        || '-'
+        || LPAD(FLOOR(RANDOM() * 9000 + 1000)::TEXT, 4, '0');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: llamar a la función ANTES de cada INSERT en orders
+-- Solo cuando el code no viene especificado (IS NULL)
+CREATE TRIGGER set_order_code
+    BEFORE INSERT ON orders
+    FOR EACH ROW
+    WHEN (NEW.code IS NULL)
+    EXECUTE FUNCTION generate_order_code();</code></pre>
+
+    <div class="analogia">
+        <strong>Analogía: El trigger es como un empleado automático</strong><br>
+        Imagina que cada vez que llega un pedido nuevo, hay un empleado cuya única tarea es estampar un código único en ese pedido. No necesitas recordar llamarlo; está siempre ahí, esperando. El trigger hace exactamente eso: ejecuta código automáticamente cada vez que se inserta un pedido.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <h2>9. Ejecutar el schema en Supabase</h2>
+
+    <p>Con el proyecto creado, es momento de crear todas las tablas. Supabase incluye un editor SQL directamente en el dashboard.</p>
+
+    <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-contenido">
+            En el panel izquierdo de Supabase, busca el ícono de <strong>"SQL Editor"</strong> (parece un terminal o pantalla con código).
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-contenido">
+            Haz clic en <strong>"New query"</strong> para abrir un editor en blanco.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-contenido">
+            Abre el archivo <code>database/schema.sql</code> del proyecto Aroma, copia todo su contenido y pégalo en el editor de Supabase.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-contenido">
+            Haz clic en el botón <strong>"Run"</strong> (o presiona <code>Ctrl+Enter</code>). Si todo está correcto, verás el mensaje <em>"Success. No rows returned"</em>.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-contenido">
+            Ve al <strong>"Table Editor"</strong> (ícono de tabla en el menú izquierdo) y verifica que se crearon las tablas: <code>profiles</code>, <code>categories</code>, <code>products</code>, <code>orders</code>, <code>order_items</code>.
+        </div>
+    </div>
+    <div class="paso">
+        <div class="paso-num">6</div>
+        <div class="paso-contenido">
+            Ahora inserta los <strong>datos iniciales</strong> con la siguiente consulta en el SQL Editor:
+        </div>
+    </div>
+
+    <pre><code>-- ===== DATOS INICIALES DE PRUEBA =====
+
+-- 1. Insertar categorías del menú
+INSERT INTO categories (nombre, icono, orden) VALUES
+    ('Cafés',       '☕', 1),
+    ('Jugos',       '🍊', 2),
+    ('Pasteles',    '🎂', 3),
+    ('Sándwiches',  '🥪', 4);
+
+-- 2. Insertar productos de prueba usando subconsulta para obtener el category_id
+-- Cafés
+INSERT INTO products (nombre, descripcion, precio, costo, category_id, activo)
+SELECT
+    'Café Americano',
+    'Espresso suavizado con agua caliente',
+    12.00, 3.00, id, true
+FROM categories WHERE nombre = 'Cafés';
+
+INSERT INTO products (nombre, descripcion, precio, costo, category_id, activo)
+SELECT
+    'Café Latte',
+    'Espresso con leche vaporizada cremosa',
+    18.50, 5.00, id, true
+FROM categories WHERE nombre = 'Cafés';
+
+INSERT INTO products (nombre, descripcion, precio, costo, category_id, activo)
+SELECT
+    'Café Mocha',
+    'Espresso con chocolate y crema batida',
+    20.00, 6.00, id, true
+FROM categories WHERE nombre = 'Cafés';
+
+-- Jugos
+INSERT INTO products (nombre, descripcion, precio, costo, category_id, activo)
+SELECT
+    'Jugo de Naranja Natural',
+    'Naranja exprimida al momento, sin azúcar añadida',
+    15.00, 4.00, id, true
+FROM categories WHERE nombre = 'Jugos';
+
+-- Pasteles
+INSERT INTO products (nombre, descripcion, precio, costo, category_id, activo)
+SELECT
+    'Pastel de Chocolate',
+    'Bizcocho húmedo de chocolate con ganache',
+    25.00, 8.00, id, true
+FROM categories WHERE nombre = 'Pasteles';
+
+-- Verificar que todo se insertó correctamente
+SELECT p.nombre, p.precio, c.nombre AS categoria
+FROM products p
+JOIN categories c ON p.category_id = c.id
+ORDER BY c.orden, p.nombre;</code></pre>
+
+    <div class="tip">
+        <strong>Tip: Usa subconsultas para referencias</strong><br>
+        En lugar de copiar y pegar el UUID de cada categoría manualmente (que sería tedioso y propenso a errores), usamos <code>SELECT id FROM categories WHERE nombre = 'Cafés'</code> dentro del INSERT. PostgreSQL lo resuelve automáticamente. Mucho más limpio.
+    </div>
+
+    <hr class="separador">
+
+    <!-- ============================================================ -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final — Configura la base de datos de Aroma</h4>
+        <p>Completa estos pasos para tener tu base de datos funcionando:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido"><strong>Crea el proyecto en Supabase</strong> con el nombre <code>aroma-cafeteria</code> y región São Paulo.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido"><strong>Copia tus claves</strong> (Project URL y anon key) y créalas en el archivo de configuración del proyecto.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido"><strong>Ejecuta el schema.sql completo</strong> en el SQL Editor. Verifica que no aparecen errores.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido"><strong>Verifica en Table Editor</strong> que se crearon las 5 tablas: <code>profiles</code>, <code>categories</code>, <code>products</code>, <code>orders</code>, <code>order_items</code>.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">5</div>
+            <div class="paso-contenido"><strong>Inserta las 4 categorías</strong> (Cafés, Jugos, Pasteles, Sándwiches) usando el script de datos iniciales.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">6</div>
+            <div class="paso-contenido"><strong>Inserta al menos 5 productos</strong> distribuidos en las categorías. Verifica los datos con un SELECT en el SQL Editor.</div>
+        </div>
+        <div class="paso">
+            <div class="paso-num">7</div>
+            <div class="paso-contenido"><strong>Practica SQL:</strong> escribe un SELECT que muestre los 3 productos más caros de la categoría "Cafés".</div>
+        </div>
+
+        <div class="tip" style="margin-top: 16px;">
+            <strong>Desafío extra:</strong> Escribe una consulta SQL que cuente cuántos productos activos hay en cada categoría y muestre el resultado ordenado por cantidad (de mayor a menor). Pista: necesitarás <code>GROUP BY</code> y <code>COUNT</code>.
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 09</h2>
+        <ul>
+            <li>Una <strong>base de datos</strong> es un sistema para guardar, buscar, actualizar y eliminar información de manera eficiente. Aroma usa PostgreSQL (relacional).</li>
+            <li>Las bases relacionales organizan datos en <strong>tablas</strong> (columnas + filas), conectadas por <strong>claves foráneas</strong>.</li>
+            <li>Los <strong>tipos de datos</strong> más usados son UUID, TEXT, NUMERIC, INTEGER, BOOLEAN y TIMESTAMPTZ. Para precios siempre <code>NUMERIC</code>, nunca <code>FLOAT</code>.</li>
+            <li><strong>SQL</strong> es el lenguaje para operar la BD: SELECT (leer), INSERT (crear), UPDATE (modificar), DELETE (eliminar).</li>
+            <li><strong>Supabase</strong> es la plataforma que gestiona nuestra BD PostgreSQL y nos da auth, API y dashboard gratis.</li>
+            <li>El esquema de Aroma tiene 5 tablas: <code>profiles</code>, <code>categories</code>, <code>products</code>, <code>orders</code>, <code>order_items</code>.</li>
+            <li>El concepto de <strong>SNAPSHOT de precios</strong> en order_items garantiza la integridad histórica de los pedidos.</li>
+            <li>Los <strong>triggers</strong> son código SQL que se ejecuta automáticamente ante eventos en la BD, como generar el código de pedido.</li>
+        </ul>
+    </div>
+
+</body>
+</html>

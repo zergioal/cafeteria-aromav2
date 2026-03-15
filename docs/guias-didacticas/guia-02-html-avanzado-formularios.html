@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 02 – HTML Avanzado: Formularios y Estructura SPA de Aroma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .objetivos ul { margin-bottom: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .warning strong { color: #e65100; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.95em; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header-guia">
+        <h1>Guía 02 – HTML Avanzado: Formularios y Estructura SPA de Aroma</h1>
+        <p class="subtitulo">Módulo 1: HTML | Completando la estructura HTML del proyecto</p>
+        <div class="meta">
+            <span class="badge">Nivel: Principiante-Intermedio</span>
+            <span class="badge">Tiempo estimado: 4 horas</span>
+            <span class="badge">Prerequisito: Guía 01</span>
+        </div>
+    </div>
+
+    <!-- OBJETIVOS -->
+    <div class="objetivos">
+        <h3>Objetivos de esta guía</h3>
+        <ul>
+            <li>Entender qué es un formulario HTML y para qué sirve en una aplicación web real.</li>
+            <li>Conocer todos los tipos de <code>&lt;input&gt;</code> y cuándo usar cada uno.</li>
+            <li>Aplicar validaciones HTML nativas sin necesidad de JavaScript.</li>
+            <li>Usar atributos personalizados <code>data-*</code> como lo hace el proyecto Aroma.</li>
+            <li>Construir la estructura HTML completa de todas las secciones de Cafetería Aroma.</li>
+            <li>Entender la importancia de la accesibilidad en formularios.</li>
+        </ul>
+    </div>
+
+    <!-- SECCIÓN 1 -->
+    <h2>1. Formularios en HTML – ¿Qué son y para qué sirven?</h2>
+
+    <p>Los formularios son la forma principal en que los usuarios <strong>envían información</strong> a una aplicación web. Sin formularios, una página web sería solo lectura: no podrías registrarte, iniciar sesión, hacer un pedido ni enviar un mensaje.</p>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> Un formulario HTML es exactamente igual a un formulario de papel, pero digital. Cuando vas a un banco, te dan una hoja con campos en blanco: "Nombre:", "CI:", "Monto:". Tú llenas esos campos y se lo entregas al empleado. En la web, el formulario HTML es esa hoja, los <code>&lt;input&gt;</code> son los campos en blanco, y el botón "Enviar" reemplaza al empleado que recibe el papel.
+    </div>
+
+    <h3>Estructura básica de un formulario</h3>
+    <p>Todo formulario empieza con la etiqueta <code>&lt;form&gt;</code> y termina con <code>&lt;/form&gt;</code>. Dentro van los campos y el botón de envío:</p>
+
+    <pre><code>&lt;form id="miFormulario" action="/ruta" method="POST"&gt;
+    &lt;label for="nombre"&gt;Tu nombre:&lt;/label&gt;
+    &lt;input type="text" id="nombre" name="nombre" placeholder="Escribe aquí" required&gt;
+
+    &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+    <h3>¿Qué significa cada parte?</h3>
+    <ul>
+        <li><code>&lt;form&gt;</code> — El contenedor principal. Todo lo que está adentro pertenece al mismo formulario.</li>
+        <li><code>action="/ruta"</code> — La URL a donde se envían los datos cuando el usuario hace clic en "Enviar". En Aroma <strong>no usamos action</strong> porque JavaScript intercepta el envío.</li>
+        <li><code>method="POST"</code> — El método HTTP que se usa para enviar los datos. <code>GET</code> los pone en la URL (visible), <code>POST</code> los envía ocultos en el cuerpo de la petición (para datos sensibles como contraseñas).</li>
+        <li><code>&lt;label for="nombre"&gt;</code> — La etiqueta visible que describe el campo. El atributo <code>for</code> debe coincidir con el <code>id</code> del <code>&lt;input&gt;</code> correspondiente.</li>
+        <li><code>&lt;input&gt;</code> — El campo donde el usuario escribe o selecciona. Es un elemento vacío (sin etiqueta de cierre).</li>
+        <li><code>placeholder</code> — Texto gris de ejemplo que desaparece cuando el usuario empieza a escribir.</li>
+        <li><code>required</code> — Atributo booleano: el campo es obligatorio. El formulario no se enviará si está vacío.</li>
+        <li><code>&lt;button type="submit"&gt;</code> — El botón que envía el formulario. <code>type="submit"</code> es el comportamiento por defecto.</li>
+    </ul>
+
+    <div class="importante">
+        <strong>Importante – En el proyecto Aroma:</strong> Usamos <code>method</code> sin <code>action</code> porque JavaScript intercepta el evento <code>submit</code> del formulario. En lugar de que el navegador recargue la página y envíe los datos a un servidor, nuestro código JS toma el control, procesa los datos y actualiza la interfaz dinámicamente. Esto es lo que hace que Aroma sea una <strong>SPA (Single Page Application)</strong>.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 2 -->
+    <h2>2. Tipos de Input – La variedad de campos disponibles</h2>
+
+    <p>El atributo <code>type</code> del elemento <code>&lt;input&gt;</code> determina qué tipo de dato se puede ingresar y cómo aparece visualmente en el navegador. Cada tipo tiene un comportamiento especial que el navegador gestiona automáticamente.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Para qué se usa</th>
+                <th>Ejemplo en Aroma</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>type="text"</code></td>
+                <td>Texto libre de una línea</td>
+                <td>Nombre del cliente</td>
+            </tr>
+            <tr>
+                <td><code>type="email"</code></td>
+                <td>Correo electrónico (valida formato automáticamente)</td>
+                <td>Login de usuario</td>
+            </tr>
+            <tr>
+                <td><code>type="password"</code></td>
+                <td>Contraseña (muestra puntos en lugar de letras)</td>
+                <td>Contraseña de acceso</td>
+            </tr>
+            <tr>
+                <td><code>type="tel"</code></td>
+                <td>Número de teléfono (teclado numérico en móviles)</td>
+                <td>Teléfono para delivery</td>
+            </tr>
+            <tr>
+                <td><code>type="number"</code></td>
+                <td>Valores numéricos con flechas para incrementar</td>
+                <td>Cantidad de productos</td>
+            </tr>
+            <tr>
+                <td><code>type="radio"</code></td>
+                <td>Elegir UNA opción de un grupo</td>
+                <td>Método de pago (QR o efectivo)</td>
+            </tr>
+            <tr>
+                <td><code>type="checkbox"</code></td>
+                <td>Marcar o desmarcar una opción independiente</td>
+                <td>Aceptar términos y condiciones</td>
+            </tr>
+            <tr>
+                <td><code>type="file"</code></td>
+                <td>Subir archivos desde el dispositivo</td>
+                <td>Comprobante de pago</td>
+            </tr>
+            <tr>
+                <td><code>type="url"</code></td>
+                <td>URL web (valida formato automáticamente)</td>
+                <td>URL de imagen del producto</td>
+            </tr>
+            <tr>
+                <td><code>type="submit"</code></td>
+                <td>Botón que envía el formulario</td>
+                <td>Confirmar pedido</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Ejemplos de código por tipo</h3>
+
+    <pre><code>&lt;!-- Texto libre --&gt;
+&lt;input type="text" id="nombre" name="nombre" placeholder="Tu nombre completo"&gt;
+
+&lt;!-- Email: el navegador valida que tenga @ y dominio --&gt;
+&lt;input type="email" id="email" name="email" placeholder="tu@correo.com"&gt;
+
+&lt;!-- Contraseña: muestra ••••• en lugar de las letras --&gt;
+&lt;input type="password" id="password" name="password" placeholder="Tu contraseña"&gt;
+
+&lt;!-- Teléfono: en móvil abre teclado numérico --&gt;
+&lt;input type="tel" id="telefono" name="telefono" placeholder="70000000"&gt;
+
+&lt;!-- Número: acepta solo dígitos, con flechas arriba/abajo --&gt;
+&lt;input type="number" id="cantidad" name="cantidad" min="1" max="99" value="1"&gt;
+
+&lt;!-- Radio: solo se puede elegir UNO del mismo name --&gt;
+&lt;input type="radio" id="pagoQr" name="pago" value="qr"&gt;
+&lt;label for="pagoQr"&gt;Pago con QR&lt;/label&gt;
+
+&lt;input type="radio" id="pagoEfectivo" name="pago" value="efectivo"&gt;
+&lt;label for="pagoEfectivo"&gt;Efectivo&lt;/label&gt;
+
+&lt;!-- Checkbox: independiente, puede estar marcado o no --&gt;
+&lt;input type="checkbox" id="terminos" name="terminos" value="aceptado"&gt;
+&lt;label for="terminos"&gt;Acepto los términos y condiciones&lt;/label&gt;
+
+&lt;!-- File: abre el explorador de archivos --&gt;
+&lt;input type="file" id="comprobante" name="comprobante" accept="image/*"&gt;
+
+&lt;!-- URL: valida que empiece con http:// o https:// --&gt;
+&lt;input type="url" id="imagen" name="imagen" placeholder="https://..."&gt;</code></pre>
+
+    <div class="tip">
+        <strong>Tip:</strong> Los inputs de tipo <code>radio</code> que tienen el mismo atributo <code>name</code> forman un grupo automáticamente. Solo se puede seleccionar uno del grupo. En cambio, los <code>checkbox</code> son independientes entre sí aunque tengan el mismo name.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 3 -->
+    <h2>3. Validaciones HTML Nativas – Sin JavaScript</h2>
+
+    <p>Una de las características más poderosas de HTML5 es que permite validar formularios directamente en el navegador, <strong>sin escribir una sola línea de JavaScript</strong>. Esto se llama <em>validación del lado del cliente</em>.</p>
+
+    <h3>Atributos de validación disponibles</h3>
+
+    <ul>
+        <li><code>required</code> — El campo es obligatorio. El formulario no se enviará si está vacío.</li>
+        <li><code>minlength="2"</code> — Mínimo de caracteres que debe tener el texto.</li>
+        <li><code>maxlength="50"</code> — Máximo de caracteres permitidos (el usuario no puede escribir más).</li>
+        <li><code>min="1"</code> — Valor numérico mínimo aceptado (para <code>type="number"</code>).</li>
+        <li><code>max="100"</code> — Valor numérico máximo aceptado.</li>
+        <li><code>pattern="[A-Za-z]+"</code> — Expresión regular que el valor debe cumplir.</li>
+        <li><code>type="email"</code> — Valida automáticamente que tenga formato de correo.</li>
+        <li><code>type="url"</code> — Valida automáticamente que tenga formato de URL.</li>
+    </ul>
+
+    <h3>Ejemplo práctico con validaciones</h3>
+
+    <pre><code>&lt;form id="formularioContacto"&gt;
+
+    &lt;!-- Mínimo 2 letras, máximo 50 --&gt;
+    &lt;input type="text" name="nombre"
+           required
+           minlength="2"
+           maxlength="50"
+           placeholder="Tu nombre completo"&gt;
+
+    &lt;!-- El navegador valida el formato de email automáticamente --&gt;
+    &lt;input type="email" name="email"
+           required
+           placeholder="tu@correo.com"&gt;
+
+    &lt;!-- Pattern: exactamente 8 dígitos del 0 al 9 --&gt;
+    &lt;input type="tel" name="telefono"
+           pattern="[0-9]{8}"
+           placeholder="12345678"&gt;
+
+    &lt;!-- Contraseña con mínimo de seguridad --&gt;
+    &lt;input type="password" name="password"
+           required
+           minlength="6"
+           maxlength="100"
+           placeholder="Mínimo 6 caracteres"&gt;
+
+    &lt;!-- Número entre 1 y 50 --&gt;
+    &lt;input type="number" name="cantidad"
+           min="1"
+           max="50"
+           value="1"&gt;
+
+    &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+    <div class="warning">
+        <strong>Atención:</strong> Las validaciones HTML son útiles para dar retroalimentación rápida al usuario, pero <strong>no son suficientes por sí solas para seguridad</strong>. Un usuario malintencionado puede desactivarlas desde las herramientas del navegador. Siempre debes validar también en el servidor (backend). En Aroma, hacemos ambas cosas.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 4 -->
+    <h2>4. Select, Textarea y Fieldset – Más elementos de formulario</h2>
+
+    <p>Además de <code>&lt;input&gt;</code>, los formularios HTML tienen otros elementos igualmente importantes para recopilar diferentes tipos de información.</p>
+
+    <h3>El elemento &lt;select&gt; (lista desplegable)</h3>
+    <p>Se usa cuando el usuario debe elegir una opción de una lista predefinida. Cada opción se define con <code>&lt;option&gt;</code>:</p>
+
+    <pre><code>&lt;!-- Lista desplegable de categorías --&gt;
+&lt;select name="categoria" id="categoria"&gt;
+    &lt;option value=""&gt;Selecciona una categoría&lt;/option&gt;
+    &lt;option value="cafes"&gt;Cafés&lt;/option&gt;
+    &lt;option value="jugos"&gt;Jugos&lt;/option&gt;
+    &lt;option value="pasteles"&gt;Pasteles&lt;/option&gt;
+    &lt;option value="snacks"&gt;Snacks&lt;/option&gt;
+&lt;/select&gt;</code></pre>
+
+    <div class="tip">
+        <strong>Tip:</strong> El primer <code>&lt;option&gt;</code> con <code>value=""</code> actúa como texto de instrucción. Si agregas <code>required</code> al <code>&lt;select&gt;</code>, el formulario no se enviará hasta que el usuario elija una opción real (con valor no vacío).
+    </div>
+
+    <h3>El elemento &lt;textarea&gt; (área de texto)</h3>
+    <p>Para textos largos de múltiples líneas, como comentarios, descripciones o notas:</p>
+
+    <pre><code>&lt;!-- Área de texto para notas del pedido --&gt;
+&lt;textarea name="comentarios"
+          id="comentarios"
+          rows="4"
+          placeholder="Alguna nota especial para tu pedido..."&gt;&lt;/textarea&gt;</code></pre>
+
+    <h3>El elemento &lt;fieldset&gt; y &lt;legend&gt; (agrupación)</h3>
+    <p>Agrupa campos relacionados y les pone un título. Muy útil para botones de radio o cuando hay varias secciones en un formulario largo:</p>
+
+    <pre><code>&lt;!-- Agrupando opciones de pago --&gt;
+&lt;fieldset&gt;
+    &lt;legend&gt;Método de pago&lt;/legend&gt;
+
+    &lt;label&gt;
+        &lt;input type="radio" name="pago" value="qr"&gt;
+        Pago con QR
+    &lt;/label&gt;
+
+    &lt;label&gt;
+        &lt;input type="radio" name="pago" value="efectivo"&gt;
+        Efectivo
+    &lt;/label&gt;
+&lt;/fieldset&gt;
+
+&lt;!-- Agrupando datos personales --&gt;
+&lt;fieldset&gt;
+    &lt;legend&gt;Datos de entrega&lt;/legend&gt;
+
+    &lt;label for="nombreCliente"&gt;Nombre completo&lt;/label&gt;
+    &lt;input type="text" id="nombreCliente" name="nombre" required&gt;
+
+    &lt;label for="telefonoCliente"&gt;Teléfono&lt;/label&gt;
+    &lt;input type="tel" id="telefonoCliente" name="telefono" required&gt;
+&lt;/fieldset&gt;</code></pre>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> El <code>&lt;fieldset&gt;</code> es como dibujar un recuadro alrededor de un grupo de preguntas en un formulario de papel. El <code>&lt;legend&gt;</code> es el título que va en la parte superior de ese recuadro, como "Información personal" o "Datos de pago".
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 5 -->
+    <h2>5. El atributo <code>data-*</code> – Atributos personalizados</h2>
+
+    <p>HTML permite que nosotros <strong>inventemos nuestros propios atributos</strong> para guardar información extra en cualquier elemento. Estos atributos deben empezar con <code>data-</code> seguido del nombre que nosotros elijamos.</p>
+
+    <h3>¿Para qué sirven?</h3>
+    <p>Los atributos <code>data-*</code> son perfectos para guardar información que necesita JavaScript pero que no cambia la apariencia visual del elemento. En Aroma los usamos extensamente:</p>
+
+    <pre><code>&lt;!-- data-tab identifica qué pestaña debe mostrar cada enlace de navegación --&gt;
+&lt;a href="#" class="nav-link" data-tab="menu"&gt;Menú&lt;/a&gt;
+&lt;a href="#" class="nav-link" data-tab="cart"&gt;Carrito&lt;/a&gt;
+&lt;a href="#" class="nav-link" data-tab="login"&gt;Mi Cuenta&lt;/a&gt;
+
+&lt;!-- data-id, data-nombre y data-precio guardan info del producto en el botón --&gt;
+&lt;button class="btn-agregar"
+        data-id="123"
+        data-nombre="Café Latte"
+        data-precio="18.00"&gt;
+    Agregar al carrito
+&lt;/button&gt;
+
+&lt;!-- data-categoria filtra los productos del menú --&gt;
+&lt;button class="filter-btn" data-categoria="cafes"&gt;Cafés&lt;/button&gt;
+&lt;button class="filter-btn" data-categoria="jugos"&gt;Jugos&lt;/button&gt;</code></pre>
+
+    <h3>¿Cómo lee JavaScript estos atributos?</h3>
+    <p>JavaScript accede a los atributos <code>data-*</code> a través de la propiedad <code>dataset</code> del elemento. El nombre del atributo (sin el prefijo <code>data-</code>) se convierte en una propiedad del objeto <code>dataset</code>:</p>
+
+    <pre><code>// Si el HTML tiene: data-tab="menu"
+const enlace = document.querySelector('.nav-link');
+console.log(enlace.dataset.tab);       // "menu"
+
+// Si el HTML tiene: data-id="123" data-nombre="Café Latte" data-precio="18.00"
+const boton = document.querySelector('.btn-agregar');
+console.log(boton.dataset.id);         // "123"
+console.log(boton.dataset.nombre);     // "Café Latte"
+console.log(boton.dataset.precio);     // "18.00"
+
+// Así se usa en el proyecto Aroma para agregar al carrito:
+boton.addEventListener('click', function() {
+    const producto = {
+        id: this.dataset.id,
+        nombre: this.dataset.nombre,
+        precio: parseFloat(this.dataset.precio)
+    };
+    agregarAlCarrito(producto);
+});</code></pre>
+
+    <div class="tip">
+        <strong>Tip:</strong> Los nombres con guión en HTML (<code>data-nombre-largo</code>) se convierten en camelCase en JavaScript (<code>element.dataset.nombreLargo</code>). Esto es conversión automática del navegador.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 6 -->
+    <h2>6. Estructura completa del HTML de Aroma</h2>
+
+    <p>Cafetería Aroma es una <strong>SPA (Single Page Application)</strong>. Esto significa que toda la aplicación vive en un solo archivo HTML. En lugar de navegar a páginas diferentes, se muestran y ocultan secciones llamadas <strong>tabs</strong>. JavaScript controla cuál tab está visible en cada momento.</p>
+
+    <div class="proyecto-aroma">
+        <h4>Arquitectura de tabs del proyecto Aroma</h4>
+        <ul>
+            <li><code>#tab-home</code> — Página de inicio con hero y destacados</li>
+            <li><code>#tab-menu</code> — Catálogo completo de productos</li>
+            <li><code>#tab-cart</code> — Carrito de compras y checkout</li>
+            <li><code>#tab-orders</code> — Historial de pedidos del usuario</li>
+            <li><code>#tab-login</code> — Login y registro de cuenta</li>
+            <li><code>#tab-admin</code> — Panel de administración (solo para admins)</li>
+        </ul>
+    </div>
+
+    <h3>Tab Login – Formularios de acceso y registro</h3>
+    <p>El tab de login contiene DOS formularios: uno para iniciar sesión y otro para crear una cuenta nueva. Solo uno es visible a la vez, y JavaScript controla cuál mostrar según el botón que presione el usuario:</p>
+
+    <pre><code>&lt;section id="tab-login" class="tab-content"&gt;
+    &lt;div class="auth-container"&gt;
+        &lt;div class="auth-card"&gt;
+
+            &lt;!-- Pestañas internas: Login / Registro --&gt;
+            &lt;div class="auth-tabs"&gt;
+                &lt;button class="auth-tab-btn active" data-form="login"&gt;
+                    Iniciar Sesión
+                &lt;/button&gt;
+                &lt;button class="auth-tab-btn" data-form="register"&gt;
+                    Registrarse
+                &lt;/button&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Formulario de Login --&gt;
+            &lt;form id="loginForm" class="auth-form"&gt;
+                &lt;h2&gt;Bienvenido de vuelta&lt;/h2&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="loginEmail"&gt;Correo electrónico&lt;/label&gt;
+                    &lt;input type="email"
+                           id="loginEmail"
+                           placeholder="tu@correo.com"
+                           required&gt;
+                &lt;/div&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="loginPassword"&gt;Contraseña&lt;/label&gt;
+                    &lt;input type="password"
+                           id="loginPassword"
+                           placeholder="Tu contraseña"
+                           required&gt;
+                &lt;/div&gt;
+
+                &lt;button type="submit" class="btn-primary"&gt;Iniciar Sesión&lt;/button&gt;
+                &lt;div id="loginError" class="form-error"&gt;&lt;/div&gt;
+            &lt;/form&gt;
+
+            &lt;!-- Formulario de Registro (oculto por defecto) --&gt;
+            &lt;form id="registerForm" class="auth-form" style="display:none"&gt;
+                &lt;h2&gt;Crear cuenta&lt;/h2&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="registerName"&gt;Nombre completo&lt;/label&gt;
+                    &lt;input type="text"
+                           id="registerName"
+                           placeholder="Tu nombre"
+                           required&gt;
+                &lt;/div&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="registerEmail"&gt;Correo electrónico&lt;/label&gt;
+                    &lt;input type="email"
+                           id="registerEmail"
+                           placeholder="tu@correo.com"
+                           required&gt;
+                &lt;/div&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="registerPassword"&gt;Contraseña&lt;/label&gt;
+                    &lt;input type="password"
+                           id="registerPassword"
+                           placeholder="Mínimo 6 caracteres"
+                           required
+                           minlength="6"&gt;
+                &lt;/div&gt;
+
+                &lt;button type="submit" class="btn-primary"&gt;Crear Cuenta&lt;/button&gt;
+                &lt;div id="registerError" class="form-error"&gt;&lt;/div&gt;
+            &lt;/form&gt;
+
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+
+    <h3>Tab Checkout – Carrito y formulario de entrega</h3>
+    <p>El tab del carrito tiene dos partes: la lista de productos agregados (generada dinámicamente por JavaScript) y el formulario de datos de entrega:</p>
+
+    <pre><code>&lt;section id="tab-cart" class="tab-content"&gt;
+    &lt;div class="cart-container"&gt;
+
+        &lt;!-- Lista de items del carrito --&gt;
+        &lt;div class="cart-items-section"&gt;
+            &lt;h2&gt;Tu Pedido&lt;/h2&gt;
+            &lt;div id="cartItems"&gt;
+                &lt;!-- Los items del carrito se generan con JavaScript --&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Resumen y formulario de checkout --&gt;
+        &lt;div class="cart-checkout-section"&gt;
+
+            &lt;div id="cartSummary"&gt;
+                &lt;!-- El resumen del total se genera con JavaScript --&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Formulario de entrega (visible solo si hay items en el carrito) --&gt;
+            &lt;form id="checkoutForm" class="checkout-form" style="display:none"&gt;
+                &lt;h3&gt;Datos de Entrega&lt;/h3&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="customerName"&gt;Nombre completo *&lt;/label&gt;
+                    &lt;input type="text"
+                           id="customerName"
+                           placeholder="Tu nombre completo"
+                           required&gt;
+                &lt;/div&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="customerPhone"&gt;Teléfono *&lt;/label&gt;
+                    &lt;input type="tel"
+                           id="customerPhone"
+                           placeholder="70000000"
+                           required&gt;
+                &lt;/div&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="deliveryAddress"&gt;Dirección de entrega *&lt;/label&gt;
+                    &lt;input type="text"
+                           id="deliveryAddress"
+                           placeholder="Ej: Av. Heroínas #123"
+                           required&gt;
+                &lt;/div&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label&gt;Método de pago *&lt;/label&gt;
+                    &lt;div class="payment-options"&gt;
+                        &lt;label class="payment-option"&gt;
+                            &lt;input type="radio" name="paymentMethod" value="qr" required&gt;
+                            &lt;span&gt;📱 QR Bancario&lt;/span&gt;
+                        &lt;/label&gt;
+                        &lt;label class="payment-option"&gt;
+                            &lt;input type="radio" name="paymentMethod" value="cash"&gt;
+                            &lt;span&gt;💵 Efectivo&lt;/span&gt;
+                        &lt;/label&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                &lt;!-- Esta sección solo aparece si el usuario elige QR --&gt;
+                &lt;div class="form-group" id="qrSection" style="display:none"&gt;
+                    &lt;label&gt;Comprobante de pago (opcional)&lt;/label&gt;
+                    &lt;input type="file" id="paymentProof" accept="image/*"&gt;
+                &lt;/div&gt;
+
+                &lt;div class="form-group"&gt;
+                    &lt;label for="orderNotes"&gt;Notas del pedido&lt;/label&gt;
+                    &lt;textarea id="orderNotes"
+                              rows="3"
+                              placeholder="Instrucciones especiales, alergias, etc."&gt;&lt;/textarea&gt;
+                &lt;/div&gt;
+
+                &lt;button type="submit" class="btn-primary btn-large"&gt;
+                    ✅ Confirmar Pedido
+                &lt;/button&gt;
+            &lt;/form&gt;
+
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+
+    <div class="tip">
+        <strong>Tip – ¿Por qué style="display:none"?</strong> Los formularios <code>checkoutForm</code> y <code>qrSection</code> empiezan ocultos con <code>style="display:none"</code>. JavaScript los mostrará en el momento adecuado: el formulario de checkout cuando haya items en el carrito, y la sección QR cuando el usuario elija ese método de pago. Esto es una técnica muy común en SPAs.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 7 -->
+    <h2>7. Formularios en el Panel de Administración</h2>
+
+    <p>El panel de administración de Aroma permite al dueño de la cafetería gestionar el catálogo de productos. El formulario de productos usa varios tipos de input que hemos aprendido, combinados en un diseño de dos columnas:</p>
+
+    <pre><code>&lt;form id="productForm"&gt;
+
+    &lt;!-- Fila de dos columnas: nombre y categoría --&gt;
+    &lt;div class="form-row"&gt;
+        &lt;div class="form-group"&gt;
+            &lt;label for="productName"&gt;Nombre del producto *&lt;/label&gt;
+            &lt;input type="text"
+                   id="productName"
+                   placeholder="Ej: Café Latte"
+                   required&gt;
+        &lt;/div&gt;
+        &lt;div class="form-group"&gt;
+            &lt;label for="productCategory"&gt;Categoría *&lt;/label&gt;
+            &lt;select id="productCategory" required&gt;
+                &lt;option value=""&gt;Selecciona categoría&lt;/option&gt;
+                &lt;!-- Las opciones se cargan dinámicamente con JavaScript --&gt;
+            &lt;/select&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Descripción del producto --&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label for="productDescription"&gt;Descripción&lt;/label&gt;
+        &lt;textarea id="productDescription"
+                  rows="3"
+                  placeholder="Descripción del producto..."&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Fila de dos columnas: precio y costo --&gt;
+    &lt;div class="form-row"&gt;
+        &lt;div class="form-group"&gt;
+            &lt;label for="productPrice"&gt;Precio de venta (Bs) *&lt;/label&gt;
+            &lt;input type="number"
+                   id="productPrice"
+                   min="0"
+                   step="0.50"
+                   required&gt;
+        &lt;/div&gt;
+        &lt;div class="form-group"&gt;
+            &lt;label for="productCost"&gt;Costo (Bs)&lt;/label&gt;
+            &lt;input type="number"
+                   id="productCost"
+                   min="0"
+                   step="0.50"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- URL de imagen --&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label for="productImage"&gt;URL de imagen&lt;/label&gt;
+        &lt;input type="url"
+               id="productImage"
+               placeholder="https://..."&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Checkbox: producto activo --&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label&gt;
+            &lt;input type="checkbox" id="productActive" checked&gt;
+            Producto activo (visible en el menú)
+        &lt;/label&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Botones de acción --&gt;
+    &lt;div class="form-actions"&gt;
+        &lt;button type="button" id="btnCancelProduct" class="btn-secondary"&gt;
+            Cancelar
+        &lt;/button&gt;
+        &lt;button type="submit" class="btn-primary"&gt;
+            Guardar Producto
+        &lt;/button&gt;
+    &lt;/div&gt;
+
+&lt;/form&gt;</code></pre>
+
+    <h3>Puntos importantes de este formulario</h3>
+    <ul>
+        <li><code>step="0.50"</code> en los inputs de precio: permite valores decimales de 0.50 en 0.50 (0.00, 0.50, 1.00, 1.50…).</li>
+        <li><code>checked</code> en el checkbox: el atributo sin valor activa el checkbox por defecto (los productos nuevos están activos por defecto).</li>
+        <li><code>type="button"</code> en el botón Cancelar: muy importante, sin esto el botón actuaría como <code>submit</code> y enviaría el formulario accidentalmente al hacer clic en Cancelar.</li>
+        <li>El <code>&lt;select&gt;</code> de categorías está vacío en el HTML; JavaScript lo llenará con las categorías que existan en la base de datos.</li>
+    </ul>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 8 -->
+    <h2>8. Accesibilidad en Formularios</h2>
+
+    <p>La accesibilidad (<em>accessibility</em> o <em>a11y</em>) es la práctica de diseñar páginas web que puedan ser usadas por <strong>todas las personas</strong>, incluyendo quienes tienen discapacidades visuales, motoras o cognitivas. Los formularios son especialmente importantes en este aspecto.</p>
+
+    <h3>La relación for/id es esencial</h3>
+    <p>El atributo <code>for</code> del <code>&lt;label&gt;</code> debe coincidir exactamente con el <code>id</code> del <code>&lt;input&gt;</code> al que describe. Esto tiene dos beneficios importantes:</p>
+
+    <ol>
+        <li><strong>Usabilidad:</strong> Al hacer clic en el texto del label, el campo de input recibe el foco automáticamente. Muy útil en dispositivos táctiles y para usuarios con poca precisión.</li>
+        <li><strong>Lectores de pantalla:</strong> Los programas que leen la pantalla en voz alta (como NVDA o VoiceOver) anuncian el label cuando el usuario llega al input. Sin esta conexión, solo escucharían "campo de texto" sin saber para qué sirve.</li>
+    </ol>
+
+    <pre><code>&lt;!-- CORRECTO: label conectado al input con for/id --&gt;
+&lt;label for="emailUsuario"&gt;Correo electrónico&lt;/label&gt;
+&lt;input type="email" id="emailUsuario" name="email"&gt;
+
+&lt;!-- INCORRECTO: label sin conectar (el lector de pantalla no sabe qué describe) --&gt;
+&lt;label&gt;Correo electrónico&lt;/label&gt;
+&lt;input type="email" name="email"&gt;</code></pre>
+
+    <h3>Atributos ARIA básicos</h3>
+    <p>ARIA (Accessible Rich Internet Applications) son atributos adicionales que dan más información a los lectores de pantalla:</p>
+
+    <pre><code>&lt;!-- aria-label: descripción cuando no hay label visible --&gt;
+&lt;input type="search"
+       aria-label="Buscar productos en el menú"
+       placeholder="Buscar..."&gt;
+
+&lt;!-- aria-describedby: conecta el input con un texto de ayuda --&gt;
+&lt;input type="password"
+       id="nuevaPassword"
+       aria-describedby="passwordAyuda"
+       required&gt;
+&lt;small id="passwordAyuda"&gt;La contraseña debe tener al menos 6 caracteres.&lt;/small&gt;
+
+&lt;!-- aria-required: indica campo obligatorio para lectores de pantalla --&gt;
+&lt;input type="text" aria-required="true"&gt;
+
+&lt;!-- aria-live: anuncia cambios dinámicos (como mensajes de error) --&gt;
+&lt;div id="loginError" aria-live="polite" class="form-error"&gt;&lt;/div&gt;</code></pre>
+
+    <div class="importante">
+        <strong>Importante:</strong> Escribir código accesible no es solo un detalle técnico, es una responsabilidad ética. Aproximadamente el 15% de la población mundial tiene algún tipo de discapacidad. Un formulario inaccesible puede excluir a miles de personas de usar tu aplicación.
+    </div>
+
+    <hr class="separador">
+
+    <!-- EJERCICIO FINAL -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final – Tab de Contacto para Cafetería Aroma</h4>
+        <p>Construye el HTML completo de una nueva pestaña de "Contacto" para el proyecto Aroma. La sección debe incluir tres partes principales:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                <strong>Información de la cafetería:</strong> Crea una sección con la información de contacto de Aroma usando etiquetas semánticas adecuadas. Incluye:
+                <ul>
+                    <li>Dirección: Av. Heroínas #456, Cochabamba, Bolivia</li>
+                    <li>Horario: Lunes a Sábado 7:00 - 21:00, Domingos 8:00 - 18:00</li>
+                    <li>Teléfono WhatsApp: +591 70000000</li>
+                    <li>Email: hola@aromacafe.bo</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                <strong>Mapa placeholder:</strong> Crea un <code>&lt;div&gt;</code> con <code>class="mapa-placeholder"</code> que muestre el texto "Mapa – Av. Heroínas #456" como reemplazo visual del mapa (los mapas reales se integran con JavaScript en la guía de APIs).
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                <strong>Formulario de contacto</strong> con los siguientes campos y sus validaciones:
+                <ul>
+                    <li>Nombre completo (texto, obligatorio, mínimo 2 caracteres)</li>
+                    <li>Email (tipo email, obligatorio)</li>
+                    <li>Teléfono (tipo tel, opcional, patrón de 8 dígitos)</li>
+                    <li>Asunto: desplegable con opciones "Consulta general", "Reclamo", "Sugerencia", "Otro"</li>
+                    <li>Mensaje (textarea, obligatorio, mínimo 10 caracteres)</li>
+                    <li>Checkbox: "Acepto que me contacten por email"</li>
+                    <li>Botón de envío</li>
+                </ul>
+                Recuerda usar correctamente los atributos <code>for</code>/<code>id</code> en todos los campos.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">
+                <strong>Bonus:</strong> Agrega un atributo <code>data-seccion="contacto"</code> a la sección principal y <code>data-tipo</code> con el tipo de cada campo de información (ej: <code>data-tipo="telefono"</code>). Esto sirve para que JavaScript pueda identificar y procesar estos elementos.
+            </div>
+        </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 02</h2>
+        <ul>
+            <li>Un formulario HTML recopila datos del usuario y los envía a un servidor (o a JavaScript en una SPA como Aroma).</li>
+            <li>La estructura básica es: <code>&lt;form&gt;</code> + <code>&lt;label&gt;</code> + <code>&lt;input&gt;</code> + <code>&lt;button type="submit"&gt;</code>.</li>
+            <li>Existen muchos tipos de input: <code>text</code>, <code>email</code>, <code>password</code>, <code>tel</code>, <code>number</code>, <code>radio</code>, <code>checkbox</code>, <code>file</code>, <code>url</code>.</li>
+            <li>Las validaciones nativas (<code>required</code>, <code>minlength</code>, <code>pattern</code>, etc.) funcionan sin JavaScript.</li>
+            <li>Otros elementos de formulario: <code>&lt;select&gt;</code>, <code>&lt;textarea&gt;</code>, <code>&lt;fieldset&gt;</code> y <code>&lt;legend&gt;</code>.</li>
+            <li>Los atributos <code>data-*</code> permiten guardar información extra en cualquier elemento HTML para que JavaScript la use.</li>
+            <li>Aroma es una SPA: todas las secciones están en un archivo HTML y se muestran/ocultan con JavaScript.</li>
+            <li>La accesibilidad en formularios se logra principalmente conectando <code>&lt;label for=""&gt;</code> con <code>&lt;input id=""&gt;</code> y usando atributos ARIA.</li>
+        </ul>
+        <p style="margin-top:16px; color: #F5DEB3;">En la próxima guía aprenderemos CSS para transformar este HTML en la interfaz visual de Aroma.</p>
+    </div>
+
+</body>
+</html>

@@ -98,7 +98,7 @@ const MenuPage = {
         const cartItem = Cart.items.find(ci => ci.product_id === p.id);
         const cartQty  = cartItem ? cartItem.quantity : 0;
         return `
-        <div class="product-card" data-id="${escHtml(p.id)}">
+        <div class="product-card${cartQty > 0 ? ' in-cart' : ''}" data-id="${escHtml(p.id)}">
           <div class="product-image" aria-hidden="true">
             ${cartQty > 0 ? `<span class="product-qty-badge">${cartQty}</span>` : ''}
             ${p.image_url
@@ -112,11 +112,14 @@ const MenuPage = {
             <p class="product-desc">${escHtml(p.description || '')}</p>
             <div class="product-footer">
               <span class="product-price">${fmtCurrency(p.price)}</span>
-              <button
-                class="btn-add-cart"
-                data-pid="${escHtml(p.id)}"
-                aria-label="Agregar ${escHtml(p.name)} al carrito"
-              >+ Agregar</button>
+              <div class="product-card-actions">
+                ${cartQty > 0 ? `<button class="btn-remove-cart" data-pid="${escHtml(p.id)}" aria-label="Quitar ${escHtml(p.name)} del carrito">− Quitar</button>` : ''}
+                <button
+                  class="btn-add-cart"
+                  data-pid="${escHtml(p.id)}"
+                  aria-label="Agregar ${escHtml(p.name)} al carrito"
+                >+ Agregar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -172,16 +175,26 @@ const MenuPage = {
       }, 250);
     });
 
-    // Delegación de eventos para botones "Agregar" (evita JSON en onclick)
+    // Delegación de eventos para botones "Agregar" y "Quitar"
     const productsContainer = document.getElementById('products-container');
     productsContainer.addEventListener('click', e => {
-      const btn = e.target.closest('.btn-add-cart');
-      if (!btn) return;
-      const pid = btn.dataset.pid;
-      const product = this._productsById?.[pid] || this._products.find(p => p.id === pid);
-      if (product) {
-        this.addToCart(product);
-        this._renderProducts(); // actualiza badges de cantidad
+      const addBtn    = e.target.closest('.btn-add-cart');
+      const removeBtn = e.target.closest('.btn-remove-cart');
+
+      if (addBtn) {
+        const pid = addBtn.dataset.pid;
+        const product = this._productsById?.[pid] || this._products.find(p => p.id === pid);
+        if (product) {
+          this.addToCart(product);
+          this._renderProducts();
+        }
+      } else if (removeBtn) {
+        const pid = removeBtn.dataset.pid;
+        const product = this._productsById?.[pid] || this._products.find(p => p.id === pid);
+        if (product) {
+          this.removeFromCart(product);
+          this._renderProducts();
+        }
       }
     });
   },
@@ -194,5 +207,10 @@ const MenuPage = {
     }
     Cart.add(product, 1);
     Toast.show(`"${product.name}" agregado al carrito ☕`, 'success');
+  },
+
+  removeFromCart(product) {
+    Cart.remove(product.id);
+    Toast.show(`"${product.name}" quitado del carrito`, 'info');
   },
 };

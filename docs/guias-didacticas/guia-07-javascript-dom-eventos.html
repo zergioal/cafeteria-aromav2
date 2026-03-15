@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 07 – JavaScript DOM y Eventos | Cafetería Aroma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.7; color: #333; max-width: 950px; margin: 0 auto; padding: 30px 20px; background: #fff; }
+        h1 { color: #4A3426; padding-bottom: 10px; margin-bottom: 8px; }
+        h2 { color: #6F4E37; border-left: 5px solid #C8956C; padding-left: 14px; margin-top: 36px; margin-bottom: 12px; font-size: 1.4em; }
+        h3 { color: #4A3426; margin-top: 24px; margin-bottom: 8px; font-size: 1.15em; }
+        h4 { color: #6F4E37; margin-top: 16px; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        ul, ol { margin-left: 24px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+        code { background: #f4f0eb; padding: 2px 7px; border-radius: 4px; font-family: 'Courier New', monospace; color: #4A3426; font-size: 0.92em; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 16px 0; border-left: 4px solid #C8956C; }
+        pre code { background: none; color: inherit; padding: 0; font-size: 0.93em; }
+        .header-guia { background: linear-gradient(135deg, #4A3426 0%, #6F4E37 50%, #C8956C 100%); color: white; padding: 36px 30px; border-radius: 14px; margin-bottom: 36px; }
+        .header-guia h1 { color: white; border: none; font-size: 2em; margin-bottom: 6px; }
+        .header-guia .subtitulo { font-size: 1.15em; opacity: 0.9; margin-bottom: 14px; }
+        .header-guia .meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.85em; }
+        .objetivos { background: #FBF6F0; border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+        .objetivos h3 { color: #6F4E37; margin-top: 0; }
+        .analogia { background: #f3e5f5; border-left: 5px solid #9c27b0; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .analogia strong { color: #7b1fa2; }
+        .tip { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .tip strong { color: #2e7d32; }
+        .warning { background: #fff8e1; border-left: 5px solid #ffc107; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante { background: #fce4ec; border-left: 5px solid #e91e63; padding: 14px 18px; margin: 16px 0; border-radius: 0 10px 10px 0; }
+        .importante strong { color: #c2185b; }
+        .ejercicio { background: #e3f2fd; border: 2px solid #1976d2; padding: 20px 24px; margin: 24px 0; border-radius: 10px; }
+        .ejercicio h4 { color: #0d47a1; margin-top: 0; font-size: 1.1em; }
+        .paso { display: flex; gap: 14px; margin: 14px 0; align-items: flex-start; }
+        .paso-num { background: #6F4E37; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .paso-contenido { flex: 1; padding-top: 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th { background: #6F4E37; color: white; padding: 11px 16px; text-align: left; }
+        td { padding: 9px 16px; border-bottom: 1px solid #e8ddd4; }
+        tr:nth-child(even) { background: #faf5f0; }
+        .separador { border: none; border-top: 2px dashed #C8956C; margin: 36px 0; }
+        .resumen { background: #4A3426; color: white; padding: 24px 28px; border-radius: 12px; margin-top: 40px; }
+        .resumen h2 { color: #F5DEB3; border-left-color: #C8956C; }
+        .resumen ul { color: #e8d5c0; }
+        .proyecto-aroma { background: linear-gradient(135deg, #FBF6F0, #f0e6d8); border: 2px solid #C8956C; border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+        .proyecto-aroma h4 { color: #4A3426; margin-top: 0; }
+        .arbol-dom { background: #1e1e1e; color: #d4d4d4; font-family: 'Courier New', monospace; font-size: 0.9em; padding: 20px; border-radius: 10px; line-height: 1.9; border-left: 4px solid #C8956C; margin: 16px 0; }
+        .arbol-dom .html-col { color: #9cdcfe; }
+        .arbol-dom .flecha { color: #C8956C; }
+        .arbol-dom .dom-col { color: #4ec9b0; }
+        .arbol-dom .comment { color: #6a9955; }
+    </style>
+</head>
+<body>
+
+    <div class="header-guia">
+        <h1>Guía 07 – JavaScript DOM y Eventos: Haciendo Aroma Interactivo</h1>
+        <p class="subtitulo">Módulo 3: JavaScript | Controlando la página con código</p>
+        <div class="meta">
+            <span class="badge">Nivel: Principiante-Intermedio</span>
+            <span class="badge">Tiempo estimado: 6 horas</span>
+            <span class="badge">Prerequisito: Guía 06</span>
+        </div>
+    </div>
+
+    <div class="objetivos">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+            <li>Comprender qué es el DOM y cómo el navegador lo construye a partir del HTML.</li>
+            <li>Seleccionar elementos del DOM con <code>getElementById</code>, <code>querySelector</code> y <code>querySelectorAll</code>.</li>
+            <li>Leer y modificar el contenido, atributos, estilos y clases de elementos.</li>
+            <li>Crear, insertar y eliminar elementos dinámicamente.</li>
+            <li>Escuchar y responder a eventos del usuario (clicks, teclado, formularios).</li>
+            <li>Entender y aplicar el patrón de Event Delegation.</li>
+            <li>Generar HTML dinámico con template literals de forma segura.</li>
+            <li>Analizar el código real de <code>app.js</code> y el sistema de navegación de Aroma.</li>
+        </ul>
+    </div>
+
+    <!-- SECCIÓN 1 -->
+    <h2>1. ¿Qué es el DOM?</h2>
+
+    <div class="analogia">
+        <strong>Analogía:</strong> El HTML que escribes en tu editor es como el plano arquitectónico de la cafetería: texto en papel. El DOM es la cafetería construida en la realidad, con mesas, sillas y mostradores que puedes mover, pintar o eliminar. JavaScript interactúa con la cafetería real (el DOM), no con el plano de papel (el HTML estático).
+    </div>
+
+    <p>El <strong>DOM (Document Object Model)</strong> es la representación en memoria que el navegador crea cuando lee tu archivo HTML. Cada etiqueta HTML se convierte en un <strong>nodo</strong> de un árbol de objetos que JavaScript puede leer y modificar en tiempo real.</p>
+
+    <div class="arbol-dom">
+        <span class="comment">HTML (texto plano)          DOM (árbol de objetos en memoria)</span><br>
+        <span class="html-col">&lt;html&gt;</span>               <span class="flecha">→</span>      <span class="dom-col">document</span><br>
+        &nbsp;&nbsp;<span class="html-col">&lt;body&gt;</span>             <span class="flecha">→</span>        <span class="dom-col">└── body</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="html-col">&lt;nav&gt;</span>           <span class="flecha">→</span>              <span class="dom-col">└── nav</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="html-col">&lt;a&gt;Menú&lt;/a&gt;</span>    <span class="flecha">→</span>                    <span class="dom-col">└── a (texto: "Menú")</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="html-col">&lt;main&gt;</span>          <span class="flecha">→</span>              <span class="dom-col">└── main</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="html-col">&lt;div id="app"&gt;</span>  <span class="flecha">→</span>                    <span class="dom-col">└── div#app</span>
+    </div>
+
+    <p>El objeto raíz es siempre <code>document</code>. Desde él puedes llegar a cualquier elemento de la página.</p>
+
+    <div class="tip">
+        <strong>El DOM es vivo:</strong> cuando JavaScript modifica el DOM (por ejemplo, agrega un nuevo elemento), el navegador actualiza la página visualmente en tiempo real, sin recargarla. Así funcionan las Single Page Applications (SPA) como Aroma.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 2 -->
+    <h2>2. Seleccionar Elementos del DOM</h2>
+
+    <p>Antes de poder modificar cualquier elemento, necesitas obtener una referencia a él. Hay varias formas de hacerlo:</p>
+
+    <pre><code>// Por ID (devuelve UN elemento o null si no existe)
+const navbar = document.getElementById("navbar");
+const titulo = document.getElementById("titulo");
+
+// Por selector CSS (devuelve el PRIMERO que coincide)
+const boton = document.querySelector(".btn-primary");
+const input = document.querySelector("#loginEmail");
+const primeraCard = document.querySelector(".product-card");
+const spanPrecio = document.querySelector(".product-card .price");
+
+// Por selector CSS (devuelve TODOS - NodeList)
+const todasLasCards = document.querySelectorAll(".product-card");
+const todosLosBotones = document.querySelectorAll("button[type='submit']");
+const navLinks = document.querySelectorAll(".nav-link");
+
+// Iterar una NodeList (similar a un array)
+navLinks.forEach(link =&gt; {
+    console.log(link.textContent);
+});</code></pre>
+
+    <table>
+        <thead>
+            <tr><th>Método</th><th>Devuelve</th><th>Cuándo usarlo</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>getElementById("id")</code></td><td>Un elemento</td><td>Cuando tienes el ID exacto</td></tr>
+            <tr><td><code>querySelector(".clase")</code></td><td>El primero que coincide</td><td>Selectores CSS flexibles</td></tr>
+            <tr><td><code>querySelectorAll(".clase")</code></td><td>NodeList (todos)</td><td>Cuando necesitas manipular varios</td></tr>
+        </tbody>
+    </table>
+
+    <div class="importante">
+        <strong>Verifica que el elemento existe:</strong> si <code>getElementById</code> o <code>querySelector</code> no encuentran nada, devuelven <code>null</code>. Si intentas acceder a propiedades de <code>null</code> obtendrás un error. Siempre verifica: <code>if (elemento) { ... }</code>.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 3 -->
+    <h2>3. Leer y Modificar el DOM</h2>
+
+    <p>Una vez que tienes la referencia a un elemento, puedes leer o cambiar cualquier aspecto de él: su texto, sus atributos HTML, sus estilos visuales, sus clases CSS, e incluso su estructura interna.</p>
+
+    <pre><code>// Leer y modificar contenido
+elemento.textContent = "Nuevo texto";         // Solo texto, sin etiquetas HTML
+elemento.innerHTML = "&lt;strong&gt;Texto&lt;/strong&gt;"; // Con HTML (cuidado con XSS)
+
+// Leer y modificar atributos
+elemento.getAttribute("data-tab")             // Leer el atributo
+elemento.setAttribute("data-tab", "menu")     // Escribir o modificar
+elemento.removeAttribute("disabled")          // Eliminar atributo
+elemento.dataset.tab                           // Leer data-tab (shorthand)
+elemento.dataset.productoId                    // Leer data-producto-id
+
+// Leer y modificar estilos (camelCase en lugar de kebab-case)
+elemento.style.color = "#6F4E37";
+elemento.style.display = "none";           // Ocultar
+elemento.style.display = "block";          // Mostrar
+elemento.style.backgroundColor = "red";   // background-color → backgroundColor
+
+// Leer y modificar clases CSS (la forma preferida para estilos)
+elemento.classList.add("activo");          // Agregar clase
+elemento.classList.remove("activo");       // Quitar clase
+elemento.classList.toggle("activo");       // Agrega si no tiene, quita si tiene
+elemento.classList.contains("activo");     // true/false - verificar si la tiene
+
+// Crear elementos nuevos desde JavaScript
+const div = document.createElement("div");
+div.className = "product-card";
+div.innerHTML = `&lt;h3&gt;Café Latte&lt;/h3&gt;`;
+
+// Insertar en el DOM
+contenedor.appendChild(div);             // Al final del contenedor
+contenedor.prepend(div);                 // Al inicio del contenedor
+contenedor.insertBefore(div, referencia); // Antes de otro elemento
+div.remove();                            // Eliminar el elemento del DOM
+
+// Navegar el árbol del DOM
+elemento.parentElement              // El elemento padre
+elemento.children                   // Colección de hijos directos
+elemento.nextElementSibling         // El hermano siguiente
+elemento.previousElementSibling     // El hermano anterior</code></pre>
+
+    <div class="tip">
+        <strong>classList vs style:</strong> Prefiere siempre modificar clases CSS (<code>classList</code>) en lugar de escribir estilos directamente (<code>element.style</code>). De esta forma mantienes el diseño en el CSS y la lógica en JavaScript, separando responsabilidades. Solo usa <code>element.style</code> para valores calculados dinámicamente (ej: posición X/Y de un elemento arrastrable).
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 4 -->
+    <h2>4. Eventos – Respondiendo a las Acciones del Usuario</h2>
+
+    <p>Los eventos son el corazón de la interactividad. Un evento ocurre cuando el usuario hace algo (click, escribe, mueve el mouse) o cuando el navegador termina de cargar algo. Con <code>addEventListener</code> le dices a JavaScript: "cuando ocurra <em>este evento</em> en <em>este elemento</em>, ejecuta <em>esta función</em>".</p>
+
+    <pre><code>// Estructura básica de addEventListener
+elemento.addEventListener("nombreDelEvento", funcionHandler);
+
+// Con función inline
+boton.addEventListener("click", function(evento) {
+    console.log("¡Botón clickeado!");
+    console.log(evento.target); // El elemento exacto que fue clickeado
+    console.log(evento.type);   // "click"
+});
+
+// Con arrow function (lo más común en Aroma)
+boton.addEventListener("click", (e) =&gt; {
+    e.preventDefault();   // Evitar el comportamiento por defecto del navegador
+    e.stopPropagation();  // Evitar que el evento "suba" hacia los elementos padre
+    // Tu código aquí
+});
+
+// Catálogo de eventos más usados en Aroma:
+elemento.addEventListener("click", handler);          // Click del mouse
+elemento.addEventListener("dblclick", handler);       // Doble click
+elemento.addEventListener("mouseover", handler);      // Mouse entra al área
+elemento.addEventListener("mouseout", handler);       // Mouse sale del área
+elemento.addEventListener("keydown", handler);        // Tecla presionada
+elemento.addEventListener("keyup", handler);          // Tecla soltada
+input.addEventListener("input", handler);             // Cada vez que escribe
+input.addEventListener("change", handler);            // Al perder el foco con cambio
+form.addEventListener("submit", handler);             // Envío del formulario
+window.addEventListener("load", handler);             // Toda la página cargada
+document.addEventListener("DOMContentLoaded", handler); // Solo el DOM listo</code></pre>
+
+    <h3>El objeto <code>event</code></h3>
+    <p>Cada handler recibe automáticamente un objeto con información sobre el evento que ocurrió. Lo más útil:</p>
+
+    <pre><code>boton.addEventListener("click", (e) =&gt; {
+    e.target            // El elemento exacto donde se hizo click
+    e.currentTarget     // El elemento al que se agregó el listener
+    e.preventDefault()  // Cancela la acción predeterminada (ej: envío de form)
+    e.key               // En keydown: la tecla presionada ("Enter", "Escape", etc.)
+});
+
+input.addEventListener("keydown", (e) =&gt; {
+    if (e.key === "Enter") {
+        buscarProducto();
+    }
+    if (e.key === "Escape") {
+        cerrarModal();
+    }
+});</code></pre>
+
+    <div class="warning">
+        <strong>¿Cuándo usar <code>e.preventDefault()</code>?</strong> Úsalo cuando el elemento tiene un comportamiento nativo que no quieres. Ejemplos: en un <code>&lt;a href="#"&gt;</code> para que no cambie la URL; en un <code>&lt;form&gt;</code> para evitar que recargue la página al enviarlo; en drag-and-drop para permitir soltar elementos.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 5 -->
+    <h2>5. El Sistema de Navegación de Aroma (<code>app.js</code>)</h2>
+
+    <div class="proyecto-aroma">
+        <h4>Archivo real del proyecto: <code>frontend/js/app.js</code></h4>
+        <p>Este módulo implementa el sistema de navegación tipo SPA (Single Page Application): cambia el contenido visible sin recargar la página. Analiza cada parte con cuidado, ya que usa todos los conceptos que acabas de aprender.</p>
+    </div>
+
+    <pre><code>// frontend/js/app.js - Sistema de navegación SPA
+
+const App = {
+    // La pestaña que se está mostrando actualmente
+    currentTab: 'home',
+
+    // Inicializar la aplicación
+    init() {
+        // Esperar a que el DOM esté completamente listo antes de ejecutar nada
+        document.addEventListener('DOMContentLoaded', () =&gt; {
+            this.setupNavigation();
+            this.showTab('home');
+        });
+    },
+
+    // Configurar los clicks de la barra de navegación
+    setupNavigation() {
+        // Seleccionar todos los links de navegación
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // Para cada link, agregar un listener de click
+        navLinks.forEach(link =&gt; {
+            link.addEventListener('click', (e) =&gt; {
+                e.preventDefault(); // Evitar que el navegador cambie la URL
+
+                const tab = link.dataset.tab; // Leer el atributo data-tab="menu"
+                this.showTab(tab);
+            });
+        });
+    },
+
+    // Mostrar una pestaña específica y ocultar todas las demás
+    showTab(tabName) {
+        // Paso 1: Ocultar TODAS las pestañas
+        document.querySelectorAll('.tab-content').forEach(tab =&gt; {
+            tab.classList.remove('active');
+        });
+
+        // Paso 2: Quitar la clase "active" de TODOS los links
+        document.querySelectorAll('.nav-link').forEach(link =&gt; {
+            link.classList.remove('active');
+        });
+
+        // Paso 3: Mostrar SOLO la pestaña seleccionada
+        const tabElement = document.getElementById(`tab-${tabName}`);
+        if (tabElement) {
+            tabElement.classList.add('active');
+        }
+
+        // Paso 4: Marcar el link correspondiente como activo
+        const activeLink = document.querySelector(`[data-tab="${tabName}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+
+        // Paso 5: Guardar la pestaña actual en el estado del objeto
+        this.currentTab = tabName;
+    }
+};
+
+// Iniciar la aplicación
+App.init();</code></pre>
+
+    <h3>Analizando cada decisión del código</h3>
+
+    <h4>¿Por qué usamos un objeto <code>App</code>? (Module Pattern)</h4>
+    <p>En lugar de tener funciones y variables sueltas, las encapsulamos dentro de un objeto. Esto tiene varias ventajas:</p>
+    <ul>
+        <li>Evita contaminar el espacio de nombres global (no hay decenas de funciones y variables sueltas).</li>
+        <li>Agrupa el código relacionado en un solo lugar (todo lo de la navegación está en <code>App</code>).</li>
+        <li>Los métodos pueden compartir estado interno usando <code>this.currentTab</code>.</li>
+        <li>Queda claro de dónde viene cada función: <code>App.showTab()</code> es más descriptivo que <code>showTab()</code>.</li>
+    </ul>
+
+    <h4>¿Qué hace <code>DOMContentLoaded</code>?</h4>
+    <p>Si JavaScript intenta seleccionar un elemento antes de que el HTML lo haya creado, obtendrá <code>null</code>. El evento <code>DOMContentLoaded</code> se dispara en el momento exacto en que el navegador terminó de parsear el HTML completo y construyó el árbol DOM, pero antes de cargar imágenes o estilos externos. Es el momento seguro para empezar a manipular el DOM.</p>
+
+    <h4>¿Por qué <code>e.preventDefault()</code> en los links de navegación?</h4>
+    <p>Los links de navegación en Aroma tienen atributos <code>data-tab</code> pero no un <code>href</code> real, o tienen <code>href="#"</code>. Sin <code>preventDefault()</code>, al hacer click el navegador intentaría navegar a otra URL (o hacer scroll al inicio de la página con <code>#</code>), recargando la aplicación y perdiendo el estado del carrito y del usuario logueado.</p>
+
+    <h4>¿Cómo funciona <code>dataset.tab</code>?</h4>
+    <pre><code>&lt;!-- En el HTML --&gt;
+&lt;a class="nav-link" data-tab="menu"&gt;Menú&lt;/a&gt;
+&lt;a class="nav-link" data-tab="carrito"&gt;Carrito&lt;/a&gt;
+
+// En JavaScript:
+link.dataset.tab      // "menu" o "carrito"
+// dataset convierte automáticamente kebab-case a camelCase:
+// data-producto-id → dataset.productoId</code></pre>
+
+    <h4>El patrón "ocultar todos, mostrar uno"</h4>
+    <p>Este es un patrón fundamental en interfaces SPA. En lugar de rastrear qué estaba visible antes, simplemente:</p>
+    <ol>
+        <li>Quita la clase <code>active</code> de todos los elementos del grupo.</li>
+        <li>Agrega la clase <code>active</code> solo al elemento deseado.</li>
+    </ol>
+    <p>Es simple, predecible y no deja estados inconsistentes.</p>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 6 -->
+    <h2>6. Event Delegation – Un Solo Listener para Muchos Elementos</h2>
+
+    <p>Imagina que el menú de Aroma tiene 50 productos. Si agregas un <code>addEventListener</code> a cada botón "Agregar", estás creando 50 funciones en memoria. Además, cuando los productos se cargan dinámicamente (desde la API), los botones no existen todavía cuando el código se ejecuta.</p>
+
+    <div class="importante">
+        <strong>El problema:</strong> los listeners solo se pueden agregar a elementos que ya existen en el DOM. Los elementos creados dinámicamente después (con <code>innerHTML</code>) no tienen los listeners.
+    </div>
+
+    <p><strong>La solución: Event Delegation.</strong> En lugar de escuchar el evento en cada botón hijo, escuchamos en el elemento padre que SÍ existe desde el principio. Cuando el usuario hace click en cualquier lugar del padre, el evento "burbujea" hacia arriba y el padre lo captura. Luego verificamos si el click fue en el elemento específico que nos interesa.</p>
+
+    <pre><code>// MAL - 50 listeners, no funciona con elementos dinámicos
+document.querySelectorAll('.btn-agregar').forEach(btn =&gt; {
+    btn.addEventListener('click', agregarAlCarrito); // Se agrega a elementos existentes
+});
+// Los botones que se creen después con innerHTML NO tendrán este listener
+
+// BIEN - 1 solo listener en el contenedor padre (que siempre existe)
+document.getElementById('productGrid').addEventListener('click', (e) =&gt; {
+    // Verificar si el click fue exactamente en un botón "agregar"
+    if (e.target.classList.contains('btn-agregar')) {
+        // Leer los datos del producto desde los atributos data-*
+        const productoId = e.target.dataset.id;
+        const productoNombre = e.target.dataset.nombre;
+        const productoPrecio = parseFloat(e.target.dataset.precio);
+
+        agregarAlCarrito(productoId, productoNombre, productoPrecio);
+    }
+
+    // También podemos manejar otros clicks en el mismo listener
+    if (e.target.classList.contains('btn-detalle')) {
+        const productoId = e.target.dataset.id;
+        verDetalleProducto(productoId);
+    }
+});</code></pre>
+
+    <div class="tip">
+        <strong>Event Delegation funciona gracias al "bubbling":</strong> cuando haces click en un botón, el evento no solo se dispara en el botón, sino que después "sube" (burbujea) por todos sus ancestros: el div contenedor, el main, el body, hasta llegar al document. El listener en el padre captura el evento aunque el click original fue en el hijo.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 7 -->
+    <h2>7. Generar HTML Dinámico de Forma Segura</h2>
+
+    <p>Una de las habilidades más importantes en el desarrollo frontend es construir HTML desde datos JavaScript. Así es como Aroma muestra los productos que vienen del servidor.</p>
+
+    <pre><code>// Función para crear la tarjeta HTML de un producto
+function crearTarjetaProducto(producto) {
+    // Usamos template literals para construir el HTML como string
+    return `
+        &lt;div class="product-card" data-id="${producto.id}"&gt;
+            &lt;div class="product-image-container"&gt;
+                &lt;img
+                    src="${producto.imagen_url || 'img/placeholder.jpg'}"
+                    alt="${escHtml(producto.nombre)}"
+                    class="product-image"
+                    loading="lazy"
+                &gt;
+            &lt;/div&gt;
+            &lt;div class="product-info"&gt;
+                &lt;h3 class="product-name"&gt;${escHtml(producto.nombre)}&lt;/h3&gt;
+                &lt;p class="product-desc"&gt;${escHtml(producto.descripcion || '')}&lt;/p&gt;
+                &lt;div class="product-footer"&gt;
+                    &lt;span class="product-price"&gt;Bs. ${producto.precio.toFixed(2)}&lt;/span&gt;
+                    &lt;button
+                        class="btn-agregar"
+                        data-id="${producto.id}"
+                        data-nombre="${escHtml(producto.nombre)}"
+                        data-precio="${producto.precio}"
+                    &gt;
+                        + Agregar
+                    &lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    `;
+}
+
+// Función de seguridad: prevenir XSS escapando caracteres HTML peligrosos
+function escHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&amp;/g, '&amp;amp;')
+        .replace(/&lt;/g, '&amp;lt;')
+        .replace(/&gt;/g, '&amp;gt;')
+        .replace(/"/g, '&amp;quot;')
+        .replace(/'/g, '&amp;#039;');
+}
+
+// Renderizar TODOS los productos en el contenedor
+function renderizarProductos(productos) {
+    const grid = document.getElementById('productGrid');
+
+    if (productos.length === 0) {
+        grid.innerHTML = `
+            &lt;div class="empty-state"&gt;
+                &lt;p&gt;No hay productos disponibles&lt;/p&gt;
+            &lt;/div&gt;
+        `;
+        return; // Salir de la función aquí
+    }
+
+    // map() convierte cada producto en string HTML, join() los une en uno solo
+    grid.innerHTML = productos.map(crearTarjetaProducto).join('');
+}</code></pre>
+
+    <div class="importante">
+        <strong>XSS (Cross-Site Scripting) – Por qué es crítico usar escHtml():</strong> Si un atacante logra guardar en la base de datos un nombre de producto como <code>&lt;script&gt;robarContrasenas()&lt;/script&gt;</code>, y tú lo insertas directamente con <code>innerHTML</code>, ese script malicioso se ejecutará en el navegador de todos los usuarios que vean el menú. La función <code>escHtml()</code> convierte los caracteres <code>&lt;</code>, <code>&gt;</code>, <code>"</code> y <code>&amp;</code> en sus equivalentes seguros (<code>&amp;lt;</code>, etc.), que el navegador mostrará como texto literal, no como código.
+    </div>
+
+    <hr class="separador">
+
+    <!-- SECCIÓN 8 -->
+    <h2>8. Toast Notifications – Mensajes Emergentes</h2>
+
+    <p>Las notificaciones "toast" son pequeños mensajes que aparecen temporalmente (generalmente en una esquina de la pantalla) para confirmar acciones o mostrar errores, sin interrumpir al usuario con un <code>alert()</code> bloqueante.</p>
+
+    <pre><code>// Sistema de notificaciones de Aroma
+function mostrarToast(mensaje, tipo = 'info', duracion = 3000) {
+    // 1. Crear el elemento DOM del toast
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${tipo}`;
+    toast.innerHTML = `
+        &lt;span class="toast-icon"&gt;${getToastIcon(tipo)}&lt;/span&gt;
+        &lt;span class="toast-mensaje"&gt;${escHtml(mensaje)}&lt;/span&gt;
+        &lt;button class="toast-close" onclick="this.parentElement.remove()"&gt;×&lt;/button&gt;
+    `;
+
+    // 2. Agregar al contenedor (o crear el contenedor si no existe)
+    const contenedor = document.getElementById('toastContainer')
+        || crearContenedorToast();
+    contenedor.appendChild(toast);
+
+    // 3. Pequeño delay para que el CSS pueda animar la entrada
+    setTimeout(() =&gt; toast.classList.add('visible'), 10);
+
+    // 4. Auto-eliminar después de la duración especificada
+    setTimeout(() =&gt; {
+        toast.classList.remove('visible');           // Animar salida
+        setTimeout(() =&gt; toast.remove(), 300);      // Eliminar del DOM tras animación
+    }, duracion);
+}
+
+function getToastIcon(tipo) {
+    const iconos = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    return iconos[tipo] || iconos.info;
+}
+
+// Ejemplos de uso en Aroma:
+mostrarToast('Producto agregado al carrito', 'success');
+mostrarToast('Debes iniciar sesión para ordenar', 'warning');
+mostrarToast('Error al cargar productos', 'error');
+mostrarToast('Bienvenido a Cafetería Aroma', 'info');</code></pre>
+
+    <p>Esta función es un buen ejemplo de múltiples conceptos combinados:</p>
+    <ul>
+        <li><strong>Parámetros por defecto:</strong> <code>tipo = 'info'</code> y <code>duracion = 3000</code> hacen que los 2 últimos parámetros sean opcionales.</li>
+        <li><strong>createElement e innerHTML:</strong> para construir la notificación dinámicamente.</li>
+        <li><strong>classList.add/remove:</strong> para controlar las animaciones CSS.</li>
+        <li><strong>setTimeout:</strong> para ejecutar código después de un delay (en milisegundos).</li>
+        <li><strong>Encadenamiento de setTimeouts:</strong> primero se espera la duración del toast, luego se espera la animación de salida (300ms), luego se elimina del DOM.</li>
+    </ul>
+
+    <hr class="separador">
+
+    <!-- EJERCICIO FINAL -->
+    <div class="ejercicio">
+        <h4>Ejercicio Final – Sistema de Navegación de Aroma</h4>
+        <p>Implementa desde cero la funcionalidad de navegación con pestañas. Crea un archivo HTML de prueba con la siguiente estructura y agrega el JavaScript necesario:</p>
+
+        <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-contenido">
+                <strong>Crea el HTML base:</strong>
+                <pre><code>&lt;nav&gt;
+    &lt;a class="nav-link" data-tab="inicio"&gt;Inicio&lt;/a&gt;
+    &lt;a class="nav-link" data-tab="menu"&gt;Menú&lt;/a&gt;
+    &lt;a class="nav-link" data-tab="carrito"&gt;Carrito&lt;/a&gt;
+&lt;/nav&gt;
+&lt;div id="tab-inicio" class="tab-content"&gt;Pestaña Inicio&lt;/div&gt;
+&lt;div id="tab-menu" class="tab-content"&gt;Pestaña Menú&lt;/div&gt;
+&lt;div id="tab-carrito" class="tab-content"&gt;Pestaña Carrito&lt;/div&gt;</code></pre>
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-contenido">
+                <strong>Escribe el CSS:</strong> haz que las <code>.tab-content</code> tengan <code>display: none</code> por defecto, y <code>display: block</code> cuando tienen la clase <code>active</code>. Haz que los <code>.nav-link.active</code> tengan un estilo diferente.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-contenido">
+                <strong>Implementa el JavaScript:</strong> al hacer click en cualquier link de la navbar, muestra el tab correspondiente y oculta los demás. Actualiza el link activo visualmente.
+            </div>
+        </div>
+
+        <div class="paso">
+            <div class="paso-num">4</div>
+            <div class="paso-contenido">
+                <strong>Agrega un toast de bienvenida:</strong> cuando la página cargue (<code>DOMContentLoaded</code>), muestra un mensaje de bienvenida usando la función <code>mostrarToast()</code>. Implementa una versión simplificada de la función usando <code>createElement</code> y <code>setTimeout</code>.
+            </div>
+        </div>
+    </div>
+
+    <hr class="separador">
+
+    <!-- RESUMEN -->
+    <div class="resumen">
+        <h2>Resumen de la Guía 07</h2>
+        <ul>
+            <li>El DOM es la representación en memoria del HTML. JavaScript lo manipula en tiempo real para crear interfaces dinámicas sin recargar la página.</li>
+            <li>Selecciona elementos con <code>getElementById</code>, <code>querySelector</code> (primero que coincide) y <code>querySelectorAll</code> (todos los que coinciden).</li>
+            <li>Modifica clases con <code>classList.add/remove/toggle/contains</code>; es más limpio que escribir estilos directamente.</li>
+            <li>Usa <code>addEventListener</code> para responder a eventos. El objeto <code>event</code> que recibe el handler tiene información sobre lo que ocurrió.</li>
+            <li><code>e.preventDefault()</code> cancela el comportamiento predeterminado del navegador (necesario en links de navegación SPA y formularios).</li>
+            <li><code>DOMContentLoaded</code> es el evento que indica que el DOM está listo para ser manipulado de forma segura.</li>
+            <li>El Module Pattern (<code>const App = { métodos... }</code>) organiza el código evitando variables globales sueltas.</li>
+            <li><code>dataset.nombreAtributo</code> permite leer atributos <code>data-*</code> del HTML de forma limpia.</li>
+            <li>Event Delegation: un solo listener en el padre maneja eventos de todos sus hijos, incluso los creados dinámicamente.</li>
+            <li>Usa siempre <code>escHtml()</code> al insertar datos del usuario o del servidor con <code>innerHTML</code> para prevenir ataques XSS.</li>
+            <li>Las notificaciones toast combinan <code>createElement</code>, <code>classList</code> y <code>setTimeout</code> para mostrar mensajes animados sin bloquear al usuario.</li>
+        </ul>
+    </div>
+
+</body>
+</html>
